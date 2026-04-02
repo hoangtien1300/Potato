@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Potato English Center - Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Background Elements for Glassmorphism -->
+    <div class="bg-shape shape-1"></div>
+    <div class="bg-shape shape-2"></div>
+    <div class="bg-shape shape-3"></div>
+
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar glass-panel">
+            <div class="sidebar-header">
+                <img src="../1. Potato logo.png" alt="Potato Logo" class="logo">
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item active">
+                    <a href="#"><i class="fa-solid fa-house"></i> Overview</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#"><i class="fa-solid fa-users"></i> Students</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#"><i class="fa-solid fa-chalkboard-user"></i> Classes</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#"><i class="fa-solid fa-chart-pie"></i> Reports</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#"><i class="fa-solid fa-gear"></i> Settings</a>
+                </li>
+            </ul>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-bar glass-panel">
+                <div class="search-box">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" placeholder="Tìm kiếm lớp học, học viên...">
+                </div>
+                <div class="user-profile">
+                    <div class="notification-icon">
+                        <i class="fa-regular fa-bell"></i>
+                        <span class="badge">3</span>
+                    </div>
+                    <div class="avatar">
+                        <img src="https://ui-avatars.com/api/?name=Admin&background=00aeef&color=fff" alt="User">
+                    </div>
+                    <div class="user-info">
+                        <h4>Admin</h4>
+                        <span>Center Manager</span>
+                    </div>
+                </div>
+            </header>
+
+            <div class="content-wrapper">
+                <!-- Metrics Grid -->
+                <section class="metrics-grid">
+                    <div class="metric-card glass-panel">
+                        <div class="metric-icon">
+                            <i class="fa-solid fa-user-graduate"></i>
+                        </div>
+                        <div class="metric-data">
+                            <h3>Tổng số Học viên</h3>
+                            <p class="value">1,245</p>
+                            <span class="trend positive"><i class="fa-solid fa-arrow-up"></i> 12% tháng này</span>
+                        </div>
+                    </div>
+                    <div class="metric-card glass-panel">
+                        <div class="metric-icon">
+                            <i class="fa-solid fa-chalkboard"></i>
+                        </div>
+                        <div class="metric-data">
+                            <h3>Tổng số Lớp</h3>
+                            <p class="value">86</p>
+                            <span class="trend positive"><i class="fa-solid fa-arrow-up"></i> 5 lớp mới</span>
+                        </div>
+                    </div>
+                    <div class="metric-card glass-panel">
+                        <div class="metric-icon alert">
+                            <i class="fa-solid fa-pen-to-square"></i>
+                        </div>
+                        <div class="metric-data">
+                            <h3>Lớp sắp thi</h3>
+                            <p class="value">12</p>
+                            <span class="trend neutral">Trong tháng này</span>
+                        </div>
+                    </div>
+                    <div class="metric-card glass-panel">
+                        <div class="metric-icon highlight">
+                            <i class="fa-solid fa-door-open"></i>
+                        </div>
+                        <div class="metric-data">
+                            <h3>Lớp sắp mở</h3>
+                            <p class="value">8</p>
+                            <span class="trend positive">Tuần tới</span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Class List with Integrated Departments -->
+                <div class="table-header-flex">
+                    <h2 class="section-title">Danh sách Lớp và Phân hệ</h2>
+                </div>
+                <section class="classes-list glass-panel" style="overflow-x: auto;">
+                    <table class="modern-table integrated-table">
+                        <thead>
+                            <tr>
+                                <th rowspan="2" class="sticky-col">Mã Lớp</th>
+                                <th rowspan="2" class="text-center">Học Viên</th>
+                                <th rowspan="2">Giáo viên</th>
+                                <th colspan="4" class="dept-th teacher-th"><i class="fa-solid fa-chalkboard-user"></i> Teacher</th>
+                                <th colspan="4" class="dept-th academic-th"><i class="fa-solid fa-book-open"></i> Academic</th>
+                                <th colspan="4" class="dept-th operation-th"><i class="fa-solid fa-briefcase"></i> Operation</th>
+                                <th rowspan="2">Hành động</th>
+                            </tr>
+                            <tr class="sub-headers">
+                                <!-- Teacher -->
+                                <th>Homework</th>
+                                <th>Attendance</th>
+                                <th>Engagement</th>
+                                <th>Issues</th>
+                                <!-- Academic -->
+                                <th>Test</th>
+                                <th>Score</th>
+                                <th>Lesson</th>
+                                <th>Issues</th>
+                                <!-- Operation -->
+                                <th>Fees</th>
+                                <th>Notice</th>
+                                <th>Report</th>
+                                <th>Issues</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Row 1 -->
+                            <tr class="clickable-row">
+                                <td class="sticky-col"><strong>I. Kid 2 (Fox)</strong></td>
+                                <td class="text-center font-bold">12</td>
+                                <td>Ms. Sarah</td>
+                                <!-- Teacher -->
+                                <td><span class="stat-badge">85%</span></td>
+                                <td><span class="stat-badge success">92%</span></td>
+                                <td>Tốt</td>
+                                <td><button class="issue-badge has-issue" onclick="openIssues('Teacher', 'I. Kid 2 (Fox)', 2)">2 <i class="fa-solid fa-triangle-exclamation"></i></button></td>
+                                <!-- Academic -->
+                                <td>
+                                    <div class="test-date"><strong>15/04/2026</strong><br><span class="test-type">Mid Term</span></div>
+                                </td>
+                                <td><strong>8.2</strong></td>
+                                <td>
+                                    <div class="lesson-progress">
+                                        <div class="lesson-bar"><div class="lesson-fill" style="width: 55%;"></div></div>
+                                        <span class="lesson-text">22/40</span>
+                                    </div>
+                                </td>
+                                <td><button class="issue-badge" onclick="openIssues('Academic', 'I. Kid 2 (Fox)', 0)">0</button></td>
+                                <!-- Operation -->
+                                <td>80%</td>
+                                <td>0</td>
+                                <td><span class="status active">Đã báo cáo</span></td>
+                                <td><button class="issue-badge" onclick="openIssues('Operation', 'I. Kid 2 (Fox)', 0)">0</button></td>
+                                <td><button class="icon-btn" onclick="openClassDetail('I. Kid 2 (Fox)')"><i class="fa-solid fa-arrow-right"></i></button></td>
+                            </tr>
+                            <!-- Row 2 -->
+                            <tr class="clickable-row">
+                                <td class="sticky-col"><strong>I. Kid 4 (Fox)</strong></td>
+                                <td class="text-center font-bold">15</td>
+                                <td>Mr. John</td>
+                                <!-- Teacher -->
+                                <td><span class="stat-badge warning">60%</span></td>
+                                <td><span class="stat-badge">80%</span></td>
+                                <td>Khá</td>
+                                <td><button class="issue-badge has-issue" onclick="openIssues('Teacher', 'I. Kid 4 (Fox)', 1)">1 <i class="fa-solid fa-triangle-exclamation"></i></button></td>
+                                <!-- Academic -->
+                                <td>
+                                    <div class="test-date"><strong>20/04/2026</strong><br><span class="test-type">Final</span></div>
+                                </td>
+                                <td><strong>7.5</strong></td>
+                                <td>
+                                    <div class="lesson-progress">
+                                        <div class="lesson-bar"><div class="lesson-fill warning-fill" style="width: 90%;"></div></div>
+                                        <span class="lesson-text">36/40</span>
+                                    </div>
+                                </td>
+                                <td><button class="issue-badge" onclick="openIssues('Academic', 'I. Kid 4 (Fox)', 0)">0</button></td>
+                                <!-- Operation -->
+                                <td>50%</td>
+                                <td>1</td>
+                                <td><span class="status warning">Chưa</span></td>
+                                <td><button class="issue-badge" onclick="openIssues('Operation', 'I. Kid 4 (Fox)', 0)">0</button></td>
+                                <td><button class="icon-btn" onclick="openClassDetail('I. Kid 4 (Fox)')"><i class="fa-solid fa-arrow-right"></i></button></td>
+                            </tr>
+                            <!-- Row 3 -->
+                            <tr class="clickable-row">
+                                <td class="sticky-col"><strong>II. Junior 2 (FF1B)</strong></td>
+                                <td class="text-center font-bold">18</td>
+                                <td>Ms. Emma</td>
+                                <!-- Teacher -->
+                                <td><span class="stat-badge success">95%</span></td>
+                                <td><span class="stat-badge success">98%</span></td>
+                                <td>Xuất sắc</td>
+                                <td><button class="issue-badge has-issue" onclick="openIssues('Teacher', 'II. Junior 2 (FF1B)', 2)">2 <i class="fa-solid fa-triangle-exclamation"></i></button></td>
+                                <!-- Academic -->
+                                <td>
+                                    <div class="test-date"><strong>10/05/2026</strong><br><span class="test-type">Mini Test</span></div>
+                                </td>
+                                <td><strong>9.1</strong></td>
+                                <td>
+                                    <div class="lesson-progress">
+                                        <div class="lesson-bar"><div class="lesson-fill" style="width: 20%;"></div></div>
+                                        <span class="lesson-text">8/40</span>
+                                    </div>
+                                </td>
+                                <td><button class="issue-badge" onclick="openIssues('Academic', 'II. Junior 2 (FF1B)', 0)">0</button></td>
+                                <!-- Operation -->
+                                <td>100%</td>
+                                <td>0</td>
+                                <td><span class="status new">Đang chờ</span></td>
+                                <td><button class="issue-badge" onclick="openIssues('Operation', 'II. Junior 2 (FF1B)', 0)">0</button></td>
+                                <td><button class="icon-btn" onclick="openClassDetail('II. Junior 2 (FF1B)')"><i class="fa-solid fa-arrow-right"></i></button></td>
+                            </tr>
+                            <!-- Row 4 -->
+                            <tr class="clickable-row">
+                                <td class="sticky-col"><strong>IV. IELTS 1 (Foundation)</strong></td>
+                                <td class="text-center font-bold">20</td>
+                                <td>Mr. David</td>
+                                <!-- Teacher -->
+                                <td><span class="stat-badge">88%</span></td>
+                                <td><span class="stat-badge success">95%</span></td>
+                                <td>Tốt</td>
+                                <td><button class="issue-badge" onclick="openIssues('Teacher', 'IV. IELTS 1 (Foundation)', 0)">0</button></td>
+                                <!-- Academic -->
+                                <td>
+                                    <div class="test-date"><strong>05/05/2026</strong><br><span class="test-type">Mock Test</span></div>
+                                </td>
+                                <td><strong>6.5</strong></td>
+                                <td>
+                                    <div class="lesson-progress">
+                                        <div class="lesson-bar"><div class="lesson-fill" style="width: 75%;"></div></div>
+                                        <span class="lesson-text">36/48</span>
+                                    </div>
+                                </td>
+                                <td><button class="issue-badge has-issue" onclick="openIssues('Academic', 'IV. IELTS 1 (Foundation)', 1)">1 <i class="fa-solid fa-triangle-exclamation"></i></button></td>
+                                <!-- Operation -->
+                                <td>90%</td>
+                                <td>0</td>
+                                <td><span class="status active">Đã báo cáo</span></td>
+                                <td><button class="issue-badge" onclick="openIssues('Operation', 'IV. IELTS 1 (Foundation)', 0)">0</button></td>
+                                <td><button class="icon-btn" onclick="openClassDetail('IV. IELTS 1 (Foundation)')"><i class="fa-solid fa-arrow-right"></i></button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </section>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal for Class Detail -->
+    <div id="classModal" class="modal-backdrop">
+        <div class="modal-content glass-panel">
+            <div class="modal-header">
+                <h3 id="modalClassTitle">Chi tiết lớp</h3>
+                <button class="close-btn" onclick="closeClassDetail()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="placeholder-content">
+                    <div class="skeleton-line"></div>
+                    <div class="skeleton-line"></div>
+                    <div class="skeleton-line short"></div>
+                    <br>
+                    <p>Thông tin chi tiết về học viên, điểm số và bài tập của lớp sẽ hiển thị ở đây.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Issues -->
+    <div id="issuesModal" class="modal-backdrop">
+        <div class="modal-content glass-panel" style="max-width: 500px;">
+            <div class="modal-header">
+                <h3 id="modalIssuesTitle">Vấn đề lớp</h3>
+                <button class="close-btn" onclick="closeIssues()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <ul id="issuesList" style="padding-left: 20px; line-height: 1.6; color: var(--text-color);">
+                    <!-- issues dynamically added here -->
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
