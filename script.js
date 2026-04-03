@@ -113,4 +113,24 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     });
+
+    // Sidebar Toggle Logic
+    const sidebarToggle = document.getElementById('sidebar-toggle');
+    const sidebar = document.querySelector('.sidebar');
+    
+    if (sidebarToggle && sidebar) {
+        sidebarToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('collapsed');
+            
+            // Change icon based on state
+            const icon = sidebarToggle.querySelector('i');
+            if (sidebar.classList.contains('collapsed')) {
+                icon.classList.remove('fa-bars');
+                icon.classList.add('fa-indent');
+            } else {
+                icon.classList.remove('fa-indent');
+                icon.classList.add('fa-bars');
+            }
+        });
+    }
 });

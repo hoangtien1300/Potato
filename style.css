@@ -101,6 +101,47 @@ body {
     flex-direction: column;
     padding: 24px 0;
     overflow: hidden;
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebar.collapsed {
+    width: 80px;
+}
+
+.sidebar.collapsed .sidebar-header {
+    padding: 0 0 16px;
+    border-bottom: none;
+}
+
+.sidebar.collapsed .logo {
+    max-width: 40px;
+}
+
+.sidebar.collapsed .nav-section-title {
+    font-size: 0;
+    height: 1px;
+    background: rgba(0, 174, 239, 0.2);
+    margin: 15px 15px;
+    padding: 0;
+    overflow: hidden;
+}
+
+.sidebar.collapsed .nav-item a {
+    justify-content: center;
+    padding: 12px 0;
+}
+
+.sidebar.collapsed .nav-item a i {
+    font-size: 1.3rem;
+    margin: 0;
+}
+
+.sidebar.collapsed .nav-item a span {
+    display: none;
+}
+
+.sidebar.collapsed .nav-item.active a::before {
+    left: 0;
 }
 
 .sidebar-header {
@@ -251,6 +292,16 @@ body {
     width: 100%;
     color: var(--text-color);
     font-size: 0.95rem;
+}
+
+.toggle-btn {
+    margin-right: 8px;
+    color: var(--text-muted);
+}
+
+.toggle-btn:hover {
+    color: var(--primary-color);
+    background: var(--primary-light);
 }
 
 .search-box i {
