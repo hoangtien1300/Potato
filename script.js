@@ -76,3 +76,41 @@ window.addEventListener('click', function(event) {
         closeIssues();
     }
 });
+
+// Navigation Logic
+document.addEventListener('DOMContentLoaded', () => {
+    const navLinks = document.querySelectorAll('.nav-item a');
+    const homeView = document.getElementById('home-view');
+    const placeholderView = document.getElementById('placeholder-view');
+    const placeholderTitle = document.getElementById('placeholder-title');
+
+    navLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            
+            // Remove active class from all
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            // Add active class to clicked parent li
+            link.parentElement.classList.add('active');
+            
+            const target = link.getAttribute('data-target');
+            const title = link.getAttribute('data-title');
+            
+            if (target === 'home') {
+                homeView.style.display = 'block';
+                placeholderView.style.display = 'none';
+            } else if (target === 'placeholder') {
+                homeView.style.display = 'none';
+                placeholderView.style.display = 'flex';
+                if (title) {
+                    placeholderTitle.innerText = title + ' (Đang cập nhật)';
+                } else {
+                    placeholderTitle.innerText = 'Giao diện đang được update';
+                }
+            }
+        });
+    });
+});
