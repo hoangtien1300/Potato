@@ -177,9 +177,9 @@
             week: "Tuần 4 - Tháng 3",
             seniorTeacher: "Phan Trần Khôi",
             summary: [
-                { label: "Chỉ số ổn định", value: "85%", trend: "↑ 3%", color: "emerald", icon: "ph-chart-line-up" },
-                { label: "Tỷ lệ làm HW", value: "78%", trend: "Cần cải thiện", color: "amber", icon: "ph-notebook" },
-                { label: "Tiến độ Final Test", value: "100%", trend: "Hoàn tất soạn đề", color: "sky", icon: "ph-check-circle" }
+                { label: "Chỉ số ổn định", value: "85%", trend: "↑ 3% so với tuần trước", color: "emerald", icon: "ph-chart-line-up" },
+                { label: "Tỷ lệ làm HW", value: "78%", trend: "Cần cải thiện khối Junior", color: "amber", icon: "ph-notebook" },
+                { label: "Tiến độ Final Test", value: "100%", trend: "Đã hoàn tất soạn đề", color: "sky", icon: "ph-check-circle" }
             ],
             chartData: [
                 { label: "Kids 2", value: 85, color: "#10B981" },
@@ -191,19 +191,42 @@
                 { label: "Teen 2+ KET", value: 70, color: "#F59E0B" },
                 { label: "Teen 3", value: 72, color: "#64748B" }
             ],
-            classes: [
-                { name: "Kids 2", group: "Young Learners", status: "Chênh lệch trình độ", solution: "Kết hợp ôn tập lồng ghép thực hành Stage 3.", color: "emerald" },
-                { name: "Kids 4", group: "Young Learners", status: "Ổn định & Nội quy", solution: "Đã soạn xong Final Test, ôn luyện trọng tâm.", color: "emerald" },
-                { name: "Junior 2", group: "Warning Zone", status: "Lệch độ tuổi & Kỹ năng", solution: "Giao BT riêng nhóm viết yếu. Liên hệ PH Ken.", color: "rose" },
-                { name: "Junior 5", group: "Junior", status: "Khó khăn chuyển cấp", solution: "Dạy chắc từ vựng, hướng dẫn kỹ làm ngữ pháp.", color: "blue" },
-                { name: "Teen 1 WFE", group: "Teen Focus", status: "Chuẩn bị Final Test", solution: "Ôn tập bám sát cấu trúc đề thi Final.", color: "sky" },
-                { name: "Teen 1A SSM", group: "Teen Focus", status: "Duy trì tiến bộ", solution: "Áp dụng phương pháp Grammar & Vocab mới.", color: "sky" },
-                { name: "Teen 2+ KET", group: "Cambridge Prep", status: "Kỹ năng Nghe & Đọc", solution: "Tăng cường bài tập, theo dõi Hailey.", color: "violet" },
-                { name: "Teen 3", group: "Weekend Class", status: "Tỷ lệ chuyên cần", solution: "Gửi kiến thức cô đọng cho HS vắng ôn nhà.", color: "slate" }
+            categories: [
+                {
+                    name: "Kids",
+                    color: "emerald",
+                    classes: [
+                        { name: "Kids 2", sub: "Young Learners", status: "Chênh lệch trình độ", desc: "Các bạn mới đang bắt kịp tiến độ tốt. Cần tránh gây nhàm chán cho các bạn cũ.", solution: "Kết hợp ôn tập lồng ghép thực hành Stage 3." },
+                        { name: "Kids 4", sub: "Young Learners", status: "Ổn định & Nội quy", desc: "Các bạn tuân thủ tốt. Đang chuẩn bị chuyển giao sang Stage 4 quan trọng.", solution: "Đã soạn xong Final Test, tập trung ôn luyện trọng tâm." }
+                    ]
+                },
+                {
+                    name: "Junior",
+                    color: "blue",
+                    classes: [
+                        { name: "Junior 2", sub: "Warning Zone", status: "Lệch độ tuổi & Kỹ năng", desc: "Nói tốt nhưng viết yếu. Ken nghỉ nhiều và yếu. Đang thử nghiệm Story Spark.", solution: "Giao BT riêng cho nhóm viết yếu. Liên hệ PH Ken." },
+                        { name: "Junior 5", sub: "Junior", status: "Khó khăn chuyển cấp", desc: "Các bạn lớp 2 (Michelle, Aria...) bắt đầu thấy khó khăn với bài tập mới.", solution: "Dạy chắc từ vựng, hướng dẫn kỹ phương pháp làm ngữ pháp." }
+                    ]
+                },
+                {
+                    name: "Teen",
+                    color: "indigo",
+                    classes: [
+                        { name: "Teen 1 WFE", sub: "Teen Focus", status: "Chuẩn bị Final Test", desc: "Thái độ tốt, làm HW đầy đủ. Ngữ pháp cần được gia cố thêm trước kỳ thi.", solution: "Ôn tập bám sát cấu trúc đề thi Final." },
+                        { name: "Teen 1A SSM", sub: "Teen Focus", status: "Duy trì sự tiến bộ", desc: "Học giỏi đều, feedback Ms Sue rất tốt. Cần rèn thêm ngữ pháp nâng cao.", solution: "Áp dụng phương pháp luyện Grammar & Vocab mới." },
+                        { name: "Teen 2+ KET", sub: "Cambridge Prep", status: "Kỹ năng Nghe & Đọc", desc: "Đọc có tiến bộ, Nghe cần tăng cường. Hailey nỗ lực nhưng chưa thuộc từ.", solution: "Tăng cường bài tập, áp dụng PP mới, theo dõi Hailey." },
+                        { name: "Teen 3", sub: "Weekend Class", status: "Tỷ lệ chuyên cần", desc: "Nghiêm túc nhưng vắng nhiều do bận cuối tuần. Kỹ năng ngữ pháp còn yếu.", solution: "Gửi kiến thức cô đọng cho HS vắng ôn tại nhà." }
+                    ]
+                },
+                {
+                    name: "IELTS",
+                    color: "rose",
+                    classes: [] // Placeholder as per Teacher.html source
+                }
             ],
             strategies: [
-                { title: "New Grammar & Vocab", desc: "Hệ thống hóa từ vựng qua hình ảnh và bối cảnh (Contextual Learning).", icon: "ph-sparkle" },
-                { title: "Story Spark Integration", desc: "Áp dụng vào lớp Junior 2, bước đầu nhận được sự hào hứng.", icon: "ph-book-open" }
+                { title: "New Grammar & Vocab Method", desc: "Hệ thống hóa lại cách tiếp cận từ vựng thông qua hình ảnh và bối cảnh (Contextual Learning), áp dụng cho toàn bộ khối Teen.", icon: "ph-sparkle" },
+                { title: "Story Spark Integration", desc: "Đã áp dụng vào lớp Junior 2, bước đầu nhận được sự hào hứng từ học sinh. Sẽ theo dõi tiến độ tiếp thu trong 2 tuần tới.", icon: "ph-book-open" }
             ]
         };
 
@@ -231,11 +254,17 @@
                     </div>
 
                     {/* Health Analysis Chart */}
-                    <div className="glass-card p-8 rounded-[32px] bg-white/30 backdrop-blur-xl border border-white/40">
+                    <div className="glass-card p-8 rounded-[32px] bg-white/30 backdrop-blur-xl border border-white/40 relative overflow-visible">
                         <h3 className="text-lg font-black text-slate-800 mb-10 flex items-center gap-2">
                              <Icon name="ph-chart-bar" className="text-indigo-500" /> Sức Khỏe Lớp Học (Hệ 100 - Tuần 4)
                         </h3>
-                        <div className="h-64 flex items-end justify-between gap-2 px-2">
+                        
+                        {/* Y-Axis Label */}
+                        <div className="absolute left-4 top-1/2 -rotate-90 origin-left text-[10px] font-black text-slate-400 uppercase tracking-widest pointer-events-none">
+                            Chỉ số (%)
+                        </div>
+
+                        <div className="h-64 flex items-end justify-between gap-2 px-8 border-l border-b border-slate-200/50 ml-6 relative">
                             {TEACHER_REPORT_DATA.chartData.map((bar, idx) => (
                                 <div key={idx} className="flex-1 flex flex-col items-center group relative h-full justify-end">
                                     <div 
@@ -257,31 +286,57 @@
                                 </div>
                             ))}
                         </div>
+
+                        {/* X-Axis Label */}
+                        <div className="text-center mt-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                            Học viên/Lớp
+                        </div>
                     </div>
 
-                    {/* Detailed Class Report */}
+                    {/* Detailed Class Report - 4 Columns */}
                     <div className="space-y-6">
                         <div className="border-l-4 border-amber-500 pl-4">
                             <h2 className="text-xl font-black text-slate-800">I. Báo cáo chi tiết các lớp</h2>
                             <p className="text-slate-400 text-[11px] font-bold uppercase tracking-wider">Academic Detailed Tracking</p>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                            {TEACHER_REPORT_DATA.classes.map((cls, idx) => (
-                                <div key={idx} className={`glass-card p-6 border-l-4 rounded-[24px] border-${cls.color}-500/50 hover:translate-y-[-4px] transition-all shadow-sm group hover:shadow-md`}>
-                                    <div className="flex justify-between items-start mb-4">
-                                        <span className={`text-[9px] font-black uppercase tracking-widest px-2.5 py-1 bg-${cls.color}-50 text-${cls.color}-600 rounded-full border border-${cls.color}-100`}>
-                                            {cls.group}
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 items-start">
+                            {TEACHER_REPORT_DATA.categories.map((cat, cIdx) => (
+                                <div key={cIdx} className="space-y-6">
+                                    <div className={`px-4 py-2 rounded-xl bg-${cat.color}-50 border border-${cat.color}-100 flex items-center justify-between`}>
+                                        <h3 className={`font-black text-sm text-${cat.color}-700 uppercase tracking-widest`}>{cat.name}</h3>
+                                        <span className={`text-[10px] font-bold px-2 py-0.5 bg-white rounded-full text-${cat.color}-600 shadow-sm border border-${cat.color}-100`}>
+                                            {cat.classes.length} Lớp
                                         </span>
-                                        <span className={`font-black text-${cls.color}-600 text-xs`}>{cls.name}</span>
                                     </div>
-                                    <h4 className="font-black text-slate-800 text-[13px] mb-2">{cls.status}</h4>
-                                    <p className="text-[11px] font-medium text-slate-500 mb-6 leading-relaxed line-clamp-3">{cls.solution}</p>
-                                    <div className="pt-4 border-t border-slate-50 flex items-center justify-between">
-                                        <div className="flex items-center gap-1.5">
-                                            <div className={`w-1.5 h-1.5 rounded-full bg-${cls.color}-500 animate-pulse`}></div>
-                                            <span className="text-[9px] font-black text-slate-400 uppercase">Tracking</span>
-                                        </div>
-                                        <Icon name="ph-arrow-right" className={`text-sm text-${cls.color}-400 group-hover:translate-x-1 transition-transform`} />
+                                    
+                                    <div className="space-y-4">
+                                        {cat.classes.length > 0 ? (
+                                            cat.classes.map((cls, idx) => (
+                                                <div key={idx} className={`glass-card p-5 border-l-4 rounded-[24px] border-${cat.color}-500/50 hover:translate-y-[-4px] transition-all shadow-sm group hover:shadow-md`}>
+                                                    <div className="flex justify-between items-start mb-3">
+                                                        <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-0.5 bg-white/80 text-slate-500 rounded-lg border border-slate-100`}>
+                                                            {cls.sub}
+                                                        </span>
+                                                        <span className={`font-black text-${cat.color}-600 text-xs`}>{cls.name}</span>
+                                                    </div>
+                                                    <h4 className="font-black text-slate-800 text-[12px] mb-2">{cls.status}</h4>
+                                                    <p className="text-[10px] font-medium text-slate-500 mb-4 leading-relaxed italic border-l-2 border-slate-100 pl-2">"{cls.desc}"</p>
+                                                    <div className="bg-slate-50/50 p-3 rounded-xl border border-slate-100">
+                                                        <p className="text-[9px] font-black text-slate-400 uppercase mb-1">Giải pháp</p>
+                                                        <p className="text-[10px] font-bold text-slate-700 leading-tight">{cls.solution}</p>
+                                                    </div>
+                                                </div>
+                                            ))
+                                        ) : (
+                                            <div className="glass-card p-8 rounded-[24px] border-dashed border-slate-200 flex flex-col items-center justify-center text-center opacity-60">
+                                                <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center mb-3">
+                                                    <Icon name="ph-calendar-x" className="text-slate-400 text-xl" />
+                                                </div>
+                                                <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Không có báo cáo</p>
+                                                <p className="text-[10px] font-medium text-slate-300">Tuần hiện tại</p>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             ))}
