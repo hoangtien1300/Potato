@@ -173,6 +173,174 @@
             );
         };
 
+        const TEACHER_REPORT_DATA = {
+            week: "Tuần 4 - Tháng 3",
+            seniorTeacher: "Phan Trần Khôi",
+            summary: [
+                { label: "Chỉ số ổn định", value: "85%", trend: "↑ 3%", color: "emerald", icon: "ph-chart-line-up" },
+                { label: "Tỷ lệ làm HW", value: "78%", trend: "Cần cải thiện", color: "amber", icon: "ph-notebook" },
+                { label: "Tiến độ Final Test", value: "100%", trend: "Hoàn tất soạn đề", color: "sky", icon: "ph-check-circle" }
+            ],
+            chartData: [
+                { label: "Kids 2", value: 85, color: "#10B981" },
+                { label: "Kids 4", value: 92, color: "#10B981" },
+                { label: "Teen 1 WFE", value: 88, color: "#0EA5E9" },
+                { label: "Junior 2", value: 65, color: "#F43F5E" },
+                { label: "Junior 5", value: 75, color: "#3B82F6" },
+                { label: "Teen 1A SSM", value: 95, color: "#0EA5E9" },
+                { label: "Teen 2+ KET", value: 70, color: "#F59E0B" },
+                { label: "Teen 3", value: 72, color: "#64748B" }
+            ],
+            classes: [
+                { name: "Kids 2", group: "Young Learners", status: "Chênh lệch trình độ", solution: "Kết hợp ôn tập lồng ghép thực hành Stage 3.", color: "emerald" },
+                { name: "Kids 4", group: "Young Learners", status: "Ổn định & Nội quy", solution: "Đã soạn xong Final Test, ôn luyện trọng tâm.", color: "emerald" },
+                { name: "Junior 2", group: "Warning Zone", status: "Lệch độ tuổi & Kỹ năng", solution: "Giao BT riêng nhóm viết yếu. Liên hệ PH Ken.", color: "rose" },
+                { name: "Junior 5", group: "Junior", status: "Khó khăn chuyển cấp", solution: "Dạy chắc từ vựng, hướng dẫn kỹ làm ngữ pháp.", color: "blue" },
+                { name: "Teen 1 WFE", group: "Teen Focus", status: "Chuẩn bị Final Test", solution: "Ôn tập bám sát cấu trúc đề thi Final.", color: "sky" },
+                { name: "Teen 1A SSM", group: "Teen Focus", status: "Duy trì tiến bộ", solution: "Áp dụng phương pháp Grammar & Vocab mới.", color: "sky" },
+                { name: "Teen 2+ KET", group: "Cambridge Prep", status: "Kỹ năng Nghe & Đọc", solution: "Tăng cường bài tập, theo dõi Hailey.", color: "violet" },
+                { name: "Teen 3", group: "Weekend Class", status: "Tỷ lệ chuyên cần", solution: "Gửi kiến thức cô đọng cho HS vắng ôn nhà.", color: "slate" }
+            ],
+            strategies: [
+                { title: "New Grammar & Vocab", desc: "Hệ thống hóa từ vựng qua hình ảnh và bối cảnh (Contextual Learning).", icon: "ph-sparkle" },
+                { title: "Story Spark Integration", desc: "Áp dụng vào lớp Junior 2, bước đầu nhận được sự hào hứng.", icon: "ph-book-open" }
+            ]
+        };
+
+        const TeacherView = () => {
+            return (
+                <div className="space-y-8 animate-fade-in pb-12">
+                    {/* Header / Executive Summary */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        {TEACHER_REPORT_DATA.summary.map((item, idx) => (
+                            <div key={idx} className={`glass-card p-6 border-l-4 border-${item.color}-500/50 hover:scale-[1.02] transition-all`}>
+                                <div className="flex justify-between items-start">
+                                    <div>
+                                        <p className="text-[11px] font-black text-slate-500 uppercase tracking-widest">{item.label}</p>
+                                        <p className="text-3xl font-black text-slate-800 mt-2">{item.value}</p>
+                                        <p className={`text-[11px] font-bold mt-2 flex items-center gap-1 ${item.color === 'emerald' ? 'text-emerald-600' : item.color === 'amber' ? 'text-amber-600' : 'text-sky-600'}`}>
+                                            {item.trend}
+                                        </p>
+                                    </div>
+                                    <div className={`p-3 rounded-xl bg-white/50 text-2xl shadow-sm ${item.color === 'emerald' ? 'text-emerald-600' : item.color === 'amber' ? 'text-amber-600' : 'text-sky-600'}`}>
+                                        <Icon name={item.icon} />
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Health Analysis Chart */}
+                    <div className="glass-card p-8 rounded-[32px] bg-white/30 backdrop-blur-xl border border-white/40">
+                        <h3 className="text-lg font-black text-slate-800 mb-10 flex items-center gap-2">
+                             <Icon name="ph-chart-bar" className="text-indigo-500" /> Sức Khỏe Lớp Học (Hệ 100 - Tuần 4)
+                        </h3>
+                        <div className="h-64 flex items-end justify-between gap-2 px-2">
+                            {TEACHER_REPORT_DATA.chartData.map((bar, idx) => (
+                                <div key={idx} className="flex-1 flex flex-col items-center group relative h-full justify-end">
+                                    <div 
+                                        className="w-full rounded-t-xl transition-all duration-1000 ease-out hover:brightness-110 shadow-lg relative overflow-hidden group/bar" 
+                                        style={{ height: `${bar.value}%`, backgroundColor: bar.color }}
+                                    >
+                                        <div className="absolute inset-0 bg-white/10 opacity-0 group-hover/bar:opacity-100 transition-opacity"></div>
+                                        <div className="absolute top-2 left-0 right-0 text-center text-[10px] font-black text-white drop-shadow-md opacity-0 group-hover/bar:opacity-100 transition-all transform -translate-y-2 group-hover/bar:translate-y-0">
+                                            {bar.value}%
+                                        </div>
+                                    </div>
+                                    <p className="mt-4 text-[10px] font-black text-slate-500 text-center leading-tight h-8 flex items-center justify-center">
+                                        {bar.label}
+                                    </p>
+                                    {/* Tooltip on hover */}
+                                    <div className="absolute -top-6 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-800 text-white text-[10px] font-black py-1 px-2 rounded-lg pointer-events-none z-10 whitespace-nowrap shadow-xl">
+                                        {bar.label}: {bar.value}%
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Detailed Class Report */}
+                    <div className="space-y-6">
+                        <div className="border-l-4 border-amber-500 pl-4">
+                            <h2 className="text-xl font-black text-slate-800">I. Báo cáo chi tiết các lớp</h2>
+                            <p className="text-slate-400 text-[11px] font-bold uppercase tracking-wider">Academic Detailed Tracking</p>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                            {TEACHER_REPORT_DATA.classes.map((cls, idx) => (
+                                <div key={idx} className={`glass-card p-6 border-l-4 rounded-[24px] border-${cls.color}-500/50 hover:translate-y-[-4px] transition-all shadow-sm group hover:shadow-md`}>
+                                    <div className="flex justify-between items-start mb-4">
+                                        <span className={`text-[9px] font-black uppercase tracking-widest px-2.5 py-1 bg-${cls.color}-50 text-${cls.color}-600 rounded-full border border-${cls.color}-100`}>
+                                            {cls.group}
+                                        </span>
+                                        <span className={`font-black text-${cls.color}-600 text-xs`}>{cls.name}</span>
+                                    </div>
+                                    <h4 className="font-black text-slate-800 text-[13px] mb-2">{cls.status}</h4>
+                                    <p className="text-[11px] font-medium text-slate-500 mb-6 leading-relaxed line-clamp-3">{cls.solution}</p>
+                                    <div className="pt-4 border-t border-slate-50 flex items-center justify-between">
+                                        <div className="flex items-center gap-1.5">
+                                            <div className={`w-1.5 h-1.5 rounded-full bg-${cls.color}-500 animate-pulse`}></div>
+                                            <span className="text-[9px] font-black text-slate-400 uppercase">Tracking</span>
+                                        </div>
+                                        <Icon name="ph-arrow-right" className={`text-sm text-${cls.color}-400 group-hover:translate-x-1 transition-transform`} />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Innovation Strategy */}
+                    <div className="glass-card rounded-[32px] p-8 relative overflow-hidden bg-white/40 border border-white/40">
+                        <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-50 rounded-full -mr-32 -mt-32 opacity-20 pointer-events-none blur-3xl"></div>
+                        <h2 className="text-xl font-black text-slate-800 mb-10 flex items-center gap-2">
+                            <Icon name="ph-sparkle" className="text-indigo-500" /> II. Chiến lược cải tiến chuyên môn
+                        </h2>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                            <div className="space-y-6">
+                                {TEACHER_REPORT_DATA.strategies.map((strat, idx) => (
+                                    <div key={idx} className="flex items-start gap-5 p-6 rounded-[24px] bg-white/50 border border-white/60 hover:bg-white/80 transition-all group">
+                                        <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shrink-0 shadow-lg group-hover:scale-110 transition-transform">
+                                            <Icon name={strat.icon} className="text-2xl" />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <h4 className="font-black text-slate-800 text-sm">{strat.title}</h4>
+                                            <p className="text-[12px] font-medium text-slate-500 leading-relaxed">{strat.desc}</p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                            <div className="bg-indigo-50/30 p-8 rounded-[32px] border border-indigo-100/50 shadow-inner">
+                                <div className="flex items-center gap-3 mb-6">
+                                    <div className="p-2 bg-indigo-600 rounded-xl text-white shadow-md">
+                                        <Icon name="ph-users-three" className="text-lg" />
+                                    </div>
+                                    <h4 className="font-black text-[10px] uppercase tracking-widest text-indigo-700">Student Care: Ken & Hailey</h4>
+                                </div>
+                                <div className="space-y-5">
+                                    {[
+                                        { task: "Kết nối Phụ huynh", progress: 80, badge: "80%", color: "emerald" },
+                                        { task: "Bài tập cá nhân hóa", progress: 100, badge: "DONE", color: "indigo" },
+                                        { task: "Kiểm tra từ vựng", progress: 60, badge: "WEEKLY", color: "amber" }
+                                    ].map((item, idx) => (
+                                        <div key={idx} className="space-y-2">
+                                            <div className="flex justify-between items-center px-1">
+                                                <span className="text-[12px] font-bold text-slate-700">{item.task}</span>
+                                                <span className={`text-[9px] font-black bg-${item.color}-100 text-${item.color}-700 px-2 py-0.5 rounded-full`}>
+                                                    {item.badge}
+                                                </span>
+                                            </div>
+                                            <div className="w-full bg-slate-200/50 h-2 rounded-full overflow-hidden shadow-inner">
+                                                <div className={`h-full bg-${item.color === 'emerald' ? 'emerald-500' : item.color === 'indigo' ? 'indigo-600' : 'amber-500'} transition-all duration-1000 shadow-sm`} style={{ width: `${item.progress}%` }}></div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
         const LeaderReportView = () => {
              const reports = [
                 { title: "Upload Ảnh Học Sinh", value: "90%", sub: "Trừ Movers HD & lý do cá nhân (5%)", icon: "ph-camera", color: "text-blue-600", border: "border-l-4 border-l-blue-500" },
@@ -551,6 +719,8 @@
                         );
                     case 'leader_report':
                         return <LeaderReportView />;
+                    case 'teacher':
+                        return <TeacherView />;
                     case 'operation':
                         return (
                             <div className="space-y-8 animate-fade-in">
@@ -635,7 +805,7 @@
                                     <div>
                                         <p className="text-[10px] font-black text-rose-400 uppercase tracking-[0.2em] mb-2 leading-none">Management Dashboard / v6.4</p>
                                         <h1 className="text-4xl font-black text-slate-900 tracking-tight leading-none">
-                                            {activeTab === 'leader_report' ? 'Leader Weekly Report' : 'Welcome Potato Dashboard'}
+                                            {activeTab === 'leader_report' ? 'Leader Weekly Report' : activeTab === 'teacher' ? 'Báo cáo Chuyên môn' : 'Welcome Potato Dashboard'}
                                         </h1>
                                     </div>
                                     <div className="flex flex-col md:flex-row items-center gap-4">
