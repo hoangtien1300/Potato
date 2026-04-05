@@ -1077,11 +1077,15 @@
                                     <div>
                                         <p className="text-[10px] font-black text-rose-400 uppercase tracking-[0.2em] mb-2 leading-none">Management Dashboard / v6.4</p>
                                         <h1 className="text-4xl font-black text-slate-900 tracking-tight leading-none">
-                                            {activeTab === 'leader_report' ? 'Leader Weekly Report' : activeTab === 'teacher' ? 'Báo cáo Chuyên môn' : 'Welcome Potato Dashboard'}
+                                            {activeTab === 'dashboard' ? 'Welcome Potato Dashboard' : 
+                                             activeTab === 'teacher' ? 'Welcome Teacher Dashboard' : 
+                                             activeTab === 'academic' ? 'Welcome Academic Dashboard' : 
+                                             activeTab === 'operation' ? 'Welcome Operation Dashboard' : 
+                                             'Welcome Potato Dashboard'}
                                         </h1>
                                     </div>
                                     <div className="flex flex-col md:flex-row items-center gap-4">
-                                        {activeTab === 'leader_report' && activeWeek === 14 && (
+                                        {activeTab === 'operation' && activeWeek === 14 && (
                                             <div className="flex gap-3 animate-fade-in">
                                                 <button className="px-5 py-2.5 bg-white/60 text-slate-700 rounded-xl text-[11px] font-black flex items-center gap-2 hover:bg-white transition-all border border-white/40 shadow-sm">
                                                     <Icon name="ph-printer" /> Export
