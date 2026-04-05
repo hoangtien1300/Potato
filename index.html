@@ -319,6 +319,39 @@
                             ))}
                         </div>
                     </div>
+
+                    {/* Next Actions */}
+                    <div className="glass-card rounded-[32px] p-8 bg-gradient-to-br from-indigo-500 to-indigo-700 text-white relative overflow-hidden shadow-2xl">
+                        <div className="absolute top-0 right-0 p-12 opacity-10 text-9xl rotate-12 pointer-events-none">
+                            <Icon name="ph-rocket-launch" />
+                        </div>
+                        <h3 className="text-xl font-black mb-8 flex items-center gap-3 relative z-10">
+                            <div className="p-2 bg-white/20 rounded-xl backdrop-blur-md">
+                                <Icon name="ph-lightning" />
+                            </div>
+                            Công Việc Sắp Tới (Next Actions)
+                        </h3>
+                        <div className="space-y-4 relative z-10">
+                            <div className="flex items-center gap-4 p-5 bg-white/10 rounded-2xl border border-white/20 hover:bg-white/20 transition-all group">
+                                <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                                    <Icon name="ph-check-square" className="text-xl" />
+                                </div>
+                                <p className="text-base font-bold">Tiếp tục dồn lực hoàn thiện album "Mùa hè rực rỡ" cho khối Kids (Target: 05/04).</p>
+                            </div>
+                            <div className="flex items-center gap-4 p-5 bg-white/10 rounded-2xl border border-white/20 hover:bg-white/20 transition-all group">
+                                <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                                    <Icon name="ph-users-four" className="text-xl" />
+                                </div>
+                                <p className="text-base font-bold">Tổ chức buổi ôn tập thử (Mock Test) cho nhóm học sinh đăng ký thi HK2 vào tối Thứ 7.</p>
+                            </div>
+                            <div className="flex items-center gap-4 p-5 bg-white/10 rounded-2xl border border-white/20 hover:bg-white/20 transition-all group">
+                                <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                                    <Icon name="ph-chart-line-up" className="text-xl" />
+                                </div>
+                                <p className="text-base font-bold">Hoàn thiện báo cáo phân tích hiệu quả chiến dịch "Học thử 0 đồng".</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             );
         };
@@ -627,6 +660,9 @@
                                             <div className="flex items-center px-2">
                                                  <button onClick={() => setActiveWeek(w => Math.max(12, w-1))} className="p-2.5 text-slate-400 hover:text-potato-magenta hover:bg-rose-50 rounded-xl transition-all"><Icon name="ph-caret-left" /></button>
                                                  <span className="px-5 text-sm font-black text-slate-900 min-w-[60px] text-center">{activeWeek}</span>
+                                                 {activeWeek < 14 && (
+                                                     <button onClick={() => setActiveWeek(w => Math.min(14, w+1))} className="p-2.5 text-slate-400 hover:text-potato-magenta hover:bg-rose-50 rounded-xl transition-all animate-fade-in"><Icon name="ph-caret-right" /></button>
+                                                 )}
                                             </div>
                                         </div>
                                     </div>
