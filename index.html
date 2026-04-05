@@ -981,7 +981,7 @@
             );
         };
 
-        const Sidebar = ({ activeTab, setActiveTab, isOpen, toggleOpen }) => {
+        const Sidebar = ({ activeTab, setActiveTab, isOpen, toggleOpen, isMobile, setMobileOpen }) => {
             const menuItems = [
                 { id: 'dashboard', label: 'Tổng Quan', icon: 'ph-squares-four' },
                 { id: 'teacher', label: 'Giáo Viên', icon: 'ph-user-focus' },
@@ -989,8 +989,8 @@
                 { id: 'operation', label: 'Vận Hành', icon: 'ph-gear-six' }
             ];
 
-            return (
-                <aside className={`${isOpen ? 'w-[280px]' : 'w-[80px]'} h-screen bg-white border-r border-slate-100 flex flex-col transition-all duration-300 ease-in-out relative z-50 overflow-hidden group/sidebar shadow-sm`}>
+            const sidebarContent = (
+                <aside className={`${isOpen ? 'translate-x-0 w-[280px]' : '-translate-x-full lg:translate-x-0 lg:w-[80px]'} h-screen bg-white border-r border-slate-100 flex flex-col transition-all duration-300 ease-in-out fixed lg:relative z-[60] overflow-hidden group/sidebar shadow-sm`}>
                     {/* Logo Section */}
                     <div className={`p-6 pb-12 flex items-center ${isOpen ? 'gap-4 px-8' : 'justify-center px-0'}`}>
                         <div className="w-10 h-10 rounded-2xl overflow-hidden shadow-lg shadow-magenta-500/10 flex items-center justify-center bg-white shrink-0 border border-slate-100">
@@ -1002,6 +1002,11 @@
                                 <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-1">Never Stop Learning</p>
                             </div>
                         )}
+                        {isMobile && (
+                            <button onClick={toggleOpen} className="ml-auto lg:hidden p-2 text-slate-400">
+                                <Icon name="ph-x" />
+                            </button>
+                        )}
                     </div>
 
                     {/* Navigation */}
@@ -1009,7 +1014,7 @@
                         {menuItems.map((item) => (
                             <button
                                 key={item.id}
-                                onClick={() => setActiveTab(item.id)}
+                                onClick={() => { setActiveTab(item.id); if(isMobile) toggleOpen(); }}
                                 className={`w-full flex items-center ${isOpen ? 'gap-4 px-6' : 'justify-center px-0'} py-4 rounded-[20px] transition-all duration-300 relative group ${
                                     activeTab === item.id 
                                     ? 'bg-potato-magenta text-white shadow-xl shadow-magenta-500/20' 
@@ -1019,9 +1024,6 @@
                             >
                                 <Icon name={item.icon} className={`text-xl transition-transform ${activeTab === item.id ? 'scale-110' : 'group-hover:scale-110'}`} />
                                 {isOpen && <span className="text-sm font-black tracking-tight whitespace-nowrap animate-fade-in uppercase italic">{item.label}</span>}
-                                {isOpen && activeTab === item.id && (
-                                    <div className="absolute right-4 w-1.5 h-1.5 rounded-full bg-white shadow-sm" />
-                                )}
                             </button>
                         ))}
                     </nav>
@@ -1030,7 +1032,7 @@
                     <div className="p-4 border-t border-slate-50 space-y-4">
                         <button 
                             onClick={toggleOpen}
-                            className="w-full flex items-center justify-center h-12 rounded-2xl bg-slate-50 text-slate-400 hover:text-potato-magenta hover:bg-rose-50 transition-all active:scale-95 shadow-inner group/toggle"
+                            className={`w-full hidden lg:flex items-center justify-center h-12 rounded-2xl bg-slate-50 text-slate-400 hover:text-potato-magenta hover:bg-rose-50 transition-all active:scale-95 shadow-inner group/toggle`}
                         >
                             <Icon name={isOpen ? "ph-caret-double-left" : "ph-caret-double-right"} className="text-xl group-hover:scale-110 transition-transform" />
                         </button>
@@ -1041,18 +1043,38 @@
                                     <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                                     <span className="text-[9px] font-black text-slate-800 uppercase tracking-widest">v6.5 PRO</span>
                                 </div>
-                                <p className="text-[9px] font-bold text-slate-400 leading-relaxed uppercase tracking-tighter">Potato English Intelligence System</p>
                             </div>
                         )}
                     </div>
                 </aside>
+            );
+
+            return (
+                <>
+                    {isMobile && isOpen && (
+                        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[55] animate-fade-in lg:hidden" onClick={toggleOpen}></div>
+                    )}
+                    {sidebarContent}
+                </>
             );
         };
 
         const MainApp = () => {
             const [activeTab, setActiveTab] = useState('dashboard');
             const [activeWeek, setActiveWeek] = useState(14);
-            const [isSidebarOpen, setSidebarOpen] = useState(true);
+            const [isSidebarOpen, setSidebarOpen] = useState(window.innerWidth > 1024);
+            const [isMobile, setIsMobile] = useState(window.innerWidth <= 1024);
+
+            useEffect(() => {
+                const handleResize = () => {
+                    const mobile = window.innerWidth <= 1024;
+                    setIsMobile(mobile);
+                    if (mobile) setSidebarOpen(false);
+                    else setSidebarOpen(true);
+                };
+                window.addEventListener('resize', handleResize);
+                return () => window.removeEventListener('resize', handleResize);
+            }, []);
 
             const renderContent = () => {
                 if (activeWeek < 14) {
@@ -1076,8 +1098,8 @@
                             <div className="flex flex-col xl:flex-row gap-10 animate-fade-in relative">
                                 {/* Main Content Column */}
                                 <div className="flex-1 space-y-10 min-w-0">
-                                    {/* Top Row: 3 modern Stat Cards */}
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                                    {/* Top Row: Responsive modern Stat Cards */}
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
                                         <StatCardV2 
                                             title="Tổng Học Viên" 
                                             value="1,245" 
@@ -1242,8 +1264,10 @@
                                     </div>
                                 </div>
 
-                                {/* Right Sidebar - Unified within content area for responsiveness */}
-                                <RightSidebarV2 />
+                                {/* Right Sidebar - Adaptive placement */}
+                                <div className="w-full xl:w-[380px] shrink-0">
+                                    <RightSidebarV2 />
+                                </div>
                             </div>
                         );
                     case 'teacher':
@@ -1275,46 +1299,54 @@
                         setActiveTab={setActiveTab} 
                         isOpen={isSidebarOpen} 
                         toggleOpen={() => setSidebarOpen(!isSidebarOpen)} 
+                        isMobile={isMobile}
                     />
-                    <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-                        <header className="h-[80px] px-10 flex items-center justify-between border-b border-slate-100 bg-white sticky top-0 z-40">
-                             <div className="flex flex-col">
-                                <p className="text-[10px] font-black text-rose-500 uppercase tracking-[0.2em] mb-1">Intelligence / v6.5</p>
-                                <h1 className="text-2xl font-black text-slate-900 tracking-tight leading-none italic uppercase">
-                                    {activeTab === 'dashboard' ? 'Welcome Potato Dashboard' : 
-                                     activeTab === 'teacher' ? 'Welcome Teacher Dashboard' : 
-                                     activeTab === 'academic' ? 'Welcome Academic Dashboard' : 
-                                     activeTab === 'operation' ? 'Welcome Operation Dashboard' : 
-                                     'Welcome Potato Dashboard'}
-                                </h1>
+                    <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
+                        <header className="h-[70px] lg:h-[80px] px-4 lg:px-10 flex items-center justify-between border-b border-slate-100 bg-white sticky top-0 z-40">
+                             <div className="flex items-center gap-4">
+                                {isMobile && (
+                                    <button onClick={() => setSidebarOpen(true)} className="p-2 text-slate-400 hover:text-potato-magenta">
+                                        <Icon name="ph-list" className="text-2xl" />
+                                    </button>
+                                )}
+                                <div className="flex flex-col">
+                                    <p className="text-[9px] font-black text-rose-500 uppercase tracking-[0.2em] mb-0.5">v6.5 PRO</p>
+                                    <h1 className="text-sm lg:text-2xl font-black text-slate-900 tracking-tight leading-none italic uppercase truncate max-w-[150px] lg:max-w-none">
+                                        {activeTab === 'dashboard' ? 'Welcome Potato Dashboard' : 
+                                         activeTab === 'teacher' ? 'Teacher Dashboard' : 
+                                         activeTab === 'academic' ? 'Academic Dashboard' : 
+                                         activeTab === 'operation' ? 'Operation Dashboard' : 
+                                         'Potato Dashboard'}
+                                    </h1>
+                                </div>
                              </div>
-                             <div className="flex items-center gap-10">
-                                <div className="flex items-center px-4 py-2.5 bg-slate-50 rounded-2xl border border-slate-100 shadow-inner">
-                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-r border-slate-200 pr-4 mr-4">Tuần SOP</span>
-                                    <div className="flex items-center gap-4">
+                             <div className="flex items-center gap-4 lg:gap-10">
+                                <div className="hidden sm:flex items-center px-4 py-2 bg-slate-50 rounded-2xl border border-slate-100 shadow-inner">
+                                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest border-r border-slate-200 pr-3 mr-3">Week</span>
+                                    <div className="flex items-center gap-3">
                                          <button onClick={() => setActiveWeek(w => Math.max(12, w-1))} className="text-slate-400 hover:text-potato-magenta transition-colors"><Icon name="ph-caret-left" /></button>
-                                         <span className="text-sm font-black text-slate-900 min-w-[20px] text-center">{activeWeek}</span>
+                                         <span className="text-xs font-black text-slate-900 min-w-[20px] text-center">{activeWeek}</span>
                                          {activeWeek < 14 && <button onClick={() => setActiveWeek(w => Math.min(14, w+1))} className="text-slate-400 hover:text-potato-magenta transition-colors"><Icon name="ph-caret-right" /></button>}
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-6 border-l pl-10 border-slate-100">
+                                <div className="flex items-center gap-3 lg:gap-6 border-l pl-4 lg:pl-10 border-slate-100">
                                     <div className="relative p-2 rounded-xl bg-slate-50 text-slate-400 hover:text-slate-800 transition-colors cursor-pointer group">
-                                        <Icon name="ph-bell-simple" className="text-xl" />
-                                        <span className="absolute top-2 right-2 w-2 h-2 bg-rose-500 rounded-full border-2 border-white" />
+                                        <Icon name="ph-bell-simple" className="text-lg lg:text-xl" />
+                                        <span className="absolute top-2 right-2 w-1.5 h-1.5 bg-rose-500 rounded-full border-2 border-white" />
                                     </div>
-                                    <div className="flex items-center gap-4">
-                                        <div className="text-right hidden md:block">
+                                    <div className="flex items-center gap-3">
+                                        <div className="text-right hidden lg:block">
                                             <p className="text-[12px] font-black text-slate-900 leading-tight">Admin Potato</p>
-                                            <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">Operation Lead</p>
+                                            <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">Ops Lead</p>
                                         </div>
-                                        <div className="w-11 h-11 rounded-2xl bg-slate-900 flex items-center justify-center text-white text-xs font-black shadow-lg shadow-slate-900/20">AP</div>
+                                        <div className="w-9 h-9 lg:w-11 lg:h-11 rounded-xl lg:rounded-2xl bg-slate-900 flex items-center justify-center text-white text-[10px] lg:text-xs font-black shadow-lg shadow-slate-900/20 shrink-0">AP</div>
                                     </div>
                                 </div>
                              </div>
                         </header>
 
-                        <main className="flex-1 overflow-y-auto no-scrollbar p-10">
-                            <div className="max-w-[1600px] mx-auto">
+                        <main className="flex-1 overflow-y-auto no-scrollbar p-4 lg:p-10 bg-[#F8F9FE]">
+                            <div className="max-w-[1600px] mx-auto space-y-8 lg:space-y-12">
                                 {renderContent()}
                             </div>
                         </main>
