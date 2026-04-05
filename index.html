@@ -321,7 +321,7 @@
                     </div>
 
                     {/* Next Actions */}
-                    <div className="glass-card rounded-[32px] p-8 bg-gradient-to-br from-indigo-500 to-indigo-700 text-white relative overflow-hidden shadow-2xl">
+                    <div className="rounded-[32px] p-8 bg-gradient-to-br from-indigo-600 to-indigo-800 text-white relative overflow-hidden shadow-2xl border border-white/20 transition-all hover:shadow-[0_20px_50px_rgba(79,70,229,0.4)] hover:scale-[1.01] duration-500">
                         <div className="absolute top-0 right-0 p-12 opacity-10 text-9xl rotate-12 pointer-events-none">
                             <Icon name="ph-rocket-launch" />
                         </div>
@@ -332,24 +332,18 @@
                             Công Việc Sắp Tới (Next Actions)
                         </h3>
                         <div className="space-y-4 relative z-10">
-                            <div className="flex items-center gap-4 p-5 bg-white/10 rounded-2xl border border-white/20 hover:bg-white/20 transition-all group">
-                                <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
-                                    <Icon name="ph-check-square" className="text-xl" />
+                            {[
+                                { icon: "ph-check-square", text: "Tiếp tục dồn lực hoàn thiện album \"Mùa hè rực rỡ\" cho khối Kids (Target: 05/04)." },
+                                { icon: "ph-users-four", text: "Tổ chức buổi ôn tập thử (Mock Test) cho nhóm học sinh đăng ký thi HK2 vào tối Thứ 7." },
+                                { icon: "ph-chart-line-up", text: "Hoàn thiện báo cáo phân tích hiệu quả chiến dịch \"Học thử 0 đồng\"." }
+                            ].map((action, i) => (
+                                <div key={i} className="flex items-center gap-4 p-5 bg-white/10 rounded-2xl border border-white/10 hover:bg-white/20 transition-all group">
+                                    <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                                        <Icon name={action.icon} className="text-xl" />
+                                    </div>
+                                    <p className="text-base font-bold leading-relaxed">{action.text}</p>
                                 </div>
-                                <p className="text-base font-bold">Tiếp tục dồn lực hoàn thiện album "Mùa hè rực rỡ" cho khối Kids (Target: 05/04).</p>
-                            </div>
-                            <div className="flex items-center gap-4 p-5 bg-white/10 rounded-2xl border border-white/20 hover:bg-white/20 transition-all group">
-                                <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
-                                    <Icon name="ph-users-four" className="text-xl" />
-                                </div>
-                                <p className="text-base font-bold">Tổ chức buổi ôn tập thử (Mock Test) cho nhóm học sinh đăng ký thi HK2 vào tối Thứ 7.</p>
-                            </div>
-                            <div className="flex items-center gap-4 p-5 bg-white/10 rounded-2xl border border-white/20 hover:bg-white/20 transition-all group">
-                                <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
-                                    <Icon name="ph-chart-line-up" className="text-xl" />
-                                </div>
-                                <p className="text-base font-bold">Hoàn thiện báo cáo phân tích hiệu quả chiến dịch "Học thử 0 đồng".</p>
-                            </div>
+                            ))}
                         </div>
                     </div>
                 </div>
