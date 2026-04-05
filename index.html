@@ -173,6 +173,229 @@
             );
         };
 
+        const ACADEMIC_REPORT_DATA = {
+            title: "Kế hoạch Tối ưu hóa Quý 2/2026",
+            subtitle: "Phòng Học vụ - Quản trị 200 học viên",
+            status: "ĐANG THỰC THI",
+            completionRates: [
+                { label: "KID", value: 95, color: "emerald" },
+                { label: "JUNIOR", value: 80, color: "amber" },
+                { label: "JUNIOR+", value: 90, color: "emerald" }, // Simple data mapping
+                { label: "TEEN", value: 100, color: "emerald" },
+                { label: "TEEN+ / PRE-IELTS", value: 50, color: "rose" },
+                { label: "IELTS", value: 100, color: "emerald" }
+            ],
+            // Simplified for rendering
+            rates: [
+                { label: "KID", value: 95, color: "emerald" },
+                { label: "JUNIOR", value: 80, color: "amber" },
+                { label: "JUNIOR+", value: 90, color: "emerald" },
+                { label: "TEEN", value: 100, color: "emerald" },
+                { label: "TEEN+ / PRE-IELTS", value: 50, color: "rose" },
+                { label: "IELTS", value: 100, color: "emerald" }
+            ],
+            matrix: [
+                {
+                    category: "Lộ trình",
+                    icon: "ph-map",
+                    color: "blue",
+                    done: [
+                        "Kiểm tra đánh giá trình độ & viết lộ trình phù hợp cho các lớp.",
+                        "Tìm sách bổ sung Ngữ pháp + Từ vựng cho TEEN+: B1 Destination cho PET."
+                    ],
+                    issues: [
+                        { title: "KET/PET: Cần tinh chỉnh", desc: "Bổ sung bài tập nghe mỗi buổi học để tăng cường kỹ năng thực tế cho HV." },
+                        { title: "IELTS: Cần chi tiết hóa", desc: "Danh sách bài giảng còn sơ sài; cần lược bỏ các nội dung không trọng tâm." }
+                    ],
+                    actions: [
+                        { period: "Tuần 1 (06/04)", tasks: ["Tinh chỉnh lộ trình KET - PET.", "Hoàn tất thông tin khóa học: Kid - Junior."] },
+                        { period: "Tuần 2 (13/04)", tasks: ["Chi tiết hóa lộ trình IELTS.", "Hoàn tất thông tin khóa học: Teen."] },
+                        { period: "Tuần 3 (20/04)", tasks: ["Hoàn tất thông tin khóa học: Junior+."] },
+                        { period: "Tuần 4 (27/04)", tasks: ["Hoàn tất thông tin khóa học: Teen+."] }
+                    ]
+                },
+                {
+                    category: "Đề thi",
+                    icon: "ph-clipboard-check",
+                    color: "emerald",
+                    done: [
+                        "Hoàn thành 90% đề thi còn thiếu (Khối KID & PRE-IELTS 2)."
+                    ],
+                    issues: [
+                        { title: "Tối ưu quy trình Đầu vào", desc: "Chuẩn hóa lại bộ đề Placement Test và tiêu chí đánh giá để phân loại học sinh chính xác hơn, không dựa trên cảm tính." }
+                    ],
+                    actions: [
+                        { period: "Tháng 4 (06/04)", tasks: ["Review và hoàn tất bộ đề kiểm tra hiện hữu."] },
+                        { period: "Tháng 5", tasks: ["Đánh giá các đề kiểm tra đang triển khai."] },
+                        { period: "Tháng 6", tasks: ["Nâng cấp Placement test & Tiêu chí xếp lớp."] }
+                    ]
+                },
+                {
+                    category: "Học cụ",
+                    icon: "ph-package",
+                    color: "purple",
+                    done: [
+                        "Bổ sung Flashcards cho lớp JUNIOR 6+ Hưng Định.",
+                        "Stories Spark: Chốt danh sách lớp thực hiện, check học cụ & dạy demo."
+                    ],
+                    issues: [], 
+                    actions: [
+                        { period: "Tuần 1 (06/04)", tasks: ["Hoàn tất học cụ cơ bản Junior+.", "Stories Spark: Trích bài giảng + Danh sách 8 buổi hoạt động."] },
+                        { period: "Tuần 2 (13/04)", tasks: ["Hoàn tất học cụ Teen+."] },
+                        { period: "Tuần 3 (20/04)", tasks: ["Học cụ số PRE-IELTS."] },
+                        { period: "Tháng 5", tasks: ["Stories Spark vận hành chính thức cho các lớp khối JUNIOR."] }
+                    ]
+                }
+            ]
+        };
+
+        const AcademicView = () => {
+            return (
+                <div className="space-y-10 animate-fade-in pb-20">
+                    {/* Header Banner */}
+                    <div className="glass-card rounded-[40px] p-10 bg-gradient-to-br from-slate-900 to-slate-800 text-white relative overflow-hidden shadow-2xl">
+                        <div className="absolute top-0 right-0 w-80 h-80 bg-blue-500/10 rounded-full blur-3xl -mr-40 -mt-40"></div>
+                        <div className="relative z-10 text-center md:text-left">
+                            <h1 className="text-3xl font-black tracking-tight uppercase italic mb-2">
+                                {ACADEMIC_REPORT_DATA.title.split(' Quý')[0]} <span className="text-blue-400">Quý 2/2026</span>
+                            </h1>
+                            <p className="text-slate-400 font-bold uppercase tracking-widest text-[11px] flex items-center justify-center md:justify-start gap-2">
+                                <Icon name="ph-shield-check" className="text-blue-400" /> {ACADEMIC_REPORT_DATA.subtitle}
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* Completion Rates Grid */}
+                    <div className="space-y-6">
+                        <div className="flex items-center justify-between px-4">
+                            <h2 className="text-xl font-black text-slate-800 flex items-center gap-2">
+                                <Icon name="ph-chart-pie-slice" className="text-emerald-500" /> Hoàn thiện học cụ theo khối
+                            </h2>
+                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest italic">Live Status Update</span>
+                        </div>
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
+                            {ACADEMIC_REPORT_DATA.rates.map((rate, idx) => (
+                                <div key={idx} className="glass-card p-6 rounded-[24px] text-center group hover:translate-y-[-4px] transition-all">
+                                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-tighter mb-4 h-8 flex items-center justify-center line-clamp-2">
+                                        {rate.label}
+                                    </p>
+                                    <div className="relative w-16 h-16 mx-auto mb-4">
+                                        <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                                            <path className="text-slate-100" strokeWidth="3" stroke="currentColor" fill="transparent" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                            <path className={`text-${rate.color}-500 transition-all duration-1000`} strokeWidth="3" strokeDasharray={`${rate.value}, 100`} strokeLinecap="round" stroke="currentColor" fill="transparent" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                        </svg>
+                                        <div className="absolute inset-0 flex items-center justify-center text-xs font-black text-slate-800">
+                                            {rate.value}%
+                                        </div>
+                                    </div>
+                                    <div className={`w-2 h-2 rounded-full mx-auto bg-${rate.color}-500 shadow-[0_0_8px_rgba(var(--tw-color-${rate.color}-500),0.4)]`}></div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Action Matrix Rows */}
+                    <div className="space-y-8">
+                        <div className="flex items-center gap-4 px-4">
+                            <div className="h-[2px] flex-1 bg-slate-100"></div>
+                            <h2 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.3em]">Ma trận hành động chi tiết</h2>
+                            <div className="h-[2px] flex-1 bg-slate-100"></div>
+                        </div>
+
+                        {ACADEMIC_REPORT_DATA.matrix.map((row, rIdx) => (
+                            <div key={rIdx} className="glass-card rounded-[32px] overflow-hidden border border-white/40 shadow-xl group">
+                                <div className="grid grid-cols-1 lg:grid-cols-12">
+                                    {/* Column 1: Category & Done */}
+                                    <div className="lg:col-span-4 p-8 border-r border-slate-50 bg-slate-50/30">
+                                        <div className="flex items-center gap-4 mb-8">
+                                            <div className={`w-12 h-12 rounded-2xl bg-${row.color}-600 text-white flex items-center justify-center shadow-lg shadow-${row.color}-200 group-hover:scale-110 transition-transform`}>
+                                                <Icon name={row.icon} className="text-2xl" />
+                                            </div>
+                                            <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight">{row.category}</h3>
+                                        </div>
+                                        <div className="space-y-4">
+                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Đã thực hiện tuần qua</p>
+                                            {row.done.map((task, tIdx) => (
+                                                <div key={tIdx} className="flex gap-3 items-start">
+                                                    <div className="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center shrink-0 mt-0.5">
+                                                        <Icon name="ph-check" className="text-emerald-600 text-[10px] font-bold" />
+                                                    </div>
+                                                    <p className="text-xs font-bold text-slate-600 leading-relaxed text-justify">{task}</p>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* Column 2: Issues */}
+                                    <div className="lg:col-span-4 p-8 border-r border-slate-50">
+                                        <div className="space-y-6">
+                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Vấn đề tồn đọng</p>
+                                            {row.issues.length > 0 ? (
+                                                row.issues.map((issue, iIdx) => (
+                                                    <div key={iIdx} className="p-4 rounded-2xl bg-rose-50/50 border-l-4 border-rose-500 space-y-2">
+                                                        <h4 className="text-xs font-black text-rose-900 italic">{issue.title}</h4>
+                                                        <p className="text-[11px] font-medium text-rose-700 leading-relaxed text-justify">{issue.desc}</p>
+                                                    </div>
+                                                ))
+                                            ) : (
+                                                <div className="p-8 rounded-2xl border-2 border-dashed border-slate-100 flex flex-col items-center justify-center text-center opacity-40">
+                                                    <Icon name="ph-shield-check" className="text-3xl text-emerald-500 mb-2" />
+                                                    <p className="text-[10px] font-black text-slate-400 uppercase">Chưa ghi nhận rủi ro</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {/* Column 3: Actions & Timeline */}
+                                    <div className="lg:col-span-4 p-8 bg-white/20">
+                                        <div className="space-y-6">
+                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Hành động & Thời hạn</p>
+                                            <div className="space-y-6 relative">
+                                                <div className="absolute left-2.5 top-2 bottom-2 w-0.5 bg-slate-100"></div>
+                                                {row.actions.map((action, aIdx) => (
+                                                    <div key={aIdx} className="relative pl-8">
+                                                        <div className={`absolute left-0 top-1.5 w-5 h-5 rounded-full bg-white border-2 border-${row.color}-400 z-10 flex items-center justify-center`}>
+                                                            <div className={`w-2 h-2 rounded-full bg-${row.color}-500`}></div>
+                                                        </div>
+                                                        <h4 className="text-xs font-black text-slate-800 mb-2">{action.period}</h4>
+                                                        <ul className="space-y-1.5">
+                                                            {action.tasks.map((task, kIdx) => (
+                                                                <li key={kIdx} className="text-[11px] font-bold text-slate-500 flex items-start gap-2">
+                                                                    <div className="w-1 h-1 rounded-full bg-slate-300 mt-1.5 shrink-0"></div>
+                                                                    <span>{task}</span>
+                                                                </li>
+                                                            ))}
+                                                        </ul>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Footer Status */}
+                    <div className="glass-card rounded-[40px] p-10 bg-slate-900 text-white relative overflow-hidden shadow-2xl flex flex-col md:flex-row justify-between items-center gap-8">
+                        <div className="absolute top-0 right-0 w-64 h-64 bg-blue-600/10 rounded-full blur-3xl -mr-32 -mt-32"></div>
+                        <div className="relative z-10 text-center md:text-left">
+                            <h3 className="text-xl font-black mb-2 italic tracking-tight flex items-center justify-center md:justify-start gap-3">
+                                <Icon name="ph-rocket-launch" className="text-blue-400" /> Quản trị Vận hành & Chất lượng Q2
+                            </h3>
+                            <p className="text-xs text-slate-400 italic font-bold">Hệ thống hóa Lộ trình - Chuẩn hóa Đầu vào - Tối ưu hóa Học cụ</p>
+                        </div>
+                        <div className="relative z-10 flex gap-4">
+                            <div className="px-10 py-4 bg-slate-800/80 rounded-2xl border border-slate-700/50 text-center shadow-inner group transition-all">
+                                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] mb-1 italic">Tình trạng</p>
+                                <p className="text-xl font-black text-blue-400 italic group-hover:scale-105 transition-transform">{ACADEMIC_REPORT_DATA.status}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
         const TEACHER_REPORT_DATA = {
             week: "Tuần 4 - Tháng 3",
             seniorTeacher: "Phan Trần Khôi",
@@ -776,6 +999,8 @@
                         return <LeaderReportView />;
                     case 'teacher':
                         return <TeacherView />;
+                    case 'academic':
+                        return <AcademicView />;
                     case 'operation':
                         return (
                             <div className="space-y-8 animate-fade-in">
