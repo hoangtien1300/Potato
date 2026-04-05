@@ -173,6 +173,77 @@
             );
         };
 
+        const LeaderReportView = () => {
+            const reports = [
+                { title: "Upload Ảnh Học Sinh", value: "90%", sub: "Trừ Movers HD & lý do cá nhân (5%)", icon: "ph-camera", color: "text-blue-600", border: "border-l-4 border-l-blue-500" },
+                { title: "Cập Nhật Lịch Khóa", value: "80%", sub: "Ngô Quyền đang cập nhật", icon: "ph-calendar", color: "text-emerald-600", border: "border-l-4 border-l-emerald-500" },
+                { title: "Đăng Ký Ôn Thi HK2", value: "13 HS", sub: "9 Ngô Quyền, 4 Hưng Định", icon: "ph-graduation-cap", color: "text-purple-600", border: "border-l-4 border-l-purple-500" },
+                { title: "Đề Ôn Thi HK2", value: "Đang Xử Lý", sub: "Dự kiến hoàn thành: 01-05/04", icon: "ph-books", color: "text-amber-600", border: "border-l-4 border-l-amber-500" }
+            ];
+
+            const issues = [
+                { date: "THỨ 4 (NGÀY 1 & 22)", detail: "Ca Chiều - Chi nhánh Hưng Định" },
+                { date: "THỨ 6 (NGÀY 3, 17 & 24)", detail: "Ca Chiều - Chi nhánh Ngô Quyền" },
+                { date: "NGÀY 25", detail: "Ca Sáng - Chi nhánh Hưng Định" }
+            ];
+
+            return (
+                <div className="space-y-8 animate-fade-in">
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center bg-white/40 p-6 rounded-[24px] border border-white/20 backdrop-blur-md gap-4">
+                        <div>
+                            <h2 className="text-2xl font-black text-slate-800 tracking-tight">Leader Weekly Report</h2>
+                            <p className="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-[0.2em]">Latest Update: 30th March</p>
+                        </div>
+                        <button className="px-6 py-2.5 bg-indigo-50 text-indigo-700 rounded-xl text-xs font-black flex items-center gap-2 hover:bg-indigo-100 transition-all border border-indigo-100 shadow-sm">
+                             <Icon name="ph-file-text" /> Management Overview
+                        </button>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        {reports.map((report, i) => (
+                            <div key={i} className={`glass-card rounded-[24px] p-6 flex flex-col justify-between group overflow-hidden relative ${report.border}`}>
+                                <div className="flex justify-between items-start relative z-10">
+                                    <div>
+                                        <p className="text-[11px] font-black text-slate-500 mb-1 uppercase tracking-wider">{report.title}</p>
+                                        <h3 className="text-3xl font-black text-slate-800 tracking-tight">{report.value}</h3>
+                                    </div>
+                                    <div className={`p-2.5 rounded-xl bg-white/50 text-2xl ${report.color} shadow-sm`}>
+                                        <Icon name={report.icon} />
+                                    </div>
+                                </div>
+                                <p className="mt-4 text-[11px] font-bold text-slate-400 leading-tight relative z-10">{report.sub}</p>
+                                <div className={`absolute -right-4 -bottom-4 text-6xl opacity-[0.03] rotate-12 ${report.color}`}>
+                                    <Icon name={report.icon} />
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className="glass-card rounded-[32px] p-8 border-l-4 border-l-rose-500 relative overflow-hidden">
+                        <div className="absolute top-0 right-0 p-8 opacity-[0.02] text-9xl text-rose-500 rotate-12 pointer-events-none">
+                             <Icon name="ph-warning-octagon" />
+                        </div>
+                        <div className="flex items-center gap-4 mb-8 relative z-10">
+                             <div className="w-12 h-12 bg-rose-50 rounded-2xl flex items-center justify-center shadow-sm border border-rose-100">
+                                <Icon name="ph-warning-octagon" className="text-2xl text-rose-500" />
+                             </div>
+                             <h3 className="text-xl font-black text-slate-900 tracking-tight">Issues: Thiếu tư vấn viên trực ca</h3>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative z-10">
+                            {issues.map((issue, i) => (
+                                <div key={i} className="bg-white/40 p-6 rounded-2xl border border-white/40 hover:bg-white/60 hover:shadow-md transition-all duration-300">
+                                    <h4 className="text-[10px] font-black text-rose-500 uppercase tracking-[0.1em] mb-3 flex items-center gap-2">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" /> {issue.date}
+                                    </h4>
+                                    <p className="text-slate-800 text-[14px] font-bold leading-relaxed">{issue.detail}</p>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
         const WeeklyFocusCard = ({ department, week, data }) => {
             if (!data) return (
                 <div className="bg-white rounded-[24px] p-10 border border-slate-100 border-dashed text-center text-slate-300">
@@ -278,6 +349,7 @@
 
             const navigation = [
                 { id: 'dashboard', name: 'Tổng Quan', icon: 'ph-gauge-high' },
+                { id: 'leader_report', name: 'Leader Weekly Report', icon: 'ph-clipboard-text' },
                 { id: 'teacher', name: 'Giáo Viên', icon: 'ph-users-three' },
                 { id: 'academic', name: 'Học Thuật', icon: 'ph-book-open' },
                 { id: 'operation', name: 'Vận Hành', icon: 'ph-briefcase' }
@@ -356,6 +428,8 @@
                                 </div>
                             </div>
                         );
+                    case 'leader_report':
+                        return <LeaderReportView />;
                     case 'operation':
                         return (
                             <div className="space-y-8 animate-fade-in">
@@ -383,11 +457,10 @@
                 <div className="flex h-screen overflow-hidden">
                     {/* SIDEBAR */}
                     <aside className={`glass-panel border-r border-white/20 flex flex-col sidebar-transition z-50 ${isSidebarOpen ? 'w-[260px]' : 'w-[80px]'}`}>
-                        <div className="h-[72px] flex items-center px-6 border-b border-white/10 overflow-hidden">
-                            <div className="w-10 h-10 rounded-xl overflow-hidden flex items-center justify-center mr-4 flex-shrink-0">
-                                <img src="https://raw.githubusercontent.com/hoangtien1300/Potato/main/logo_potato.jpg" alt="Potato Logo" className="w-full h-full object-cover" />
+                        <div className="h-[90px] flex items-center justify-center px-4 border-b border-white/10 overflow-hidden">
+                            <div className={`transition-all duration-300 overflow-hidden flex items-center justify-center ${isSidebarOpen ? 'w-full h-16' : 'w-12 h-12'} rounded-xl`}>
+                                <img src="https://raw.githubusercontent.com/hoangtien1300/Potato/main/logo_potato.jpg" alt="Potato Logo" className="w-full h-full object-contain" />
                             </div>
-                            {isSidebarOpen && <span className="font-black text-[22px] tracking-tighter text-slate-800 whitespace-nowrap uppercase">Potato <span className="text-potato-magenta">Admin</span></span>}
                         </div>
                         <nav className="flex-1 px-4 py-10 space-y-2">
                             {isSidebarOpen && <div className="text-[10px] font-black text-slate-300 uppercase tracking-widest mb-6 px-4">Menu Vận Hành</div>}
