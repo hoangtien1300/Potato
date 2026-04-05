@@ -187,47 +187,53 @@
                         </div>
                     </div>
 
-                    {/* Recent Problems (Action List) */}
+                    {/* Quick Links Section */}
                     <div className="space-y-6 mb-12">
-                        <h3 className="text-lg font-black text-slate-900 tracking-tight">Recent Problems</h3>
+                        <div className="flex justify-between items-center">
+                            <h3 className="text-lg font-black text-slate-900 tracking-tight">Quick Links</h3>
+                            <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center">
+                                <Icon name="ph-link-simple" className="text-blue-500" />
+                            </div>
+                        </div>
                         <div className="space-y-4">
                             {[
-                                { name: 'Google', icon: 'ph-google-logo', color: 'text-red-500', status: 'Down', statusColor: 'bg-rose-500' },
-                                { name: 'Facebook', icon: 'ph-facebook-logo', color: 'text-blue-600', status: 'Stable', statusColor: 'bg-emerald-500' },
-                                { name: 'Youtube', icon: 'ph-youtube-logo', color: 'text-rose-600', status: 'Warning', statusColor: 'bg-amber-400' }
-                            ].map((prob, i) => (
-                                <div key={i} className="flex items-center justify-between p-4 bg-slate-50 border border-slate-100 rounded-[20px] hover:bg-white hover:shadow-md transition-all cursor-pointer group">
+                                { name: 'Facebook Fanpage', url: 'https://www.facebook.com/HocAnhVanTotBinhDuong', icon: 'ph-facebook-logo', color: 'text-blue-600', sub: 'Học Anh Văn Tốt Bình Dương' },
+                                { name: 'Youtube Channel', url: '#', icon: 'ph-youtube-logo', color: 'text-rose-600', sub: 'Potato English Official' },
+                                { name: 'Google Support', url: '#', icon: 'ph-google-logo', color: 'text-red-500', sub: 'Help desk & resources' }
+                            ].map((link, i) => (
+                                <a key={i} href={link.url} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-4 bg-slate-50 border border-slate-100 rounded-[20px] hover:bg-white hover:shadow-md transition-all cursor-pointer group no-underline">
                                     <div className="flex items-center gap-4">
                                         <div className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center text-xl">
-                                            <Icon name={prob.icon} className={prob.color} />
+                                            <Icon name={link.icon} className={link.color} />
                                         </div>
                                         <div>
-                                            <h4 className="text-xs font-black text-slate-800 uppercase tracking-tight">{prob.name}</h4>
-                                            <p className="text-[10px] font-bold text-slate-400 tracking-tighter mt-0.5">https://www.{prob.name.toLowerCase()}.com</p>
+                                            <h4 className="text-xs font-black text-slate-800 uppercase tracking-tight">{link.name}</h4>
+                                            <p className="text-[10px] font-bold text-slate-400 tracking-tighter mt-0.5">{link.sub}</p>
                                         </div>
                                     </div>
-                                    <span className={`px-3 py-1 rounded-full text-[9px] font-black text-white ${prob.statusColor} shadow-lg shadow-${prob.statusColor.split('-')[1]}-500/10`}>
-                                        {prob.status}
-                                    </span>
-                                </div>
+                                    <Icon name="ph-arrow-up-right" className="text-slate-300 group-hover:text-potato-magenta transition-colors" />
+                                </a>
                             ))}
                         </div>
                     </div>
 
-                    {/* Latest Activity (Timeline) */}
+                    {/* Biên bản họp Section */}
                     <div className="space-y-6">
-                        <h3 className="text-lg font-black text-slate-900 tracking-tight">Latest Activity</h3>
+                        <h3 className="text-lg font-black text-slate-900 tracking-tight flex items-center gap-2">
+                             <Icon name="ph-article-medium" className="text-potato-magenta" /> Biên bản họp
+                        </h3>
                         <div className="space-y-8 relative pl-6">
                             <div className="absolute left-2.5 top-2 bottom-2 w-0.5 bg-slate-100 rounded-full"></div>
                             {[
-                                { date: 'January 2nd, 04:35 AM', text: 'Illum omnis quo illum nisi. Nesciunt est accusamus. Blanditiis nisi quae eum.' },
-                                { date: 'January 4th, 05:19 AM', text: 'Corrupti unde qui molestiae labore ad adipisci veniam perspiciatis.' },
-                                { date: 'January 5th, 12:34 AM', text: 'Maiores doloribus qui. Repellat accusamus minima ipsa ipsam incididunt.' }
+                                { date: '05/04/2026 - 09:00 AM', title: 'Họp Vận Hành Tuần 14', text: 'Thống nhất kế hoạch dồn lực hoàn thiện album "Mùa hè rực rỡ" cho khối Kids.' },
+                                { date: '01/04/2026 - 14:30 PM', title: 'Họp Chuyên Môn Học Vụ', text: 'Review bộ đề Placement Test và cập nhật lộ trình KET/PET mới.' },
+                                { date: '28/03/2026 - 11:15 AM', title: 'Họp Chiến Lược Tuyển Sinh', text: 'Phân tích hiệu quả chiến dịch "Học thử 0 đồng" và kế hoạch tháng 4.' }
                             ].map((act, i) => (
                                 <div key={i} className="relative group">
                                     <div className="absolute -left-[1.37rem] top-1.5 w-4 h-4 rounded-full bg-white border-4 border-potato-magenta shadow-sm z-10 transition-transform group-hover:scale-125"></div>
                                     <h4 className="text-[11px] font-black text-slate-900 mb-1 leading-none">{act.date}</h4>
-                                    <p className="text-[12px] font-medium text-slate-400 leading-relaxed text-justify line-clamp-2 italic">{act.text}</p>
+                                    <p className="text-[13px] font-black text-slate-800 mt-1 uppercase tracking-tighter">{act.title}</p>
+                                    <p className="text-[12px] font-medium text-slate-400 mt-1 leading-relaxed text-left line-clamp-2 italic">{act.text}</p>
                                 </div>
                             ))}
                         </div>
@@ -987,12 +993,12 @@
                 <aside className="w-[280px] h-screen bg-white border-r border-slate-100 flex flex-col sidebar-transition relative z-50 overflow-hidden group/sidebar shadow-sm">
                     {/* Logo Section */}
                     <div className="p-8 pb-12 flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-potato-magenta to-potato-yellow shadow-lg shadow-magenta-500/20 flex items-center justify-center text-white shrink-0">
-                            <Icon name="ph-lightning-fill" className="text-2xl" />
+                        <div className="w-12 h-12 rounded-2xl overflow-hidden shadow-lg shadow-magenta-500/10 flex items-center justify-center bg-white shrink-0 border border-slate-100">
+                            <img src="https://raw.githubusercontent.com/hoangtien1300/Potato/main/logo_potato.jpg" alt="Potato Logo" className="w-full h-full object-contain p-1" />
                         </div>
                         <div className="group-hover/sidebar:opacity-100 transition-opacity">
-                            <h1 className="text-xl font-black text-slate-900 leading-none tracking-tighter">Potato<span className="text-potato-magenta">.</span></h1>
-                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Intelligence</p>
+                            <h1 className="text-xl font-black text-slate-900 leading-none tracking-tighter">POTATO<span className="text-potato-magenta"> English</span></h1>
+                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Intelligence System</p>
                         </div>
                     </div>
 
@@ -1145,13 +1151,13 @@
                                         </div>
 
                                         {/* Right: Pie/Donut Chart Summary */}
-                                        <div className="glass-card rounded-[40px] p-8 space-y-8">
+                                        <div className="glass-card rounded-[40px] p-8 space-y-8 flex flex-col justify-between h-full">
                                             <div className="flex justify-between items-center px-2">
                                                 <h3 className="text-lg font-black text-slate-900 tracking-tight leading-none italic uppercase">Cơ Cấu Học Viên</h3>
                                                 <button className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Refresh</button>
                                             </div>
-                                            <div className="flex flex-col md:flex-row items-center gap-10">
-                                                <div className="relative w-40 h-40 shrink-0">
+                                            <div className="flex flex-col sm:flex-row items-center gap-8 lg:gap-12 px-2">
+                                                <div className="relative w-36 h-36 shrink-0">
                                                     <svg viewBox="0 0 100 100" className="w-full h-full transform -rotate-90">
                                                         <circle cx="50" cy="50" r="40" fill="transparent" stroke="#F1F5F9" strokeWidth="12" />
                                                         <circle cx="50" cy="50" r="40" fill="transparent" stroke="#D81B60" strokeWidth="12" strokeDasharray="251.2" strokeDashoffset="62.8" strokeLinecap="round" className="drop-shadow-lg" />
@@ -1169,15 +1175,18 @@
                                                         { label: 'Junior', val: '25%', color: 'bg-potato-blue' },
                                                         { label: 'Teen/IELTS', val: '10%', color: 'bg-potato-yellow' }
                                                     ].map((item, i) => (
-                                                        <div key={i} className="flex justify-between items-center group">
+                                                        <div key={i} className="flex justify-between items-center group w-full">
                                                             <div className="flex items-center gap-3">
                                                                 <div className={`w-3 h-3 rounded-full ${item.color} shadow-sm group-hover:scale-125 transition-transform`} />
-                                                                <span className="text-[11px] font-black text-slate-500 uppercase tracking-wider">{item.label}</span>
+                                                                <span className="text-[11px] font-black text-slate-500 uppercase tracking-wider truncate max-w-[80px]">{item.label}</span>
                                                             </div>
-                                                            <span className="text-xs font-black text-slate-800 tracking-tight">{item.val}</span>
+                                                            <span className="text-xs font-black text-slate-800 tracking-tight shrink-0">{item.val}</span>
                                                         </div>
                                                     ))}
                                                 </div>
+                                            </div>
+                                            <div className="pt-4 border-t border-slate-50 mt-2">
+                                                <p className="text-[11px] font-bold text-slate-400 text-center uppercase tracking-widest">Dữ liệu cập nhật: 05/04/2026</p>
                                             </div>
                                         </div>
                                     </div>
