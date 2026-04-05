@@ -903,8 +903,7 @@
                 { id: 'dashboard', name: 'Tổng Quan', icon: 'ph-gauge-high' },
                 { id: 'teacher', name: 'Giáo Viên', icon: 'ph-users-three' },
                 { id: 'academic', name: 'Học Thuật', icon: 'ph-book-open' },
-                { id: 'operation', name: 'Vận Hành', icon: 'ph-briefcase' },
-                { id: 'leader_report', name: 'Leader Weekly Report', icon: 'ph-clipboard-text' }
+                { id: 'operation', name: 'Vận Hành', icon: 'ph-briefcase' }
             ];
 
             const renderContent = () => {
@@ -995,19 +994,12 @@
                                 </div>
                             </div>
                         );
-                    case 'leader_report':
-                        return <LeaderReportView />;
                     case 'teacher':
                         return <TeacherView />;
                     case 'academic':
                         return <AcademicView />;
                     case 'operation':
-                        return (
-                            <div className="space-y-8 animate-fade-in">
-                                <WeeklyFocusCard department="Vận Hành" week={activeWeek} data={WEEKLY_SOP_DATA[activeWeek]?.operation} />
-                                <MasterTable data={MASTER_CLASSES} />
-                            </div>
-                        );
+                        return <LeaderReportView />;
                     default:
                         return (
                             <div className="flex flex-col items-center justify-center p-32 text-slate-300 space-y-6 animate-fade-in">
