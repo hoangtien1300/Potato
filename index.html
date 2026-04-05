@@ -16,68 +16,46 @@
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
     <style>
         body {
-            font-family: 'Quicksand', sans-serif;
-            background-color: #F8F9FD;
-            color: #2D3748;
+            font-family: 'Inter', sans-serif;
+            background-color: #F8F9FE;
+            color: #1E293B;
             min-height: 100vh;
         }
-        .geex-panel {
-            background: #FFFFFF;
-            border-radius: 40px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.02);
-        }
-        .geex-card {
-            background: #FFFFFF;
-            border-radius: 32px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .geex-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.06);
-        }
         .glass-panel {
-            background: #FFFFFF;
-            border-radius: 40px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.02);
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border-right: 1px solid rgba(226, 232, 240, 0.8);
         }
         .glass-card {
             background: #FFFFFF;
-            border-radius: 32px;
-            border: 1px solid rgba(0,0,0,0.02);
-            transition: all 0.4s ease;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+            border: 1px solid rgba(226, 232, 240, 0.5);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.04), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .glass-card:hover {
             transform: translateY(-4px);
-            box-shadow: 0 15px 40px rgba(0,0,0,0.06);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 10px 10px -6px rgba(0, 0, 0, 0.04);
         }
-        /* Keep legacy classes but map them to the new style */
-        .no-scrollbar::-webkit-scrollbar {
-            display: none;
-        }
-        .no-scrollbar {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(15px); }
+            from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        .animate-fade-in {
-            animation: fadeIn 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-        }
-        .sidebar-transition {
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .active-nav {
-            background: #F3E5F5;
-            color: #D81B60;
-            border-radius: 20px;
+        .animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
+        .sidebar-transition { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        
+        /* Custom Sparkline Style */
+        .sparkline {
+            fill: none;
+            stroke-width: 2.5;
+            stroke-linecap: round;
+            stroke-linejoin: round;
         }
     </style>
 
@@ -88,22 +66,11 @@
                     colors: {
                         potato: {
                             magenta: '#D81B60',
-                            purple: '#7B1FA2',
-                            blue: '#1976D2',
-                            green: '#388E3C',
-                            yellow: '#FBC02D',
-                            red: '#E53935'
-                        },
-                        geex: {
-                            bg: '#F8F9FD',
-                            card: '#FFFFFF',
-                            text: '#2D3748',
-                            muted: '#A0AEC0'
+                            blue: '#1E88E5',
+                            yellow: '#FFC107',
+                            dark: '#0F172A',
+                            slate: '#F8F9FE'
                         }
-                    },
-                    borderRadius: {
-                        '4xl': '32px',
-                        '5xl': '40px'
                     }
                 }
             }
@@ -116,232 +83,156 @@
     <script type="text/babel">
         const { useState, useEffect } = React;
         
-        // --- COMPONENTS ---
+        // --- REDESIGNED COMPONENTS (Geex Style) ---
 
-        // Simple Icon Wrapper for Phosphor
         const Icon = ({ name, className = "" }) => <i className={`ph ${name} ${className}`} style={{ fontSize: 'inherit' }} />;
 
+        // Helper for SVG Sparkline
         const Sparkline = ({ data, color }) => {
             const width = 100;
             const height = 40;
             const max = Math.max(...data);
             const min = Math.min(...data);
             const range = max - min || 1;
-            const points = data.map((val, i) => ({
-                x: (i / (data.length - 1)) * width,
-                y: height - ((val - min) / range) * height
-            }));
-            const d = `M ${points.map(p => `${p.x},${p.y}`).join(' L ')}`;
+            const points = data.map((val, i) => {
+                const x = (i / (data.length - 1)) * width;
+                const y = height - ((val - min) / range) * height;
+                return `${x},${y}`;
+            }).join(' ');
+
             return (
-                <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} className="overflow-visible">
-                    <path d={d} fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                <svg viewBox={`0 0 ${width} ${height}`} className="w-24 h-10 overflow-visible">
+                    <polyline points={points} className="sparkline" style={{ stroke: color }} />
                 </svg>
             );
         };
 
-        const StatCard = ({ title, value, change, trend, icon, color, bg, sparkData }) => (
-            <div className="geex-card p-8 flex justify-between items-center group">
-                <div className="space-y-4">
-                    <p className="text-[12px] font-bold text-geex-muted uppercase tracking-widest">{title}</p>
+        const StatCardV2 = ({ title, value, change, trend, data, colorClass }) => (
+            <div className="glass-card rounded-[32px] p-8 flex flex-col justify-between group h-full">
+                <div className="flex justify-between items-start mb-6">
                     <div>
-                        <h3 className="text-3xl font-black text-geex-text tracking-tight">{value}</h3>
-                        <p className={`text-[12px] font-black mt-1 ${trend === 'up' ? 'text-emerald-500' : 'text-rose-500'}`}>
-                            {trend === 'up' ? '+' : ''}{change}
-                        </p>
+                        <p className="text-[12px] font-black text-slate-400 mb-1 uppercase tracking-widest">{title}</p>
+                        <h3 className="text-3xl font-black text-slate-900 tracking-tight">{value}</h3>
                     </div>
                 </div>
-                <div className="flex flex-col items-end gap-4">
-                    <div className={`p-4 rounded-2xl ${bg} text-2xl ${color} group-hover:scale-110 transition-transform duration-500`}>
-                        <Icon name={icon} />
+                <div className="flex justify-between items-end">
+                    <div className={`px-3 py-1 rounded-lg text-[11px] font-black ${trend === 'up' ? 'text-emerald-600 bg-emerald-50' : 'text-rose-600 bg-rose-50'} transition-all`}>
+                        {change}
                     </div>
-                    {sparkData && <Sparkline data={sparkData} color={trend === 'up' ? '#10B981' : '#EF4444'} />}
+                    <Sparkline data={data} color={colorClass} />
                 </div>
             </div>
         );
 
-        const GeexMainChart = () => {
-            const data = [20, 25, 18, 22, 35, 28, 45, 38, 48, 42, 55, 50, 65, 60, 75];
-            const width = 800;
-            const height = 200;
-            const points = data.map((val, i) => ({
-                x: (i / (data.length - 1)) * width,
-                y: height - (val / 80) * height
-            }));
-            const dLine = `M ${points.map(p => `${p.x},${p.y}`).join(' L ')}`;
-            const dArea = `${dLine} L ${width},${height} L 0,${height} Z`;
-
-            return (
-                <div className="geex-card p-10 space-y-8 h-full">
-                    <div className="flex justify-between items-center">
-                        <h3 className="text-xl font-black text-geex-text tracking-tight">Server Request</h3>
-                        <div className="flex gap-4">
-                            <div className="flex items-center gap-2">
-                                <div className="w-3 h-3 rounded-full bg-emerald-500" />
-                                <span className="text-[10px] font-bold text-geex-muted uppercase">Web Server A</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <div className="w-3 h-3 rounded-full bg-amber-500" />
-                                <span className="text-[10px] font-bold text-geex-muted uppercase">Web Server B</span>
-                            </div>
+        const ReviewCard = ({ name, date, text, avatar, status }) => (
+            <div className="glass-card rounded-[32px] p-8 min-w-[320px] max-w-[320px] flex flex-col justify-between">
+                <div>
+                    <div className="flex items-center gap-4 mb-6">
+                        <img src={avatar} className="w-14 h-14 rounded-2xl object-cover shadow-lg border-2 border-white" />
+                        <div>
+                            <h4 className="text-sm font-black text-slate-900 leading-tight">{name}</h4>
+                            <p className="text-[11px] font-bold text-slate-400 mt-0.5">{date}</p>
                         </div>
                     </div>
-                    <div className="relative pt-10">
-                        <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-48 overflow-visible">
-                            {/* Grid lines */}
-                            {[0, 25, 50, 75, 100].map(y => (
-                                <line key={y} x1="0" y1={height - (y / 100) * height} x2={width} y2={height - (y / 100) * height} stroke="#EDF2F7" strokeWidth="1" />
-                            ))}
-                            <path d={dArea} fill="url(#gradientArea)" opacity="0.1" />
-                            <path d={dLine} fill="none" stroke="#10B981" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
-                            {/* Interactive dots */}
-                            {points.map((p, i) => i % 3 === 0 && (
-                                <circle key={i} cx={p.x} cy={p.y} r="4" fill="white" stroke="#10B981" strokeWidth="2" />
-                            ))}
-                            <defs>
-                                <linearGradient id="gradientArea" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="0%" stopColor="#10B981" />
-                                    <stop offset="100%" stopColor="transparent" />
-                                </linearGradient>
-                            </defs>
-                        </svg>
-                        <div className="flex justify-between mt-6 px-1">
-                            {['14.10', '14.20', '14.30', '14.40', '14.50', '15.00', '15.10', '15.20'].map((t, i) => (
-                                <span key={i} className="text-[10px] font-bold text-geex-muted">{t}</span>
-                            ))}
-                        </div>
-                    </div>
+                    <p className="text-[13px] font-medium text-slate-500 leading-relaxed italic line-clamp-4">"{text}"</p>
                 </div>
-            );
-        };
-
-        const GeexVisitorsChart = () => {
-            const data = [40, 60, 30, 80, 50, 70, 45];
-            return (
-                <div className="geex-card p-10 h-full">
-                    <div className="flex justify-between items-center mb-8">
-                        <div>
-                            <h3 className="text-xl font-black text-geex-text">Visitors</h3>
-                            <p className="text-3xl font-black text-potato-blue mt-1">98,425k</p>
-                            <p className="text-[11px] font-bold text-geex-muted mt-1 uppercase tracking-tighter"><span className="text-emerald-500 font-black">+0.4%</span> Than last week</p>
-                        </div>
-                        <button className="text-[10px] font-black text-potato-magenta uppercase tracking-widest border-b-2 border-potato-magenta/20 hover:border-potato-magenta transition-all pb-1">View more</button>
+                <div className="mt-8 flex justify-between items-center">
+                    <div className="flex gap-4">
+                        <button className="text-[11px] font-black text-rose-500 hover:text-rose-700 uppercase tracking-widest">Archive</button>
+                        <button className="text-[11px] font-black text-emerald-600 hover:text-emerald-800 uppercase tracking-widest">Accept</button>
                     </div>
-                    <div className="flex items-end justify-between h-40 pt-4 px-2">
-                        {data.map((val, i) => (
-                            <div key={i} className="group relative flex flex-col items-center gap-4">
-                                <div className="w-10 bg-slate-100 rounded-full h-32 relative overflow-hidden">
-                                     <div 
-                                        className={`absolute bottom-0 w-full rounded-full transition-all duration-1000 ${i === 3 ? 'bg-potato-magenta h-[80%]' : 'bg-slate-200 h-['+val+'%]'}`} 
-                                        style={{ height: `${val}%` }} 
-                                    />
-                                </div>
-                                <span className="text-[10px] font-bold text-geex-muted uppercase">{['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][i]}</span>
-                            </div>
-                        ))}
-                    </div>
+                    {status && <span className="text-[10px] font-black text-indigo-600 italic">Published →</span>}
                 </div>
-            );
-        };
+            </div>
+        );
 
-        const GeexChartSummary = () => {
-            return (
-                <div className="geex-card p-10 h-full flex flex-col justify-between">
-                    <div className="flex justify-between items-center mb-8">
-                        <h3 className="text-xl font-black text-geex-text">Chart Summary</h3>
-                        <Icon name="ph-download-simple" className="text-potato-magenta cursor-pointer hover:scale-110 transition-transform" />
-                    </div>
-                    <div className="relative py-10 flex justify-center">
-                        <svg width="200" height="200" viewBox="0 0 100 100" className="transform rotate-[-90deg]">
-                            <circle cx="50" cy="50" r="40" fill="transparent" stroke="#F1F5F9" strokeWidth="12" />
-                            <circle cx="50" cy="50" r="40" fill="transparent" stroke="#D81B60" strokeWidth="12" strokeDasharray="251.2" strokeDashoffset="180" strokeLinecap="round" />
-                            <circle cx="50" cy="50" r="40" fill="transparent" stroke="#1976D2" strokeWidth="12" strokeDasharray="251.2" strokeDashoffset="240" strokeLinecap="round" className="transform origin-center rotate-[45deg]" />
-                        </svg>
-                        <div className="absolute inset-0 flex flex-col items-center justify-center">
-                            <span className="text-sm font-bold text-geex-muted uppercase tracking-tighter">Status</span>
-                            <span className="text-3xl font-black text-geex-text">100%</span>
-                        </div>
-                    </div>
-                    <div className="grid grid-cols-3 gap-4 mt-8">
-                        <div>
-                            <p className="text-[10px] font-black text-geex-muted uppercase mb-1 flex items-center gap-1.5"><div className="w-1.5 h-1.5 rounded-full bg-potato-magenta" /> Fixed</p>
-                            <span className="text-xl font-black text-geex-text">942</span>
-                        </div>
-                        <div>
-                            <p className="text-[10px] font-black text-geex-muted uppercase mb-1 flex items-center gap-1.5"><div className="w-1.5 h-1.5 rounded-full bg-rose-400" /> Down</p>
-                            <span className="text-xl font-black text-geex-text">25</span>
-                        </div>
-                        <div>
-                             <p className="text-[10px] font-black text-geex-muted uppercase mb-1 flex items-center gap-1.5"><div className="w-1.5 h-1.5 rounded-full bg-emerald-400" /> Active</p>
-                            <span className="text-xl font-black text-geex-text">2,452</span>
-                        </div>
-                    </div>
-                </div>
-            );
-        };
-
-        const GeexUserReviews = () => {
-            const reviews = [
-                { name: "Jons Sena", date: "2 days ago", avatar: "JS", text: "Architecto provident ex accusamus deserunt. Aut aspernatur deleniti sit maiores ut id cum accusamus." },
-                { name: "Kevin Hunt", date: "4 days ago", avatar: "KH", text: "Maiores doloribus qui. Repellat accusamus minima ipsa ipsam incidunt minima harum tenetur." },
-                { name: "Isabelle", date: "5 days ago", avatar: "IS", text: "Sed eligendi facere repellendus. Ipsam ipsam incidunt minima harum tenetur. Ad sit aspernatur." }
+        const RightSidebarV2 = () => {
+            const serverStatus = [
+                { day: 'Sun', val: [40, 60, 30], color: 'bg-rose-400' },
+                { day: 'Mon', val: [70, 40, 50], color: 'bg-emerald-400' },
+                { day: 'Tue', val: [50, 80, 60], color: 'bg-emerald-500' },
+                { day: 'Wed', val: [80, 30, 40], color: 'bg-blue-400' },
+                { day: 'Thu', val: [90, 70, 50], color: 'bg-blue-500' },
+                { day: 'Fri', val: [30, 40, 20], color: 'bg-rose-300' },
+                { day: 'Sat', val: [60, 50, 70], color: 'bg-emerald-400' }
             ];
+
             return (
-                <div className="space-y-8 pb-10">
-                    <div className="flex justify-between items-center px-4">
-                        <h3 className="text-2xl font-black text-geex-text">User Review</h3>
-                        <div className="flex gap-4">
-                            <button className="p-3 bg-white rounded-full text-geex-muted hover:text-potato-magenta shadow-sm transition-all"><Icon name="ph-caret-left" /></button>
-                            <button className="p-3 bg-white rounded-full text-geex-muted hover:text-potato-magenta shadow-sm transition-all"><Icon name="ph-caret-right" /></button>
+                <aside className="hidden xl:flex flex-col w-[380px] p-8 bg-white border-l border-slate-100 overflow-y-auto no-scrollbar animate-fade-in group/sidebar">
+                    {/* Search Bar */}
+                    <div className="relative mb-10 group/search">
+                         <Icon name="ph-magnifying-glass" className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within/search:text-potato-magenta transition-colors" />
+                         <input type="text" placeholder="Search here..." className="w-full pl-14 pr-6 py-4 bg-slate-50 border border-transparent rounded-[20px] text-xs font-bold text-slate-800 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-slate-200 transition-all shadow-inner focus:shadow-md" />
+                    </div>
+
+                    {/* Server Status Visualization */}
+                    <div className="space-y-6 mb-12">
+                        <div className="flex justify-between items-end">
+                            <h3 className="text-lg font-black text-slate-900 tracking-tight">Server Status</h3>
+                            <p className="text-[10px] font-bold text-slate-400 leading-none">Last 7 Days</p>
+                        </div>
+                        <div className="flex items-end justify-between h-40 pt-4 px-2">
+                             {serverStatus.map((s, i) => (
+                                 <div key={i} className="flex flex-col items-center gap-2 flex-1">
+                                     <div className="relative w-2 bg-slate-50 rounded-full h-24 overflow-hidden shadow-inner cursor-pointer group/bar">
+                                         <div 
+                                             className={`absolute bottom-0 w-full rounded-full transition-all duration-1000 ${s.color}`} 
+                                             style={{ height: `${s.val[0]}%` }}
+                                         />
+                                         <div className="absolute inset-0 bg-white/20 opacity-0 group-hover/bar:opacity-100 transition-opacity"></div>
+                                     </div>
+                                     <span className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">{s.day}</span>
+                                 </div>
+                             ))}
                         </div>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        {reviews.map((rev, i) => (
-                            <div key={i} className="geex-card p-10 space-y-6">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center font-black text-xl text-slate-400">{rev.avatar}</div>
-                                    <div>
-                                        <h4 className="text-base font-black text-geex-text leading-none">{rev.name}</h4>
-                                        <p className="text-xs font-bold text-geex-muted mt-2 tracking-tight">{rev.date}</p>
-                                    </div>
-                                </div>
-                                <p className="text-sm font-bold text-geex-muted leading-relaxed line-clamp-3 italic">"{rev.text}"</p>
-                                <div className="flex gap-6 pt-2">
-                                    <button className="text-[11px] font-black uppercase tracking-widest text-rose-500 hover:text-rose-700 transition-colors">Archive</button>
-                                    <button className="text-[11px] font-black uppercase tracking-widest text-emerald-500 hover:text-emerald-700 transition-colors">Accept</button>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            );
-        };
 
-        const GeexDashboardView = ({ stats, activeWeek }) => {
-            return (
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 animate-fade-in pb-20">
-                    <div className="lg:col-span-9 space-y-10">
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                            {stats.map((stat, i) => (
-                                <StatCard key={i} {...stat} />
+                    {/* Recent Problems (Action List) */}
+                    <div className="space-y-6 mb-12">
+                        <h3 className="text-lg font-black text-slate-900 tracking-tight">Recent Problems</h3>
+                        <div className="space-y-4">
+                            {[
+                                { name: 'Google', icon: 'ph-google-logo', color: 'text-red-500', status: 'Down', statusColor: 'bg-rose-500' },
+                                { name: 'Facebook', icon: 'ph-facebook-logo', color: 'text-blue-600', status: 'Stable', statusColor: 'bg-emerald-500' },
+                                { name: 'Youtube', icon: 'ph-youtube-logo', color: 'text-rose-600', status: 'Warning', statusColor: 'bg-amber-400' }
+                            ].map((prob, i) => (
+                                <div key={i} className="flex items-center justify-between p-4 bg-slate-50 border border-slate-100 rounded-[20px] hover:bg-white hover:shadow-md transition-all cursor-pointer group">
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center text-xl">
+                                            <Icon name={prob.icon} className={prob.color} />
+                                        </div>
+                                        <div>
+                                            <h4 className="text-xs font-black text-slate-800 uppercase tracking-tight">{prob.name}</h4>
+                                            <p className="text-[10px] font-bold text-slate-400 tracking-tighter mt-0.5">https://www.{prob.name.toLowerCase()}.com</p>
+                                        </div>
+                                    </div>
+                                    <span className={`px-3 py-1 rounded-full text-[9px] font-black text-white ${prob.statusColor} shadow-lg shadow-${prob.statusColor.split('-')[1]}-500/10`}>
+                                        {prob.status}
+                                    </span>
+                                </div>
                             ))}
                         </div>
-                        <div className="h-[450px]">
-                            <GeexMainChart />
-                        </div>
-                        <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-                            <div className="h-[400px]">
-                                <GeexVisitorsChart />
-                            </div>
-                            <div className="h-[400px]">
-                                <GeexChartSummary />
-                            </div>
-                        </div>
-                        <GeexUserReviews />
                     </div>
-                    <div className="lg:col-span-3">
-                        <GeexRightPanel />
+
+                    {/* Latest Activity (Timeline) */}
+                    <div className="space-y-6">
+                        <h3 className="text-lg font-black text-slate-900 tracking-tight">Latest Activity</h3>
+                        <div className="space-y-8 relative pl-6">
+                            <div className="absolute left-2.5 top-2 bottom-2 w-0.5 bg-slate-100 rounded-full"></div>
+                            {[
+                                { date: 'January 2nd, 04:35 AM', text: 'Illum omnis quo illum nisi. Nesciunt est accusamus. Blanditiis nisi quae eum.' },
+                                { date: 'January 4th, 05:19 AM', text: 'Corrupti unde qui molestiae labore ad adipisci veniam perspiciatis.' },
+                                { date: 'January 5th, 12:34 AM', text: 'Maiores doloribus qui. Repellat accusamus minima ipsa ipsam incididunt.' }
+                            ].map((act, i) => (
+                                <div key={i} className="relative group">
+                                    <div className="absolute -left-[1.37rem] top-1.5 w-4 h-4 rounded-full bg-white border-4 border-potato-magenta shadow-sm z-10 transition-transform group-hover:scale-125"></div>
+                                    <h4 className="text-[11px] font-black text-slate-900 mb-1 leading-none">{act.date}</h4>
+                                    <p className="text-[12px] font-medium text-slate-400 leading-relaxed text-justify line-clamp-2 italic">{act.text}</p>
+                                </div>
+                            ))}
+                        </div>
                     </div>
-                </div>
+                </aside>
             );
         };
 
@@ -356,12 +247,12 @@
             };
 
             return (
-                <div className="geex-card overflow-hidden animate-fade-in">
-                    <div className="p-8 border-b border-slate-50 flex justify-between items-center sm:flex-row flex-col gap-4">
-                        <h3 className="text-lg font-black text-geex-text tracking-tight">Danh sách Lớp & Vận Hành</h3>
+                <div className="glass-card rounded-[24px] overflow-hidden animate-fade-in">
+                    <div className="p-6 border-b border-white/20 flex justify-between items-center sm:flex-row flex-col gap-4">
+                        <h3 className="text-lg font-bold text-slate-800 tracking-tight">Danh sách Lớp & Vận Hành</h3>
                         <div className="flex items-center gap-2">
-                             <span className="text-[10px] font-black text-geex-muted uppercase tracking-widest">Sắp xếp:</span>
-                             <select className="text-[10px] font-black text-geex-text bg-slate-50 border-none outline-none rounded-xl px-4 py-2 cursor-pointer">
+                             <span className="text-xs font-bold text-slate-400 uppercase">Sắp xếp:</span>
+                             <select className="text-xs font-bold text-slate-600 bg-white/50 border-none outline-none rounded-lg px-2 py-1">
                                 <option>Mã lớp</option>
                                 <option>Giáo viên</option>
                              </select>
@@ -370,116 +261,34 @@
                     <div className="overflow-x-auto no-scrollbar">
                         <table className="w-full text-left border-collapse min-w-[600px]">
                             <thead>
-                                <tr className="bg-slate-50/50 text-geex-muted text-[10px] uppercase tracking-[0.2em] font-black">
-                                    <th className="p-6 pl-8">Mã Lớp / Tên Khóa</th>
-                                    <th className="p-6">Sĩ số</th>
-                                    <th className="p-6">Giáo Viên</th>
-                                    <th className="p-6">Trạng Thái SOP</th>
-                                    <th className="p-6 text-right pr-8">Hành động</th>
+                                <tr className="bg-white/30 text-slate-500 text-[11px] uppercase tracking-wider font-extrabold">
+                                    <th className="p-4 pl-6">Mã Lớp / Tên Khóa</th>
+                                    <th className="p-4">Sĩ số</th>
+                                    <th className="p-4">Giáo Viên</th>
+                                    <th className="p-4">Trạng Thái SOP</th>
+                                    <th className="p-4 text-right pr-6">Hành động</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-slate-50 text-[13px] font-bold text-geex-text">
+                            <tbody className="divide-y divide-white/10 text-[14px]">
                                 {data.map((item, idx) => (
-                                    <tr key={idx} className="hover:bg-slate-50/50 transition-colors group">
-                                        <td className="p-6 pl-8 font-black text-potato-blue">{item.name}</td>
-                                        <td className="p-6">{item.students}</td>
-                                        <td className="p-6 text-geex-muted">{item.teacher}</td>
-                                        <td className="p-6">
-                                            <span className={`px-4 py-1.5 rounded-full text-[10px] font-black border ${statusStyle(item.status)}`}>
+                                    <tr key={idx} className="hover:bg-white/40 transition-colors group">
+                                        <td className="p-4 pl-6 font-bold text-slate-800 group-hover:text-potato-blue">{item.name}</td>
+                                        <td className="p-4 text-slate-600 font-medium">{item.students} học viên</td>
+                                        <td className="p-4 text-slate-600">{item.teacher}</td>
+                                        <td className="p-4">
+                                            <span className={`px-2.5 py-1 rounded-lg text-[11px] font-bold border ${statusStyle(item.status)}`}>
                                                 {item.status}
                                             </span>
                                         </td>
-                                        <td className="p-6 text-right pr-8">
-                                            <button className="p-3 bg-slate-100 rounded-2xl text-slate-400 hover:text-potato-magenta hover:bg-rose-50 transition-all">
-                                                <Icon name="ph-dots-three-outline-vertical" />
+                                        <td className="p-4 text-right pr-6">
+                                            <button className="p-2 hover:bg-white hover:shadow-sm rounded-xl transition-all text-slate-400 hover:text-potato-blue">
+                                                <Icon name="ph-caret-right" className="text-xl" />
                                             </button>
                                         </td>
                                     </tr>
                                 ))}
                             </tbody>
                         </table>
-                    </div>
-                </div>
-            );
-        };
-
-        const GeexRightPanel = () => {
-            return (
-                <div className="space-y-10">
-                    {/* Search Bar */}
-                    <div className="relative group">
-                        <Icon name="ph-magnifying-glass" className="absolute left-6 top-1/2 -translate-y-1/2 text-geex-muted text-xl group-focus-within:text-potato-magenta transition-colors" />
-                        <input 
-                            type="text" 
-                            placeholder="Search here..." 
-                            className="w-full pl-16 pr-8 py-5 bg-white rounded-[24px] text-sm font-bold text-geex-text placeholder-geex-muted focus:outline-none focus:ring-4 focus:ring-potato-magenta/5 border border-transparent focus:border-potato-magenta/10 transition-all shadow-sm"
-                        />
-                    </div>
-
-                    {/* Server Status */}
-                    <div className="geex-card p-10">
-                        <h3 className="text-xl font-black text-geex-text mb-2">Server Status</h3>
-                        <p className="text-[11px] font-bold text-geex-muted uppercase mb-8">Consectetur et qua dolor vera.</p>
-                        <div className="flex items-end justify-between h-48 px-2">
-                            {[60, 80, 40, 90, 70, 30, 85].map((val, i) => (
-                                <div key={i} className="flex flex-col items-center gap-4">
-                                    <div className="w-3 bg-slate-100 rounded-full h-32 relative overflow-hidden">
-                                        <div 
-                                            className="absolute bottom-0 w-full bg-gradient-to-t from-emerald-500 to-emerald-300 rounded-full transition-all duration-1000" 
-                                            style={{ height: `${val}%` }} 
-                                        />
-                                    </div>
-                                    <span className="text-[10px] font-black text-geex-muted uppercase">{['S', 'M', 'T', 'W', 'T', 'F', 'S'][i]}</span>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* Recent Problems */}
-                    <div className="geex-card p-10">
-                        <h3 className="text-xl font-black text-geex-text mb-2">Recent Problems</h3>
-                        <p className="text-[11px] font-bold text-geex-muted uppercase mb-8">Maiores dicta atque dolorem.</p>
-                        <div className="space-y-6">
-                            {[
-                                { name: 'Google', url: 'https://google.com', status: 'Down', color: 'rose' },
-                                { name: 'Facebook', url: 'https://facebook.com', status: 'Stable', color: 'emerald' },
-                                { name: 'Youtube', url: 'https://youtube.com', status: 'Warning', color: 'amber' }
-                            ].map((prob, i) => (
-                                <div key={i} className="flex justify-between items-center group cursor-pointer">
-                                    <div className="flex items-center gap-4">
-                                        <div className={`w-12 h-12 rounded-2xl bg-${prob.color}-50 flex items-center justify-center text-xl text-${prob.color}-500 group-hover:scale-110 transition-transform`}>
-                                            <Icon name={prob.name === 'Google' ? 'ph-google-logo' : prob.name === 'Facebook' ? 'ph-facebook-logo' : 'ph-youtube-logo'} />
-                                        </div>
-                                        <div>
-                                            <h4 className="text-sm font-black text-geex-text">{prob.name}</h4>
-                                            <p className="text-[10px] font-bold text-geex-muted truncate w-24">{prob.url}</p>
-                                        </div>
-                                    </div>
-                                    <span className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest bg-${prob.color}-500 text-white shadow-lg shadow-${prob.color}-100`}>
-                                        {prob.status}
-                                    </span>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* Latest Activity */}
-                    <div className="geex-card p-10">
-                        <h3 className="text-xl font-black text-geex-text mb-2">Latest Activity</h3>
-                        <p className="text-[11px] font-bold text-geex-muted uppercase mb-8">Sit et tempora dicta omnis.</p>
-                        <div className="space-y-8 relative">
-                            <div className="absolute left-[7px] top-2 bottom-2 w-0.5 bg-slate-100" />
-                            {[
-                                { time: 'January 2nd, 04:35 AM', text: 'Illum omnis quo illum nisi. Nesciunt ut accusamus.' },
-                                { time: 'January 4th, 06:19 AM', text: 'Corrupti unde qui molestie labore ad adipisci.' }
-                            ].map((act, i) => (
-                                <div key={i} className="relative pl-8">
-                                    <div className="absolute left-0 top-1.5 w-4 h-4 rounded-full bg-white border-4 border-potato-purple z-10" />
-                                    <h4 className="text-[10px] font-black text-potato-purple uppercase tracking-widest mb-2">{act.time}</h4>
-                                    <p className="text-xs font-bold text-geex-muted leading-relaxed">{act.text}</p>
-                                </div>
-                            ))}
-                        </div>
                     </div>
                 </div>
             );
@@ -563,135 +372,145 @@
 
         const AcademicView = () => {
             return (
-                <div className="space-y-12 animate-fade-in pb-32">
+                <div className="space-y-10 animate-fade-in pb-20">
                     {/* Header Banner */}
-                    <div className="geex-card p-12 bg-white relative overflow-hidden ring-1 ring-slate-50">
-                        <div className="absolute top-0 right-0 w-96 h-96 bg-potato-magenta/5 rounded-full blur-3xl -mr-40 -mt-40"></div>
-                        <div className="relative z-10 flex flex-col md:flex-row justify-between items-center gap-10">
-                            <div className="text-center md:text-left space-y-4">
-                                <h1 className="text-5xl font-black text-geex-text tracking-tighter leading-none">
-                                    {ACADEMIC_REPORT_DATA.title.split(' Quý')[0]} <span className="text-potato-magenta">Quý 2/2026</span>
-                                </h1>
-                                <p className="text-geex-muted font-bold uppercase tracking-[0.3em] text-xs flex items-center justify-center md:justify-start gap-4">
-                                    <Icon name="ph-shield-check" className="text-potato-magenta text-xl" /> {ACADEMIC_REPORT_DATA.subtitle}
-                                </p>
-                            </div>
-                            <div className="px-10 py-5 bg-potato-magenta text-white rounded-[24px] font-black text-xs uppercase tracking-[0.2em] shadow-2xl shadow-rose-200/50">
-                                {ACADEMIC_REPORT_DATA.status}
-                            </div>
+                    <div className="glass-card rounded-[40px] p-10 bg-gradient-to-br from-slate-900 to-slate-800 text-white relative overflow-hidden shadow-2xl">
+                        <div className="absolute top-0 right-0 w-80 h-80 bg-blue-500/10 rounded-full blur-3xl -mr-40 -mt-40"></div>
+                        <div className="relative z-10 text-center md:text-left">
+                            <h1 className="text-3xl font-black tracking-tight uppercase italic mb-2">
+                                {ACADEMIC_REPORT_DATA.title.split(' Quý')[0]} <span className="text-blue-400">Quý 2/2026</span>
+                            </h1>
+                            <p className="text-slate-400 font-bold uppercase tracking-widest text-[11px] flex items-center justify-center md:justify-start gap-2">
+                                <Icon name="ph-shield-check" className="text-blue-400" /> {ACADEMIC_REPORT_DATA.subtitle}
+                            </p>
                         </div>
                     </div>
 
-                    {/* Completion Rates */}
-                    <div className="space-y-8">
-                        <div className="flex items-center justify-between px-6">
-                            <h2 className="text-2xl font-black text-geex-text flex items-center gap-4">
-                                <div className="p-3 bg-emerald-50 rounded-2xl shadow-sm"><Icon name="ph-chart-pie-slice" className="text-emerald-500 text-xl" /></div> 
-                                Hoàn thiện học cụ theo khối
+                    {/* Completion Rates Grid */}
+                    <div className="space-y-6">
+                        <div className="flex items-center justify-between px-4">
+                            <h2 className="text-xl font-black text-slate-800 flex items-center gap-2">
+                                <Icon name="ph-chart-pie-slice" className="text-emerald-500" /> Hoàn thiện học cụ theo khối
                             </h2>
-                            <span className="text-[11px] font-black text-geex-muted uppercase tracking-widest bg-white px-4 py-2 rounded-xl shadow-sm border border-slate-50 italic">Live Update</span>
+                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest italic">Live Status Update</span>
                         </div>
-                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8">
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
                             {ACADEMIC_REPORT_DATA.rates.map((rate, idx) => (
-                                <div key={idx} className="geex-card p-10 text-center group">
-                                    <p className="text-[10px] font-black text-geex-muted uppercase tracking-[0.2em] mb-8 h-10 flex items-center justify-center line-clamp-2 leading-tight">
+                                <div key={idx} className="glass-card p-6 rounded-[24px] text-center group hover:translate-y-[-4px] transition-all">
+                                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-tighter mb-4 h-8 flex items-center justify-center line-clamp-2">
                                         {rate.label}
                                     </p>
-                                    <div className="relative w-24 h-24 mx-auto">
+                                    <div className="relative w-16 h-16 mx-auto mb-4">
                                         <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
-                                            <circle cx="18" cy="18" r="16" fill="transparent" stroke="#F8FAFC" strokeWidth="4" />
-                                            <circle 
-                                                cx="18" cy="18" r="16" fill="transparent" 
-                                                stroke={rate.color === 'emerald' ? '#10B981' : rate.color === 'amber' ? '#F59E0B' : '#EF4444'} 
-                                                strokeWidth="4" strokeDasharray={`${rate.value}, 100`} strokeLinecap="round" 
-                                                className="transition-all duration-1000 ease-out"
-                                            />
+                                            <path className="text-slate-100" strokeWidth="3" stroke="currentColor" fill="transparent" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                            <path className={`text-${rate.color}-500 transition-all duration-1000`} strokeWidth="3" strokeDasharray={`${rate.value}, 100`} strokeLinecap="round" stroke="currentColor" fill="transparent" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
                                         </svg>
-                                        <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                            <span className="text-lg font-black text-geex-text leading-none">{rate.value}%</span>
+                                        <div className="absolute inset-0 flex items-center justify-center text-xs font-black text-slate-800">
+                                            {rate.value}%
                                         </div>
                                     </div>
+                                    <div className={`w-2 h-2 rounded-full mx-auto bg-${rate.color}-500 shadow-[0_0_8px_rgba(var(--tw-color-${rate.color}-500),0.4)]`}></div>
                                 </div>
                             ))}
                         </div>
                     </div>
 
-                    {/* Strategy Matrix */}
-                    <div className="space-y-10">
-                        <div className="flex items-center gap-6 px-6">
-                            <div className="h-[2px] flex-1 bg-slate-100/50"></div>
-                            <h2 className="text-[12px] font-black text-geex-muted uppercase tracking-[0.4em] opacity-40">Ma trận hành động chi tiết</h2>
-                            <div className="h-[2px] flex-1 bg-slate-100/50"></div>
+                    {/* Action Matrix Rows */}
+                    <div className="space-y-8">
+                        <div className="flex items-center gap-4 px-4">
+                            <div className="h-[2px] flex-1 bg-slate-100"></div>
+                            <h2 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.3em]">Ma trận hành động chi tiết</h2>
+                            <div className="h-[2px] flex-1 bg-slate-100"></div>
                         </div>
 
-                        <div className="grid grid-cols-1 gap-10">
-                            {ACADEMIC_REPORT_DATA.matrix.map((item, idx) => (
-                                <div key={idx} className="geex-card p-12 grid grid-cols-1 lg:grid-cols-12 gap-12 border border-transparent hover:border-potato-magenta/5">
-                                    {/* Info & Done */}
-                                    <div className="lg:col-span-4 space-y-10">
-                                        <div className="flex items-center gap-6">
-                                            <div className={`w-20 h-20 rounded-[32px] bg-${item.color}-50 flex items-center justify-center text-4xl text-${item.color}-500 shadow-sm`}>
-                                                <Icon name={item.icon} />
+                        {ACADEMIC_REPORT_DATA.matrix.map((row, rIdx) => (
+                            <div key={rIdx} className="glass-card rounded-[32px] overflow-hidden border border-white/40 shadow-xl group">
+                                <div className="grid grid-cols-1 lg:grid-cols-12">
+                                    {/* Column 1: Category & Done */}
+                                    <div className="lg:col-span-4 p-8 border-r border-slate-50 bg-slate-50/30">
+                                        <div className="flex items-center gap-4 mb-8">
+                                            <div className={`w-12 h-12 rounded-2xl bg-${row.color}-600 text-white flex items-center justify-center shadow-lg shadow-${row.color}-200 group-hover:scale-110 transition-transform`}>
+                                                <Icon name={row.icon} className="text-2xl" />
                                             </div>
-                                            <div>
-                                                <h3 className="text-3xl font-black text-geex-text tracking-tighter leading-none">{item.category}</h3>
-                                                <p className="text-[11px] font-bold text-geex-muted mt-3 uppercase tracking-widest leading-none">Category Focus</p>
-                                            </div>
+                                            <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight">{row.category}</h3>
                                         </div>
-                                        <div className="space-y-6">
-                                            <h4 className="text-[10px] font-black text-geex-muted uppercase tracking-widest flex items-center gap-3"><div className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> Thành tích tuần qua</h4>
-                                            <div className="space-y-3">
-                                                {item.done.map((d, i) => (
-                                                    <div key={i} className="p-5 bg-slate-50/50 rounded-2xl text-[13px] font-bold text-geex-text leading-relaxed flex items-start gap-4 border border-slate-50">
-                                                        <Icon name="ph-check-circle" className="text-emerald-500 text-xl shrink-0 mt-0.5" />
-                                                        {d}
+                                        <div className="space-y-4">
+                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Đã thực hiện tuần qua</p>
+                                            {row.done.map((task, tIdx) => (
+                                                <div key={tIdx} className="flex gap-3 items-start">
+                                                    <div className="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center shrink-0 mt-0.5">
+                                                        <Icon name="ph-check" className="text-emerald-600 text-[10px] font-bold" />
                                                     </div>
-                                                ))}
-                                            </div>
+                                                    <p className="text-xs font-bold text-slate-600 leading-relaxed text-justify">{task}</p>
+                                                </div>
+                                            ))}
                                         </div>
                                     </div>
 
-                                    {/* Issues */}
-                                    <div className="lg:col-span-4 space-y-8">
-                                        <h4 className="text-[10px] font-black text-geex-muted uppercase tracking-widest flex items-center gap-3"><div className="w-1.5 h-1.5 rounded-full bg-rose-500" /> Thách thức & Rủi ro</h4>
-                                        <div className="space-y-4">
-                                            {item.issues.length > 0 ? item.issues.map((issue, i) => (
-                                                <div key={i} className="p-6 bg-rose-50/30 rounded-3xl border border-rose-100/50 group hover:bg-rose-50 transition-colors">
-                                                    <p className="text-sm font-black text-rose-600 mb-2 leading-tight">{issue.title}</p>
-                                                    <p className="text-xs font-bold text-geex-muted leading-relaxed italic">"{issue.desc}"</p>
-                                                </div>
-                                            )) : (
-                                                <div className="p-12 border-2 border-dashed border-slate-100 rounded-[32px] flex flex-col items-center justify-center text-center opacity-30">
-                                                    <Icon name="ph-shield-check" className="text-4xl text-emerald-500 mb-4" />
-                                                    <p className="text-[10px] font-black text-geex-muted uppercase tracking-widest">No issues reported</p>
+                                    {/* Column 2: Issues */}
+                                    <div className="lg:col-span-4 p-8 border-r border-slate-50">
+                                        <div className="space-y-6">
+                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Vấn đề tồn đọng</p>
+                                            {row.issues.length > 0 ? (
+                                                row.issues.map((issue, iIdx) => (
+                                                    <div key={iIdx} className="p-4 rounded-2xl bg-rose-50/50 border-l-4 border-rose-500 space-y-2">
+                                                        <h4 className="text-xs font-black text-rose-900 italic">{issue.title}</h4>
+                                                        <p className="text-[11px] font-medium text-rose-700 leading-relaxed text-justify">{issue.desc}</p>
+                                                    </div>
+                                                ))
+                                            ) : (
+                                                <div className="p-8 rounded-2xl border-2 border-dashed border-slate-100 flex flex-col items-center justify-center text-center opacity-40">
+                                                    <Icon name="ph-shield-check" className="text-3xl text-emerald-500 mb-2" />
+                                                    <p className="text-[10px] font-black text-slate-400 uppercase">Chưa ghi nhận rủi ro</p>
                                                 </div>
                                             )}
                                         </div>
                                     </div>
 
-                                    {/* Timeline */}
-                                    <div className="lg:col-span-4 space-y-8">
-                                        <h4 className="text-[10px] font-black text-geex-muted uppercase tracking-widest flex items-center gap-3"><div className="w-1.5 h-1.5 rounded-full bg-potato-blue" /> Lộ trình & Deadline</h4>
-                                        <div className="space-y-4 relative pl-6">
-                                            <div className="absolute left-1.5 top-2 bottom-2 w-[2px] bg-slate-50" />
-                                            {item.actions.map((act, i) => (
-                                                <div key={i} className="relative p-6 bg-white rounded-3xl shadow-sm border border-slate-50 hover:shadow-md transition-all group/it">
-                                                    <div className="absolute left-[-29px] top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-white border-4 border-slate-200 group-hover/it:border-potato-blue transition-colors z-10" />
-                                                    <p className="text-xs font-black text-geex-text mb-3">{act.period}</p>
-                                                    <ul className="space-y-2">
-                                                        {act.tasks.map((t, ti) => (
-                                                            <li key={ti} className="text-[11px] font-bold text-geex-muted flex items-start gap-2">
-                                                                <div className="w-1 h-1 rounded-full bg-slate-300 mt-1.5 shrink-0" />
-                                                                {t}
-                                                            </li>
-                                                        ))}
-                                                    </ul>
-                                                </div>
-                                            ))}
+                                    {/* Column 3: Actions & Timeline */}
+                                    <div className="lg:col-span-4 p-8 bg-white/20">
+                                        <div className="space-y-6">
+                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Hành động & Thời hạn</p>
+                                            <div className="space-y-6 relative">
+                                                <div className="absolute left-2.5 top-2 bottom-2 w-0.5 bg-slate-100"></div>
+                                                {row.actions.map((action, aIdx) => (
+                                                    <div key={aIdx} className="relative pl-8">
+                                                        <div className={`absolute left-0 top-1.5 w-5 h-5 rounded-full bg-white border-2 border-${row.color}-400 z-10 flex items-center justify-center`}>
+                                                            <div className={`w-2 h-2 rounded-full bg-${row.color}-500`}></div>
+                                                        </div>
+                                                        <h4 className="text-xs font-black text-slate-800 mb-2">{action.period}</h4>
+                                                        <ul className="space-y-1.5">
+                                                            {action.tasks.map((task, kIdx) => (
+                                                                <li key={kIdx} className="text-[11px] font-bold text-slate-500 flex items-start gap-2">
+                                                                    <div className="w-1 h-1 rounded-full bg-slate-300 mt-1.5 shrink-0"></div>
+                                                                    <span>{task}</span>
+                                                                </li>
+                                                            ))}
+                                                        </ul>
+                                                    </div>
+                                                ))}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            ))}
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Footer Status */}
+                    <div className="glass-card rounded-[40px] p-10 bg-slate-900 text-white relative overflow-hidden shadow-2xl flex flex-col md:flex-row justify-between items-center gap-8">
+                        <div className="absolute top-0 right-0 w-64 h-64 bg-blue-600/10 rounded-full blur-3xl -mr-32 -mt-32"></div>
+                        <div className="relative z-10 text-center md:text-left">
+                            <h3 className="text-xl font-black mb-2 italic tracking-tight flex items-center justify-center md:justify-start gap-3">
+                                <Icon name="ph-rocket-launch" className="text-blue-400" /> Quản trị Vận hành & Chất lượng Q2
+                            </h3>
+                            <p className="text-xs text-slate-400 italic font-bold">Hệ thống hóa Lộ trình - Chuẩn hóa Đầu vào - Tối ưu hóa Học cụ</p>
+                        </div>
+                        <div className="relative z-10 flex gap-4">
+                            <div className="px-10 py-4 bg-slate-800/80 rounded-2xl border border-slate-700/50 text-center shadow-inner group transition-all">
+                                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] mb-1 italic">Tình trạng</p>
+                                <p className="text-xl font-black text-blue-400 italic group-hover:scale-105 transition-transform">{ACADEMIC_REPORT_DATA.status}</p>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -789,11 +608,11 @@
                             Chỉ số (%)
                         </div>
 
-                        <div className="h-64 flex items-end justify-between gap-4 px-8 border-l border-b border-slate-100 ml-10 relative">
+                        <div className="h-64 flex items-end justify-between gap-2 px-8 border-l border-b border-slate-200/50 ml-6 relative">
                             {TEACHER_REPORT_DATA.chartData.map((bar, idx) => (
                                 <div key={idx} className="flex-1 flex flex-col items-center group relative h-full justify-end">
                                     <div 
-                                        className="w-full rounded-t-2xl transition-all duration-1000 ease-out hover:brightness-110 shadow-sm relative overflow-hidden group/bar" 
+                                        className="w-full rounded-t-xl transition-all duration-1000 ease-out hover:brightness-110 shadow-lg relative overflow-hidden group/bar" 
                                         style={{ height: `${bar.value}%`, backgroundColor: bar.color }}
                                     >
                                         <div className="absolute inset-0 bg-white/10 opacity-0 group-hover/bar:opacity-100 transition-opacity"></div>
@@ -801,18 +620,20 @@
                                             {bar.value}%
                                         </div>
                                     </div>
-                                    <p className="mt-6 text-[10px] font-black text-geex-muted text-center leading-tight h-10 flex items-center justify-center tracking-tighter">
+                                    <p className="mt-4 text-[10px] font-black text-slate-500 text-center leading-tight h-8 flex items-center justify-center">
                                         {bar.label}
                                     </p>
-                                    <div className="absolute -top-10 opacity-0 group-hover:opacity-100 transition-all bg-geex-text text-white text-[10px] font-black py-2 px-3 rounded-xl pointer-events-none z-10 whitespace-nowrap shadow-xl">
+                                    {/* Tooltip on hover */}
+                                    <div className="absolute -top-6 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-800 text-white text-[10px] font-black py-1 px-2 rounded-lg pointer-events-none z-10 whitespace-nowrap shadow-xl">
                                         {bar.label}: {bar.value}%
                                     </div>
                                 </div>
                             ))}
                         </div>
 
-                        <div className="text-center mt-6 text-[10px] font-black text-geex-muted uppercase tracking-[0.3em] opacity-40">
-                            Học viên / Lớp học (Data Analytics)
+                        {/* X-Axis Label */}
+                        <div className="text-center mt-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                            Học viên/Lớp
                         </div>
                     </div>
 
@@ -836,27 +657,28 @@
                                     <div className="space-y-4">
                                         {cat.classes.length > 0 ? (
                                             cat.classes.map((cls, idx) => (
-                                                <div key={idx} className={`geex-card p-6 border-l-8 rounded-[32px] border-${cat.color}-500/20 hover:border-${cat.color}-500/50 transition-all group`}>
-                                                    <div className="flex justify-between items-start mb-4">
-                                                        <span className={`text-[9px] font-black uppercase tracking-widest px-3 py-1 bg-slate-50 text-geex-muted rounded-lg border border-slate-100`}>
+                                                <div key={idx} className={`glass-card p-5 border-l-4 rounded-[24px] border-${cat.color}-500/50 hover:translate-y-[-4px] transition-all shadow-sm group hover:shadow-md`}>
+                                                    <div className="flex justify-between items-start mb-3">
+                                                        <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-0.5 bg-white/80 text-slate-500 rounded-lg border border-slate-100`}>
                                                             {cls.sub}
                                                         </span>
-                                                        <span className={`font-black text-${cat.color}-600 text-xs tracking-tighter`}>{cls.name}</span>
+                                                        <span className={`font-black text-${cat.color}-600 text-xs`}>{cls.name}</span>
                                                     </div>
-                                                    <h4 className="font-black text-geex-text text-[13px] mb-3 leading-tight">{cls.status}</h4>
-                                                    <p className="text-[11px] font-bold text-geex-muted mb-6 leading-relaxed italic border-l-2 border-slate-100 pl-3">"{cls.desc}"</p>
-                                                    <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100/50">
-                                                        <p className="text-[9px] font-black text-geex-muted uppercase tracking-widest mb-2 opacity-50">Solution Strategy</p>
-                                                        <p className="text-[11px] font-black text-geex-text leading-snug">{cls.solution}</p>
+                                                    <h4 className="font-black text-slate-800 text-[12px] mb-2">{cls.status}</h4>
+                                                    <p className="text-[10px] font-medium text-slate-500 mb-4 leading-relaxed italic border-l-2 border-slate-100 pl-2">"{cls.desc}"</p>
+                                                    <div className="bg-slate-50/50 p-3 rounded-xl border border-slate-100">
+                                                        <p className="text-[9px] font-black text-slate-400 uppercase mb-1">Giải pháp</p>
+                                                        <p className="text-[10px] font-bold text-slate-700 leading-tight">{cls.solution}</p>
                                                     </div>
                                                 </div>
                                             ))
                                         ) : (
-                                            <div className="geex-card p-12 text-center opacity-40 border-dashed border-2 border-slate-100">
-                                                <div className="w-12 h-12 rounded-full bg-slate-50 mx-auto flex items-center justify-center mb-4">
-                                                    <Icon name="ph-calendar-x" className="text-slate-300 text-2xl" />
+                                            <div className="glass-card p-8 rounded-[24px] border-dashed border-slate-200 flex flex-col items-center justify-center text-center opacity-60">
+                                                <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center mb-3">
+                                                    <Icon name="ph-calendar-x" className="text-slate-400 text-xl" />
                                                 </div>
-                                                <p className="text-[10px] font-black text-geex-muted uppercase tracking-widest">No Class Reports</p>
+                                                <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Không có báo cáo</p>
+                                                <p className="text-[10px] font-medium text-slate-300">Tuần hiện tại</p>
                                             </div>
                                         )}
                                     </div>
@@ -866,51 +688,47 @@
                     </div>
 
                     {/* Innovation Strategy */}
-                    <div className="geex-card p-12 relative overflow-hidden bg-white border border-slate-50 shadow-sm">
-                        <div className="absolute top-0 right-0 w-80 h-80 bg-indigo-50 rounded-full -mr-40 -mt-40 opacity-50 blur-3xl pointer-events-none"></div>
-                        <h2 className="text-2xl font-black text-geex-text mb-12 flex items-center gap-4">
-                            <div className="p-3 bg-indigo-50 rounded-2xl"><Icon name="ph-sparkle" className="text-indigo-500" /></div> Chiến lược cải tiến chuyên môn
+                    <div className="glass-card rounded-[32px] p-8 relative overflow-hidden bg-white/40 border border-white/40">
+                        <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-50 rounded-full -mr-32 -mt-32 opacity-20 pointer-events-none blur-3xl"></div>
+                        <h2 className="text-xl font-black text-slate-800 mb-10 flex items-center gap-2">
+                            <Icon name="ph-sparkle" className="text-indigo-500" /> II. Chiến lược cải tiến chuyên môn
                         </h2>
-                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-                            <div className="lg:col-span-7 space-y-8">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                            <div className="space-y-6">
                                 {TEACHER_REPORT_DATA.strategies.map((strat, idx) => (
-                                    <div key={idx} className="flex items-start gap-6 p-8 rounded-[32px] bg-slate-50/50 border border-slate-100 hover:bg-white transition-all group">
-                                        <div className="w-16 h-16 rounded-[24px] bg-indigo-600 flex items-center justify-center text-white shrink-0 shadow-lg shadow-indigo-100 group-hover:scale-110 transition-transform">
+                                    <div key={idx} className="flex items-start gap-5 p-6 rounded-[24px] bg-white/50 border border-white/60 hover:bg-white/80 transition-all group">
+                                        <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shrink-0 shadow-lg group-hover:scale-110 transition-transform">
                                             <Icon name={strat.icon} className="text-2xl" />
                                         </div>
-                                        <div className="space-y-2">
-                                            <h4 className="font-black text-geex-text text-lg tracking-tight">{strat.title}</h4>
-                                            <p className="text-[13px] font-bold text-geex-muted leading-relaxed">{strat.desc}</p>
+                                        <div className="space-y-1">
+                                            <h4 className="font-black text-slate-800 text-sm">{strat.title}</h4>
+                                            <p className="text-[12px] font-medium text-slate-500 leading-relaxed">{strat.desc}</p>
                                         </div>
                                     </div>
                                 ))}
                             </div>
-                            <div className="lg:col-span-5 bg-indigo-50/50 p-10 rounded-[40px] border border-indigo-100/50 relative overflow-hidden">
-                                <div className="absolute top-0 left-0 w-full h-1 bg-indigo-600"></div>
-                                <div className="flex items-center gap-4 mb-8">
-                                    <div className="p-3 bg-white rounded-2xl shadow-sm text-indigo-600">
-                                        <Icon name="ph-users-three" className="text-xl" />
+                            <div className="bg-indigo-50/30 p-8 rounded-[32px] border border-indigo-100/50 shadow-inner">
+                                <div className="flex items-center gap-3 mb-6">
+                                    <div className="p-2 bg-indigo-600 rounded-xl text-white shadow-md">
+                                        <Icon name="ph-users-three" className="text-lg" />
                                     </div>
-                                    <div>
-                                        <h4 className="font-black text-[11px] uppercase tracking-[0.2em] text-indigo-700">Special Student Care</h4>
-                                        <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mt-1">Focus: Ken & Hailey</p>
-                                    </div>
+                                    <h4 className="font-black text-[10px] uppercase tracking-widest text-indigo-700">Student Care: Ken & Hailey</h4>
                                 </div>
-                                <div className="space-y-8">
+                                <div className="space-y-5">
                                     {[
                                         { task: "Kết nối Phụ huynh", progress: 80, badge: "80%", color: "emerald" },
                                         { task: "Bài tập cá nhân hóa", progress: 100, badge: "DONE", color: "indigo" },
                                         { task: "Kiểm tra từ vựng", progress: 60, badge: "WEEKLY", color: "amber" }
                                     ].map((item, idx) => (
-                                        <div key={idx} className="space-y-4">
+                                        <div key={idx} className="space-y-2">
                                             <div className="flex justify-between items-center px-1">
-                                                <span className="text-sm font-black text-slate-800 tracking-tight">{item.task}</span>
-                                                <span className={`text-[10px] font-black bg-${item.color}-100 text-${item.color}-700 px-3 py-1 rounded-xl shadow-sm`}>
+                                                <span className="text-[12px] font-bold text-slate-700">{item.task}</span>
+                                                <span className={`text-[9px] font-black bg-${item.color}-100 text-${item.color}-700 px-2 py-0.5 rounded-full`}>
                                                     {item.badge}
                                                 </span>
                                             </div>
-                                            <div className="w-full bg-white h-3 rounded-full overflow-hidden shadow-inner p-0.5 border border-slate-100">
-                                                <div className={`h-full bg-${item.color === 'emerald' ? 'emerald-500' : item.color === 'indigo' ? 'indigo-600' : 'amber-500'} rounded-full transition-all duration-1000`} style={{ width: `${item.progress}%` }}></div>
+                                            <div className="w-full bg-slate-200/50 h-2 rounded-full overflow-hidden shadow-inner">
+                                                <div className={`h-full bg-${item.color === 'emerald' ? 'emerald-500' : item.color === 'indigo' ? 'indigo-600' : 'amber-500'} transition-all duration-1000 shadow-sm`} style={{ width: `${item.progress}%` }}></div>
                                             </div>
                                         </div>
                                     ))}
@@ -950,25 +768,22 @@
             return (
                 <div className="space-y-8 animate-fade-in pb-12">
                     {/* KPI Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                         {reports.map((report, i) => (
-                            <div key={i} className={`geex-card p-10 flex flex-col justify-between group overflow-hidden relative ring-1 ring-slate-50 hover:shadow-xl hover:translate-y-[-4px] transition-all cursor-default`}>
+                            <div key={i} className={`glass-card rounded-[24px] p-6 flex flex-col justify-between group overflow-hidden relative ${report.border} hover:scale-[1.02] transition-all cursor-default`}>
                                 <div className="flex justify-between items-start relative z-10">
                                     <div>
-                                        <p className="text-[10px] font-black text-geex-muted mb-2 uppercase tracking-[0.2em] opacity-60 leading-none">{report.title}</p>
-                                        <h3 className="text-3xl font-black text-geex-text tracking-tighter leading-none">{report.value}</h3>
+                                        <p className="text-[11px] font-black text-slate-500 mb-1 uppercase tracking-wider">{report.title}</p>
+                                        <h3 className="text-3xl font-black text-slate-800 tracking-tight">{report.value}</h3>
                                     </div>
-                                    <div className={`p-4 rounded-2xl bg-slate-50 ${report.color} text-2xl shadow-sm border border-slate-100 group-hover:scale-110 transition-transform`}>
+                                    <div className={`p-2.5 rounded-xl bg-white/50 text-2xl shadow-sm ${report.color}`}>
                                         <Icon name={report.icon} />
                                     </div>
                                 </div>
-                                <div className="mt-8 pt-8 border-t border-slate-100 relative z-10">
-                                    <p className="text-[11px] font-bold text-geex-muted leading-relaxed tracking-tight">{report.sub}</p>
-                                </div>
-                                <div className={`absolute -right-6 -bottom-6 text-9xl opacity-[0.03] rotate-12 ${report.color} pointer-events-none`}>
+                                <p className="mt-4 text-[11px] font-bold text-slate-400 leading-tight relative z-10">{report.sub}</p>
+                                <div className={`absolute -right-4 -bottom-4 text-7xl opacity-[0.03] rotate-12 ${report.color}`}>
                                     <Icon name={report.icon} />
                                 </div>
-                                <div className="absolute left-0 bottom-0 w-full h-1.5 opacity-0 group-hover:opacity-100 transition-opacity bg-potato-magenta" />
                             </div>
                         ))}
                     </div>
@@ -1073,20 +888,24 @@
                     </div>
 
                     {/* Next Actions */}
-                    <div className="geex-card p-12 bg-white relative overflow-hidden shadow-sm border border-slate-50">
-                        <div className="absolute top-0 right-0 w-80 h-80 bg-potato-magenta/5 rounded-full blur-3xl -mr-40 -mt-40 pointer-events-none"></div>
-                        <h3 className="text-2xl font-black text-geex-text mb-10 flex items-center gap-4 relative z-10">
-                            <div className="p-3 bg-potato-magenta/10 rounded-2xl text-potato-magenta">
-                                <Icon name="ph-rocket-launch" />
+                    <div className="rounded-[32px] p-8 bg-gradient-to-br from-indigo-600 to-indigo-800 text-white relative overflow-hidden shadow-2xl border border-white/20 transition-all hover:shadow-[0_20px_50px_rgba(79,70,229,0.4)] hover:scale-[1.01] duration-500">
+                        <div className="absolute top-0 right-0 p-12 opacity-10 text-9xl rotate-12 pointer-events-none">
+                            <Icon name="ph-rocket-launch" />
+                        </div>
+                        <h3 className="text-xl font-black mb-8 flex items-center gap-3 relative z-10">
+                            <div className="p-2 bg-white/20 rounded-xl backdrop-blur-md">
+                                <Icon name="ph-lightning" />
                             </div>
                             Công Việc Sắp Tới (Next Actions)
                         </h3>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative z-10">
+                        <div className="space-y-4 relative z-10">
                             {[
-                                { icon: "ph-check-square", text: "Tiếp tục dồn lực hoàn thiện album \"Mùa hè rực rỡ\" cho khối Kids (Target: 05/04).", color: "emerald" },
-                                { icon: "ph-users-four", text: "Tổ chức buổi ôn tập thử (Mock Test) cho nhóm học sinh đăng ký thi HK2 vào tối Thứ 7.", color: "indigo" },
-                                { icon: "ph-chart-line-up", text: "Hoàn thiện báo cáo phân tích hiệu quả chiến dịch \"Học thử 0 đồng\".", color: "amber" }
+                                { icon: "ph-check-square", text: "Tiếp tục dồn lực hoàn thiện album \"Mùa hè rực rỡ\" cho khối Kids (Target: 05/04)." },
+                                { icon: "ph-users-four", text: "Tổ chức buổi ôn tập thử (Mock Test) cho nhóm học sinh đăng ký thi HK2 vào tối Thứ 7." },
+                                { icon: "ph-chart-line-up", text: "Hoàn thiện báo cáo phân tích hiệu quả chiến dịch \"Học thử 0 đồng\"." }
                             ].map((action, i) => (
+                                <div key={i} className="flex items-center gap-4 p-5 bg-white/10 rounded-2xl border border-white/10 hover:bg-white/20 transition-all group">
+                                    <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
                                         <Icon name={action.icon} className="text-xl" />
                                     </div>
                                     <p className="text-base font-bold leading-relaxed">{action.text}</p>
@@ -1156,56 +975,65 @@
             );
         };
 
+        const Sidebar = ({ activeTab, setActiveTab }) => {
+            const menuItems = [
+                { id: 'dashboard', label: 'Tổng Quan', icon: 'ph-squares-four' },
+                { id: 'teacher', label: 'Giáo Viên', icon: 'ph-user-focus' },
+                { id: 'academic', label: 'Học Thuật', icon: 'ph-graduation-cap' },
+                { id: 'operation', label: 'Vận Hành', icon: 'ph-gear-six' }
+            ];
+
+            return (
+                <aside className="w-[280px] h-screen bg-white border-r border-slate-100 flex flex-col sidebar-transition relative z-50 overflow-hidden group/sidebar shadow-sm">
+                    {/* Logo Section */}
+                    <div className="p-8 pb-12 flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-potato-magenta to-potato-yellow shadow-lg shadow-magenta-500/20 flex items-center justify-center text-white shrink-0">
+                            <Icon name="ph-lightning-fill" className="text-2xl" />
+                        </div>
+                        <div className="group-hover/sidebar:opacity-100 transition-opacity">
+                            <h1 className="text-xl font-black text-slate-900 leading-none tracking-tighter">Potato<span className="text-potato-magenta">.</span></h1>
+                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Intelligence</p>
+                        </div>
+                    </div>
+
+                    {/* Navigation */}
+                    <nav className="flex-1 px-4 space-y-2 overflow-y-auto no-scrollbar">
+                        {menuItems.map((item) => (
+                            <button
+                                key={item.id}
+                                onClick={() => setActiveTab(item.id)}
+                                className={`w-full flex items-center gap-4 px-6 py-4 rounded-[20px] transition-all duration-300 relative group ${
+                                    activeTab === item.id 
+                                    ? 'bg-potato-magenta text-white shadow-xl shadow-magenta-500/20' 
+                                    : 'text-slate-400 hover:bg-slate-50 hover:text-slate-600'
+                                }`}
+                            >
+                                <Icon name={item.icon} className={`text-xl transition-transform ${activeTab === item.id ? 'scale-110' : 'group-hover:scale-110'}`} />
+                                <span className="text-sm font-black tracking-tight">{item.label}</span>
+                                {activeTab === item.id && (
+                                    <div className="absolute right-4 w-1.5 h-1.5 rounded-full bg-white shadow-sm" />
+                                )}
+                            </button>
+                        ))}
+                    </nav>
+
+                    {/* Footer / Context */}
+                    <div className="p-8 border-t border-slate-50">
+                        <div className="bg-slate-50 rounded-2xl p-4 space-y-3">
+                            <div className="flex items-center gap-2">
+                                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                                <span className="text-[10px] font-black text-slate-800 uppercase tracking-widest">Management v6.5</span>
+                            </div>
+                            <p className="text-[10px] font-bold text-slate-400 leading-relaxed uppercase tracking-tighter">Potato English Center Dashboard system</p>
+                        </div>
+                    </div>
+                </aside>
+            );
+        };
+
         const MainApp = () => {
             const [activeTab, setActiveTab] = useState('dashboard');
             const [activeWeek, setActiveWeek] = useState(14);
-            const [isSidebarOpen, setSidebarOpen] = useState(true);
-
-            // --- MOCK DATA --- (Keeping it inside to avoid global scope issues)
-            const DASHBOARD_STATS = [
-                { title: "Memory", value: "200TB", change: "2.5%", trend: "up", icon: "ph-cpu", color: "text-potato-blue", bg: "bg-blue-50", sparkData: [20, 25, 18, 22, 35, 28, 45] },
-                { title: "Visitors", value: "87,245k", change: "4.4%", trend: "down", icon: "ph-users", color: "text-rose-600", bg: "bg-rose-50", sparkData: [45, 40, 35, 30, 25, 20, 15] },
-                { title: "New Users", value: "4,750", change: "2.5%", trend: "up", icon: "ph-user-plus", color: "text-emerald-600", bg: "bg-emerald-50", sparkData: [10, 15, 12, 18, 20, 25, 30] }
-            ];
-
-            const MASTER_CLASSES = [
-                { name: "I. Kid 1 (Seed)", students: 10, teacher: "Ms. Sarah", status: "Hoàn Thành" },
-                { name: "I. Kid 2 (Fox)", students: 12, teacher: "Ms. Sarah", status: "Hoàn Thành" },
-                { name: "I. Kid 3 (Panda)", students: 14, teacher: "Mr. John", status: "Đúng Tiến Độ" },
-                { name: "I. Kid 4 (Fox)", students: 15, teacher: "Mr. John", status: "Đúng Tiến Độ" },
-                { name: "II. Junior 1 (FF1A)", students: 16, teacher: "Ms. Emma", status: "Hoàn Thành" },
-                { name: "II. Junior 2 (FF1B)", students: 18, teacher: "Ms. Emma", status: "Hoàn Thành" },
-                { name: "II. Junior 3 (FF2A)", students: 15, teacher: "Mr. David", status: "Rủi Ro" },
-                { name: "II. Junior 4 (FF2B)", students: 20, teacher: "Mr. David", status: "Hoàn Thành" },
-                { name: "II. Junior 5 (FF3A)", students: 12, teacher: "Ms. Emily", status: "Đúng Tiến Độ" },
-                { name: "II. Junior 6 (FF3B)", students: 14, teacher: "Ms. Emily", status: "Hoàn Thành" },
-                { name: "II. Junior 7 (FF4A)", students: 10, teacher: "Mr. Tom", status: "Hoàn Thành" },
-                { name: "II. Junior 8 (FF4B)", students: 12, teacher: "Mr. Tom", status: "Đúng Tiến Độ" },
-                { name: "III. Teen 1 (Access)", students: 15, teacher: "Ms. Anna", status: "Hoàn Thành" },
-                { name: "III. Teen 2 (Access)", students: 18, teacher: "Ms. Anna", status: "Rủi Ro" },
-                { name: "III. Teen 3 (Achieve)", students: 16, teacher: "Mr. Ken", status: "Đúng Tiến Độ" },
-                { name: "III. Teen 4 (Achieve)", students: 14, teacher: "Mr. Ken", status: "Hoàn Thành" },
-                { name: "IV. IELTS 1 (Foundation)", students: 20, teacher: "Mr. David", status: "Hoàn Thành" },
-                { name: "IV. IELTS 2 (Pre-IELTS)", students: 12, teacher: "Mr. Peter", status: "Đúng Tiến Độ" },
-                { name: "IV. IELTS 3 (Band 5.0)", students: 10, teacher: "Mr. Peter", status: "Rủi Ro" },
-                { name: "IV. IELTS 4 (Band 6.0)", students: 8, teacher: "Ms. Maria", status: "Hoàn Thành" },
-                { name: "IV. IELTS 5 (Success)", students: 6, teacher: "Ms. Maria", status: "Hoàn Thành" }
-            ];
-
-            const WEEKLY_SOP_DATA = {
-                14: {
-                    teacher: { theme: "Chuẩn hóa quy trình Phản hồi", plan: "Workshop 2 giờ cho Giáo viên Trưởng về khung phản hồi mới.", result: "85% GV đã tham gia. LMS đã cập nhật.", action: "Theo dõi 3 cơ sở chậm trễ.", status: "Đúng Tiến Độ" },
-                    academic: { theme: "Triển khai Đánh giá Phonics mới", plan: "Phân phối đề thi chuẩn hóa cho khối Kids.", result: "Gửi đề 100% chi nhánh. Phản hồi ban đầu: Tiêu chí nói hơi phức tạp.", action: "Đơn giản hóa tiêu chí chấm ngay.", status: "Rủi Ro" },
-                    operation: { theme: "Hệ thống Nhắc phí Tự động", plan: "Tích hợp nhắc nhở SMS/Email vào CRM.", result: "Tích hợp xong. 12% SMS lỗi do sai số điện thoại.", action: "Chiến dịch cập nhật thông tin tại quầy.", status: "Đúng Tiến Độ" }
-                }
-            };
-
-            const navigation = [
-                { id: 'dashboard', name: 'Tổng Quan', icon: 'ph-gauge-high' },
-                { id: 'teacher', name: 'Giáo Viên', icon: 'ph-users-three' },
-                { id: 'academic', name: 'Học Thuật', icon: 'ph-book-open' },
-                { id: 'operation', name: 'Vận Hành', icon: 'ph-briefcase' }
-            ];
 
             const renderContent = () => {
                 if (activeWeek < 14) {
@@ -1215,17 +1043,187 @@
                                 <Icon name="ph-database" className="text-4xl opacity-20" />
                             </div>
                             <div className="text-center">
-                                <p className="font-black text-slate-800 text-2xl tracking-tight">Dữ liệu chưa sẵn sàng</p>
+                                <p className="font-black text-slate-800 text-2xl tracking-tight uppercase italic tracking-tighter">Dữ liệu chưa sẵn sàng</p>
                                 <p className="font-bold text-slate-400 mt-2">Hệ thống chưa có dữ liệu báo cáo cho Tuần {activeWeek}.</p>
                             </div>
-                            <button onClick={() => setActiveWeek(14)} className="px-8 py-3.5 bg-white text-slate-800 border border-slate-100 rounded-2xl text-xs font-black uppercase tracking-widest shadow-sm hover:bg-slate-50 transition-all">Quay lại Tuần 14</button>
+                            <button onClick={() => setActiveWeek(14)} className="px-8 py-3.5 bg-potato-magenta text-white rounded-2xl text-xs font-black uppercase tracking-widest shadow-xl shadow-magenta-500/20 hover:scale-105 transition-all">Quay lại Tuần 14</button>
                         </div>
                     );
                 }
 
                 switch(activeTab) {
                     case 'dashboard':
-                        return <GeexDashboardView stats={DASHBOARD_STATS} activeWeek={activeWeek} />;
+                        return (
+                            <div className="flex flex-col xl:flex-row gap-10 animate-fade-in relative">
+                                {/* Main Content Column */}
+                                <div className="flex-1 space-y-10 min-w-0">
+                                    {/* Top Row: 3 modern Stat Cards */}
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                                        <StatCardV2 
+                                            title="Tổng Học Viên" 
+                                            value="1,245" 
+                                            change="+12.5%" 
+                                            trend="up" 
+                                            data={[30, 40, 35, 50, 49, 60, 70, 91]} 
+                                            colorClass="#D81B60" 
+                                        />
+                                        <StatCardV2 
+                                            title="Doanh Thu" 
+                                            value="$32,845" 
+                                            change="+8.2%" 
+                                            trend="up" 
+                                            data={[20, 35, 40, 30, 45, 50, 40, 65]} 
+                                            colorClass="#1E88E5" 
+                                        />
+                                        <StatCardV2 
+                                            title="Retention Rate" 
+                                            value="94.2%" 
+                                            change="+2.4%" 
+                                            trend="up" 
+                                            data={[80, 82, 85, 84, 88, 90, 92, 94]} 
+                                            colorClass="#FFC107" 
+                                        />
+                                    </div>
+
+                                    {/* Middle Row: Large Line Chart (Visualized Placeholder) */}
+                                    <div className="glass-card rounded-[40px] p-10 bg-white group shadow-xl">
+                                        <div className="flex justify-between items-end mb-10">
+                                            <div>
+                                                <h3 className="text-xl font-black text-slate-900 tracking-tight">Activity Summary</h3>
+                                                <p className="text-[11px] font-bold text-slate-400 mt-1 uppercase tracking-widest">Monthly operation flow</p>
+                                            </div>
+                                            <div className="flex items-center gap-6">
+                                                <div className="flex items-center gap-2">
+                                                    <div className="w-2.5 h-2.5 rounded-full bg-potato-magenta shadow-lg shadow-magenta-500/20"></div>
+                                                    <span className="text-[10px] font-black text-slate-500 uppercase">Học viên mới</span>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <div className="w-2.5 h-2.5 rounded-full bg-potato-blue shadow-lg shadow-blue-500/20"></div>
+                                                    <span className="text-[10px] font-black text-slate-500 uppercase">Dự án học vụ</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {/* Simplified Graphic Representation of a Chart */}
+                                        <div className="h-64 w-full relative group/chart">
+                                            <svg viewBox="0 0 1000 300" className="w-full h-full overflow-visible">
+                                                <path d="M0,250 C100,220 200,280 300,200 C400,120 500,240 600,180 C700,120 800,160 900,100 L1000,80" fill="none" stroke="#D81B60" strokeWidth="4" strokeLinecap="round" className="drop-shadow-lg" />
+                                                <path d="M0,280 C150,260 250,220 350,250 C450,280 550,180 650,150 C750,120 850,200 1000,150" fill="none" stroke="#1E88E5" strokeWidth="4" strokeLinecap="round" className="drop-shadow-lg opacity-60" />
+                                                <circle cx="600" cy="180" r="6" fill="#D81B60" className="animate-pulse" />
+                                                <rect x="580" y="80" width="80" height="40" rx="10" fill="white" className="shadow-2xl border border-slate-100 opacity-0 group-hover/chart:opacity-100 transition-opacity" />
+                                                <text x="620" y="105" textAnchor="middle" fontSize="12" fontWeight="900" fill="#0F172A" className="opacity-0 group-hover/chart:opacity-100 transition-opacity">142 Act</text>
+                                            </svg>
+                                            <div className="absolute bottom-0 left-0 right-0 flex justify-between px-2 pt-4">
+                                                {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'].map(m => (
+                                                    <span key={m} className="text-[10px] font-black text-slate-300 uppercase tracking-tighter">{m}</span>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Bottom Data Row: Complex Data visualization */}
+                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                        {/* Left: Interactive Bar Chart Summary */}
+                                        <div className="glass-card rounded-[40px] p-8 space-y-8">
+                                            <div className="flex justify-between items-center px-2">
+                                                <h3 className="text-lg font-black text-slate-900 tracking-tight leading-none italic uppercase">Học Viên Theo Tuần</h3>
+                                                <button className="text-[10px] font-black text-indigo-500 uppercase tracking-widest border-b-2 border-indigo-100 pb-1">View Full Data</button>
+                                            </div>
+                                            <div className="flex items-end justify-between h-48 px-2 gap-3">
+                                                {[40, 60, 45, 90, 100, 65, 50].map((v, i) => (
+                                                    <div key={i} className="flex-1 flex flex-col items-center group/vbar">
+                                                        <div className="relative w-full bg-slate-50 rounded-2xl h-full flex items-end overflow-hidden shadow-inner cursor-pointer">
+                                                            <div 
+                                                                className={`w-full rounded-2xl transition-all duration-1000 ${v > 80 ? 'bg-potato-magenta' : 'bg-slate-200'} shadow-lg group-hover/vbar:bg-indigo-500`} 
+                                                                style={{ height: `${v}%` }}
+                                                            />
+                                                            <div className="absolute inset-0 bg-white/20 opacity-0 group-hover/vbar:opacity-100 transition-opacity"></div>
+                                                        </div>
+                                                        <span className="mt-4 text-[10px] font-black text-slate-300 uppercase">{['S', 'M', 'T', 'W', 'T', 'F', 'S'][i]}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                        {/* Right: Pie/Donut Chart Summary */}
+                                        <div className="glass-card rounded-[40px] p-8 space-y-8">
+                                            <div className="flex justify-between items-center px-2">
+                                                <h3 className="text-lg font-black text-slate-900 tracking-tight leading-none italic uppercase">Cơ Cấu Học Viên</h3>
+                                                <button className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Refresh</button>
+                                            </div>
+                                            <div className="flex flex-col md:flex-row items-center gap-10">
+                                                <div className="relative w-40 h-40 shrink-0">
+                                                    <svg viewBox="0 0 100 100" className="w-full h-full transform -rotate-90">
+                                                        <circle cx="50" cy="50" r="40" fill="transparent" stroke="#F1F5F9" strokeWidth="12" />
+                                                        <circle cx="50" cy="50" r="40" fill="transparent" stroke="#D81B60" strokeWidth="12" strokeDasharray="251.2" strokeDashoffset="62.8" strokeLinecap="round" className="drop-shadow-lg" />
+                                                        <circle cx="50" cy="50" r="40" fill="transparent" stroke="#1E88E5" strokeWidth="12" strokeDasharray="251.2" strokeDashoffset="188.4" strokeLinecap="round" className="drop-shadow-lg" />
+                                                        <circle cx="50" cy="50" r="40" fill="transparent" stroke="#FFC107" strokeWidth="12" strokeDasharray="251.2" strokeDashoffset="240.2" strokeLinecap="round" className="drop-shadow-lg" />
+                                                    </svg>
+                                                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                                                        <span className="text-2xl font-black text-slate-900 leading-none tracking-tight">1.2K</span>
+                                                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">Total HV</span>
+                                                    </div>
+                                                </div>
+                                                <div className="flex-1 w-full space-y-4">
+                                                    {[
+                                                        { label: 'Kids', val: '65%', color: 'bg-potato-magenta' },
+                                                        { label: 'Junior', val: '25%', color: 'bg-potato-blue' },
+                                                        { label: 'Teen/IELTS', val: '10%', color: 'bg-potato-yellow' }
+                                                    ].map((item, i) => (
+                                                        <div key={i} className="flex justify-between items-center group">
+                                                            <div className="flex items-center gap-3">
+                                                                <div className={`w-3 h-3 rounded-full ${item.color} shadow-sm group-hover:scale-125 transition-transform`} />
+                                                                <span className="text-[11px] font-black text-slate-500 uppercase tracking-wider">{item.label}</span>
+                                                            </div>
+                                                            <span className="text-xs font-black text-slate-800 tracking-tight">{item.val}</span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* User Review Section */}
+                                    <div className="space-y-6">
+                                        <div className="flex justify-between items-end px-4">
+                                            <div>
+                                                <h3 className="text-xl font-black text-slate-900 tracking-tight underline decoration-potato-magenta decoration-4 underline-offset-8 uppercase italic">User Reviews</h3>
+                                                <p className="text-[10px] font-bold text-slate-400 mt-1 pl-1 uppercase tracking-widest">What parents say about Potato English</p>
+                                            </div>
+                                            <div className="flex gap-2">
+                                                <button className="p-2 bg-white border border-slate-100 rounded-xl shadow-sm text-slate-400 hover:text-potato-magenta transition-colors"><Icon name="ph-caret-left" className="text-lg" /></button>
+                                                <button className="p-2 bg-white border border-slate-100 rounded-xl shadow-sm text-slate-400 hover:text-potato-magenta transition-colors"><Icon name="ph-caret-right" className="text-lg" /></button>
+                                            </div>
+                                        </div>
+                                        <div className="flex gap-8 overflow-x-auto no-scrollbar pb-10 px-4">
+                                            <ReviewCard 
+                                                name="Jons Sena" 
+                                                date="2 days ago" 
+                                                text="Potato English has transformed my child's confidence in speaking English. The interactive sessions are top-notch!" 
+                                                avatar="https://i.pravatar.cc/150?u=jons"
+                                                status={true}
+                                            />
+                                            <ReviewCard 
+                                                name="Kevin Hunt" 
+                                                date="4 days ago" 
+                                                text="Professional staff and a very conducive learning environment. Highly recommend the Junior roadmap." 
+                                                avatar="https://i.pravatar.cc/150?u=kevin"
+                                                status={true}
+                                            />
+                                            <ReviewCard 
+                                                name="Isabbelle" 
+                                                date="5 days ago" 
+                                                text="The monthly reports are very detailed. I can track every milestone of my daughter clearly." 
+                                                avatar="https://i.pravatar.cc/150?u=isabbelle"
+                                                status={false}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Right Sidebar - Unified within content area for responsiveness */}
+                                <RightSidebarV2 />
+                            </div>
+                        );
                     case 'teacher':
                         return <TeacherView />;
                     case 'academic':
@@ -1249,110 +1247,50 @@
             };
 
             return (
-                <div className="flex h-screen overflow-hidden bg-geex-bg">
-                    {/* SIDEBAR */}
-                    <aside className={`bg-white border-r border-slate-100 flex flex-col sidebar-transition z-50 shadow-sm ${isSidebarOpen ? 'w-[280px]' : 'w-[100px]'}`}>
-                        <div className="h-[120px] flex items-center justify-center px-8">
-                            <div className={`transition-all duration-500 overflow-hidden flex items-center justify-center ${isSidebarOpen ? 'w-full h-20' : 'w-14 h-14'}`}>
-                                <img src="https://raw.githubusercontent.com/hoangtien1300/Potato/main/logo_potato.jpg" alt="Potato Logo" className="w-full h-full object-contain" />
-                            </div>
-                        </div>
-                        <nav className="flex-1 px-6 py-10 space-y-4">
-                            {isSidebarOpen && <div className="text-[10px] font-black text-geex-muted uppercase tracking-[0.3em] mb-8 px-4 opacity-50">Main Menu</div>}
-                            {navigation.map(item => (
-                                <button 
-                                    key={item.id}
-                                    onClick={() => setActiveTab(item.id)}
-                                    className={`w-full flex items-center px-6 py-4 rounded-[20px] transition-all duration-400 group relative ${activeTab === item.id ? 'bg-potato-magenta/10 text-potato-magenta font-black' : 'text-geex-muted hover:bg-slate-50 hover:text-geex-text'}`}
-                                >
-                                    <Icon name={item.icon} className={`text-xl flex-shrink-0 transition-all duration-400 ${activeTab === item.id ? 'text-potato-magenta scale-110' : 'group-hover:scale-110 group-hover:text-potato-magenta'}`} />
-                                    {isSidebarOpen && <span className="ml-5 text-[15px] leading-none tracking-tight">{item.name}</span>}
-                                    {activeTab === item.id && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-10 bg-potato-magenta rounded-r-full shadow-lg" />}
-                                </button>
-                            ))}
-                        </nav>
-                        <div className="p-8 border-t border-slate-50">
-                            <button 
-                                onClick={() => setSidebarOpen(!isSidebarOpen)}
-                                className="w-full flex items-center justify-center h-14 rounded-2xl bg-slate-50 text-geex-muted hover:text-geex-text hover:bg-slate-100 transition-all active:scale-95 shadow-inner"
-                            >
-                                <Icon name={isSidebarOpen ? "ph-caret-left" : "ph-caret-right"} className="text-xl" />
-                            </button>
-                        </div>
-                    </aside>
-
-                    {/* MAIN */}
-                    <div className="flex-1 flex flex-col min-w-0">
-                        <header className="h-[100px] px-12 flex items-center justify-between bg-geex-bg/80 backdrop-blur-md sticky top-0 z-40">
-                             <div>
-                                <h1 className="text-3xl font-black text-geex-text tracking-tighter leading-none mb-2">
-                                    {activeTab === 'dashboard' ? 'Dashboard' : 
-                                     activeTab === 'teacher' ? 'Course Report' : 
-                                     activeTab === 'academic' ? 'Academic Strategy' : 
-                                     activeTab === 'operation' ? 'Leader Report' : 
-                                     'Dashboard'}
+                <div className="flex h-screen overflow-hidden bg-[#F8F9FE]">
+                    <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+                    <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+                        <header className="h-[80px] px-10 flex items-center justify-between border-b border-slate-100 bg-white sticky top-0 z-40">
+                             <div className="flex flex-col">
+                                <p className="text-[10px] font-black text-rose-500 uppercase tracking-[0.2em] mb-1">Intelligence / v6.5</p>
+                                <h1 className="text-2xl font-black text-slate-900 tracking-tight leading-none italic uppercase">
+                                    {activeTab === 'dashboard' ? 'Welcome Potato Dashboard' : 
+                                     activeTab === 'teacher' ? 'Welcome Teacher Dashboard' : 
+                                     activeTab === 'academic' ? 'Welcome Academic Dashboard' : 
+                                     activeTab === 'operation' ? 'Welcome Operation Dashboard' : 
+                                     'Welcome Potato Dashboard'}
                                 </h1>
-                                <p className="text-[11px] font-bold text-geex-muted uppercase tracking-widest opacity-60">
-                                    {activeTab === 'dashboard' ? 'Welcome to Potato Modern Admin Dashboard' : 
-                                     `Exploring ${activeTab.toUpperCase()} Performance Data`}
-                                </p>
                              </div>
-                             
                              <div className="flex items-center gap-10">
-                                <div className="flex items-center bg-white rounded-2xl shadow-sm border border-slate-50 p-1">
-                                    <span className="px-5 py-2 text-[9px] font-black text-geex-muted uppercase border-r border-slate-50 tracking-widest whitespace-nowrap">Tuần SOP</span>
-                                    <div className="flex items-center px-2">
-                                         <button onClick={() => setActiveWeek(w => Math.max(12, w-1))} className="p-2 text-geex-muted hover:text-potato-magenta hover:bg-rose-50 rounded-xl transition-all"><Icon name="ph-caret-left" /></button>
-                                         <span className="px-4 text-sm font-black text-geex-text min-w-[40px] text-center">{activeWeek}</span>
-                                         {activeWeek < 14 && (
-                                             <button onClick={() => setActiveWeek(w => Math.min(14, w+1))} className="p-2 text-geex-muted hover:text-potato-magenta hover:bg-rose-50 rounded-xl transition-all animate-fade-in"><Icon name="ph-caret-right" /></button>
-                                         )}
+                                <div className="flex items-center px-4 py-2.5 bg-slate-50 rounded-2xl border border-slate-100 shadow-inner">
+                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-r border-slate-200 pr-4 mr-4">Tuần SOP</span>
+                                    <div className="flex items-center gap-4">
+                                         <button onClick={() => setActiveWeek(w => Math.max(12, w-1))} className="text-slate-400 hover:text-potato-magenta transition-colors"><Icon name="ph-caret-left" /></button>
+                                         <span className="text-sm font-black text-slate-900 min-w-[20px] text-center">{activeWeek}</span>
+                                         {activeWeek < 14 && <button onClick={() => setActiveWeek(w => Math.min(14, w+1))} className="text-slate-400 hover:text-potato-magenta transition-colors"><Icon name="ph-caret-right" /></button>}
                                     </div>
                                 </div>
-
-                                <div className="flex gap-6 items-center">
-                                    <div className="relative cursor-pointer group p-3 bg-white rounded-2xl shadow-sm border border-slate-50 hover:border-potato-magenta/20 transition-all">
-                                        <Icon name="ph-chat-circle-dots" className="text-xl text-geex-muted group-hover:text-potato-magenta" />
-                                        <span className="absolute -top-1 -right-1 w-5 h-5 bg-amber-400 text-[10px] font-black text-white rounded-lg flex items-center justify-center border-2 border-white">84</span>
+                                <div className="flex items-center gap-6 border-l pl-10 border-slate-100">
+                                    <div className="relative p-2 rounded-xl bg-slate-50 text-slate-400 hover:text-slate-800 transition-colors cursor-pointer group">
+                                        <Icon name="ph-bell-simple" className="text-xl" />
+                                        <span className="absolute top-2 right-2 w-2 h-2 bg-rose-500 rounded-full border-2 border-white" />
                                     </div>
-                                    <div className="relative cursor-pointer group p-3 bg-white rounded-2xl shadow-sm border border-slate-50 hover:border-potato-magenta/20 transition-all">
-                                        <Icon name="ph-bell-simple" className="text-xl text-geex-muted group-hover:text-potato-magenta" />
-                                        <span className="absolute -top-1 -right-1 w-5 h-5 bg-potato-blue text-[10px] font-black text-white rounded-lg flex items-center justify-center border-2 border-white">2</span>
-                                    </div>
-                                </div>
-                                <div className="flex items-center gap-4 border-l pl-10 border-slate-200">
-                                    <div className="w-12 h-12 rounded-3xl bg-slate-100 border-2 border-white shadow-md overflow-hidden flex items-center justify-center group cursor-pointer hover:border-potato-magenta transition-all">
-                                        <Icon name="ph-user-focus" className="text-2xl text-slate-400 group-hover:text-potato-magenta" />
+                                    <div className="flex items-center gap-4">
+                                        <div className="text-right hidden md:block">
+                                            <p className="text-[12px] font-black text-slate-900 leading-tight">Admin Potato</p>
+                                            <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">Operation Lead</p>
+                                        </div>
+                                        <div className="w-11 h-11 rounded-2xl bg-slate-900 flex items-center justify-center text-white text-xs font-black shadow-lg shadow-slate-900/20">AP</div>
                                     </div>
                                 </div>
                              </div>
                         </header>
 
-                        <main className="flex-1 overflow-y-auto p-12 pt-4 no-scrollbar">
+                        <main className="flex-1 overflow-y-auto no-scrollbar p-10">
                             <div className="max-w-[1600px] mx-auto">
-                                {activeTab === 'operation' && activeWeek === 14 && (
-                                    <div className="flex justify-end gap-3 mb-8 animate-fade-in">
-                                        <button className="px-6 py-3 bg-white rounded-2xl text-[11px] font-black uppercase tracking-widest text-geex-text flex items-center gap-2 hover:bg-slate-50 transition-all shadow-sm border border-slate-50">
-                                            <Icon name="ph-printer" /> Export Report
-                                        </button>
-                                        <button className="px-6 py-3 bg-potato-magenta text-white rounded-2xl text-[11px] font-black uppercase tracking-widest flex items-center gap-2 hover:bg-potato-magenta/90 transition-all shadow-lg shadow-rose-100">
-                                             <Icon name="ph-file-text" /> Management Overview
-                                        </button>
-                                    </div>
-                                )}
-
                                 {renderContent()}
                             </div>
                         </main>
-                        
-                        <footer className="px-10 py-5 bg-white border-t border-slate-100 flex justify-between items-center">
-                            <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">POTATO Ops Intelligence System &copy; 2026</p>
-                            <div className="flex gap-8">
-                                <span className="text-[10px] font-black text-slate-400 hover:text-potato-magenta cursor-pointer transition-colors">Documentation</span>
-                                <span className="text-[10px] font-black text-slate-400 hover:text-potato-magenta cursor-pointer transition-colors">Support</span>
-                                <span className="text-[10px] font-black text-potato-magenta cursor-pointer animate-pulse">Live Status</span>
-                            </div>
-                        </footer>
                     </div>
                 </div>
             );
