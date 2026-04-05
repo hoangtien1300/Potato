@@ -21,7 +21,27 @@
     <style>
         body {
             font-family: 'Quicksand', sans-serif;
-            background-color: #F8FAFC;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            min-height: 100vh;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            transition: all 0.3s ease;
+        }
+        .glass-card:hover {
+            background: rgba(255, 255, 255, 0.8);
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.1);
         }
         .no-scrollbar::-webkit-scrollbar {
             display: none;
@@ -48,12 +68,12 @@
                 extend: {
                     colors: {
                         potato: {
-                            magenta: '#D81B60',
-                            red: '#E53935',
-                            blue: '#1E88E5',
-                            purple: '#9C27B0',
-                            orange: '#FB8C00',
-                            yellow: '#FFB300'
+                            magenta: '#E91E63',
+                            red: '#D32F2F',
+                            blue: '#1976D2',
+                            green: '#388E3C',
+                            yellow: '#FBC02D',
+                            lightBlue: '#0097A7'
                         }
                     }
                 }
@@ -73,7 +93,7 @@
         const Icon = ({ name, className = "" }) => <i className={`ph ${name} ${className}`} style={{ fontSize: 'inherit' }} />;
 
         const StatCard = ({ title, value, change, trend, icon, color, bg }) => (
-            <div className="bg-white rounded-[24px] p-6 border border-slate-100 shadow-sm flex flex-col justify-between hover:shadow-md transition-all duration-300 group">
+            <div className="glass-card rounded-[24px] p-6 flex flex-col justify-between group">
                 <div className="flex justify-between items-start">
                     <div>
                         <p className="text-[11px] font-bold text-slate-500 mb-1 uppercase tracking-wider">{title}</p>
@@ -106,12 +126,12 @@
             };
 
             return (
-                <div className="bg-white rounded-[24px] border border-slate-100 shadow-sm overflow-hidden animate-fade-in">
-                    <div className="p-6 border-b border-slate-50 flex justify-between items-center sm:flex-row flex-col gap-4">
+                <div className="glass-card rounded-[24px] overflow-hidden animate-fade-in">
+                    <div className="p-6 border-b border-white/20 flex justify-between items-center sm:flex-row flex-col gap-4">
                         <h3 className="text-lg font-bold text-slate-800 tracking-tight">Danh sách Lớp & Vận Hành</h3>
                         <div className="flex items-center gap-2">
                              <span className="text-xs font-bold text-slate-400 uppercase">Sắp xếp:</span>
-                             <select className="text-xs font-bold text-slate-600 bg-slate-50 border-none outline-none rounded-lg px-2 py-1">
+                             <select className="text-xs font-bold text-slate-600 bg-white/50 border-none outline-none rounded-lg px-2 py-1">
                                 <option>Mã lớp</option>
                                 <option>Giáo viên</option>
                              </select>
@@ -120,7 +140,7 @@
                     <div className="overflow-x-auto no-scrollbar">
                         <table className="w-full text-left border-collapse min-w-[600px]">
                             <thead>
-                                <tr className="bg-slate-50/50 text-slate-500 text-[11px] uppercase tracking-wider font-extrabold">
+                                <tr className="bg-white/30 text-slate-500 text-[11px] uppercase tracking-wider font-extrabold">
                                     <th className="p-4 pl-6">Mã Lớp / Tên Khóa</th>
                                     <th className="p-4">Sĩ số</th>
                                     <th className="p-4">Giáo Viên</th>
@@ -128,9 +148,9 @@
                                     <th className="p-4 text-right pr-6">Hành động</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-slate-50 text-[14px]">
+                            <tbody className="divide-y divide-white/10 text-[14px]">
                                 {data.map((item, idx) => (
-                                    <tr key={idx} className="hover:bg-slate-50/50 transition-colors group">
+                                    <tr key={idx} className="hover:bg-white/40 transition-colors group">
                                         <td className="p-4 pl-6 font-bold text-slate-800 group-hover:text-potato-blue">{item.name}</td>
                                         <td className="p-4 text-slate-600 font-medium">{item.students} học viên</td>
                                         <td className="p-4 text-slate-600">{item.teacher}</td>
@@ -168,13 +188,13 @@
             const style = statusConfig[data.status] || statusConfig["Đúng Tiến Độ"];
 
             return (
-                <div className="bg-white rounded-[24px] p-1 border border-slate-100 shadow-sm relative overflow-hidden group animate-fade-in">
-                    <div className="bg-white rounded-[20px] p-6">
-                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 border-b border-slate-50 pb-5">
+                <div className="glass-card rounded-[24px] p-1 relative overflow-hidden group animate-fade-in shadow-lg">
+                    <div className="rounded-[20px] p-6">
+                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 border-b border-white/20 pb-5">
                             <div>
                                 <div className="flex items-center gap-3 mb-2">
                                     <span className="px-3 py-1 bg-gradient-to-r from-potato-magenta to-potato-red text-white text-[10px] font-black rounded-full uppercase tracking-tighter">Trọng tâm {department}</span>
-                                    <span className="text-xs font-black text-slate-300 flex items-center">
+                                    <span className="text-xs font-black text-slate-400 flex items-center">
                                         <Icon name="ph-calendar-blank" className="mr-1" /> Tuần {week}
                                     </span>
                                 </div>
@@ -187,19 +207,19 @@
                             </div>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            <div className="bg-slate-50/50 rounded-2xl p-5 border border-slate-100 hover:bg-white hover:shadow-sm transition-all duration-300">
+                            <div className="bg-white/40 rounded-2xl p-5 border border-white/40 hover:bg-white/60 transition-all duration-300">
                                 <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-1.5 leading-none">
                                     <Icon name="ph-sparkle" className="text-potato-yellow" /> Kế Hoạch
                                 </h4>
                                 <p className="text-slate-600 text-[13px] leading-relaxed font-medium">{data.plan}</p>
                             </div>
-                            <div className="bg-slate-50/50 rounded-2xl p-5 border border-slate-100 hover:bg-white hover:shadow-sm transition-all duration-300">
+                            <div className="bg-white/40 rounded-2xl p-5 border border-white/40 hover:bg-white/60 transition-all duration-300">
                                 <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-1.5 leading-none">
                                     <Icon name="ph-chart-line-up" className="text-potato-blue" /> Kết Quả
                                 </h4>
                                 <p className="text-slate-600 text-[13px] leading-relaxed font-medium">{data.result}</p>
                             </div>
-                            <div className="bg-potato-magenta/5 rounded-2xl p-5 border border-potato-magenta/10 hover:bg-white hover:shadow-sm transition-all duration-300">
+                            <div className="bg-potato-magenta/5 rounded-2xl p-5 border border-potato-magenta/10 hover:bg-white/60 transition-all duration-300">
                                 <h4 className="text-[10px] font-black text-potato-magenta uppercase tracking-widest mb-3 flex items-center gap-1.5 leading-none">
                                     <Icon name="ph-lightning" /> Hành Động
                                 </h4>
@@ -277,61 +297,61 @@
                                         <MasterTable data={MASTER_CLASSES.slice(0, 7)} />
                                     </div>
                                     <div className="space-y-8">
-                                        <div className="bg-slate-900 rounded-[32px] p-8 text-white overflow-hidden relative shadow-xl shadow-slate-900/20">
-                                            <div className="absolute -top-10 -right-10 w-40 h-40 bg-potato-magenta opacity-10 rounded-full blur-3xl" />
-                                            <h3 className="text-lg font-black mb-6 relative z-10 flex items-center gap-2">
-                                                <Icon name="ph-bell-simple" className="text-potato-magenta" /> Thông báo
-                                            </h3>
-                                            <div className="space-y-6 relative z-10">
-                                                <div className="flex gap-4 group cursor-pointer">
-                                                    <div className="w-2.5 h-2.5 rounded-full bg-rose-500 mt-1.5 flex-shrink-0" />
-                                                    <div>
-                                                        <p className="text-[13px] font-bold leading-snug group-hover:text-potato-magenta transition-colors">Lỡ hạn SLA dự giờ tại Cơ sở D</p>
-                                                        <p className="text-[11px] text-slate-500 font-bold mt-1">2 giờ trước</p>
+                                            <div className="glass-panel text-slate-900 rounded-[32px] p-8 overflow-hidden relative shadow-xl">
+                                                <div className="absolute -top-10 -right-10 w-40 h-40 bg-potato-magenta opacity-10 rounded-full blur-3xl" />
+                                                <h3 className="text-lg font-black mb-6 relative z-10 flex items-center gap-2">
+                                                    <Icon name="ph-bell-simple" className="text-potato-magenta" /> Thông báo
+                                                </h3>
+                                                <div className="space-y-6 relative z-10">
+                                                    <div className="flex gap-4 group cursor-pointer">
+                                                        <div className="w-2.5 h-2.5 rounded-full bg-rose-500 mt-1.5 flex-shrink-0" />
+                                                        <div>
+                                                            <p className="text-[13px] font-bold leading-snug group-hover:text-potato-magenta transition-colors">Lỡ hạn SLA dự giờ tại Cơ sở D</p>
+                                                            <p className="text-[11px] text-slate-500 font-bold mt-1">2 giờ trước</p>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex gap-4 group cursor-pointer">
+                                                        <div className="w-2.5 h-2.5 rounded-full bg-amber-500 mt-1.5 flex-shrink-0" />
+                                                        <div>
+                                                            <p className="text-[13px] font-bold leading-snug group-hover:text-potato-yellow transition-colors">Tỷ lệ thu phí giảm ngưỡng 90%</p>
+                                                            <p className="text-[11px] text-slate-500 font-bold mt-1">5 giờ trước</p>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex gap-4 group cursor-pointer">
+                                                        <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 mt-1.5 flex-shrink-0" />
+                                                        <div>
+                                                            <p className="text-[13px] font-bold leading-snug group-hover:text-emerald-600 transition-colors">Giáo trình Kids mới đã duyệt</p>
+                                                            <p className="text-[11px] text-slate-500 font-bold mt-1">1 ngày trước</p>
+                                                        </div>
                                                     </div>
                                                 </div>
-                                                <div className="flex gap-4 group cursor-pointer">
-                                                    <div className="w-2.5 h-2.5 rounded-full bg-amber-500 mt-1.5 flex-shrink-0" />
+                                                <button className="w-full mt-10 py-3 bg-white/40 hover:bg-white/60 border border-white/20 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all">Tất cả thông báo</button>
+                                            </div>
+                                            <div className="glass-card rounded-[32px] p-8 space-y-6">
+                                                <h3 className="text-slate-800 font-black flex items-center gap-2">
+                                                    <Icon name="ph-target" className="text-potato-blue" /> Mục tiêu Q2
+                                                </h3>
+                                                <div className="space-y-6">
                                                     <div>
-                                                        <p className="text-[13px] font-bold leading-snug group-hover:text-potato-yellow transition-colors">Tỷ lệ thu phí giảm ngưỡng 90%</p>
-                                                        <p className="text-[11px] text-slate-500 font-bold mt-1">5 giờ trước</p>
+                                                        <div className="flex justify-between text-xs font-black mb-2 px-1">
+                                                            <span className="text-slate-500">Phát triển học viên mới</span>
+                                                            <span className="text-potato-blue">75%</span>
+                                                        </div>
+                                                        <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
+                                                            <div className="bg-potato-blue h-full rounded-full transition-all duration-1000" style={{width: '75%'}} />
+                                                        </div>
                                                     </div>
-                                                </div>
-                                                <div className="flex gap-4 group cursor-pointer">
-                                                    <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 mt-1.5 flex-shrink-0" />
                                                     <div>
-                                                        <p className="text-[13px] font-bold leading-snug group-hover:text-emerald-400 transition-colors">Giáo trình Kids mới đã duyệt</p>
-                                                        <p className="text-[11px] text-slate-500 font-bold mt-1">1 ngày trước</p>
+                                                        <div className="flex justify-between text-xs font-black mb-2 px-1">
+                                                            <span className="text-slate-500">Retention Rate</span>
+                                                            <span className="text-potato-green">92%</span>
+                                                        </div>
+                                                        <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
+                                                            <div className="bg-potato-green h-full rounded-full transition-all duration-1000" style={{width: '92%'}} />
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
-                                            <button className="w-full mt-10 py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all">Tất cả thông báo</button>
-                                        </div>
-                                        <div className="bg-white rounded-[32px] p-8 border border-slate-100 shadow-sm space-y-6">
-                                            <h3 className="text-slate-800 font-black flex items-center gap-2">
-                                                <Icon name="ph-target" className="text-potato-blue" /> Mục tiêu Q2
-                                            </h3>
-                                            <div className="space-y-6">
-                                                <div>
-                                                    <div className="flex justify-between text-xs font-black mb-2 px-1">
-                                                        <span className="text-slate-500">Phát triển học viên mới</span>
-                                                        <span className="text-potato-blue">75%</span>
-                                                    </div>
-                                                    <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
-                                                        <div className="bg-potato-blue h-full rounded-full transition-all duration-1000" style={{width: '75%'}} />
-                                                    </div>
-                                                </div>
-                                                <div>
-                                                    <div className="flex justify-between text-xs font-black mb-2 px-1">
-                                                        <span className="text-slate-500">Retention Rate</span>
-                                                        <span className="text-potato-purple">92%</span>
-                                                    </div>
-                                                    <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
-                                                        <div className="bg-potato-purple h-full rounded-full transition-all duration-1000" style={{width: '92%'}} />
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -362,12 +382,12 @@
             return (
                 <div className="flex h-screen overflow-hidden">
                     {/* SIDEBAR */}
-                    <aside className={`bg-white border-r border-slate-100 flex flex-col sidebar-transition z-50 ${isSidebarOpen ? 'w-[260px]' : 'w-[80px]'}`}>
-                        <div className="h-[72px] flex items-center px-6 border-b border-slate-50 overflow-hidden">
-                            <div className="w-9 h-9 bg-gradient-to-br from-potato-magenta to-potato-red rounded-2xl flex items-center justify-center mr-4 shadow-lg shadow-rose-500/30 flex-shrink-0 animate-pulse">
-                                <span className="text-white font-black text-xl leading-none">P</span>
+                    <aside className={`glass-panel border-r border-white/20 flex flex-col sidebar-transition z-50 ${isSidebarOpen ? 'w-[260px]' : 'w-[80px]'}`}>
+                        <div className="h-[72px] flex items-center px-6 border-b border-white/10 overflow-hidden">
+                            <div className="w-10 h-10 rounded-xl overflow-hidden flex items-center justify-center mr-4 flex-shrink-0">
+                                <img src="https://raw.githubusercontent.com/hoangtien1300/Potato/main/logo_potato.jpg" alt="Potato Logo" className="w-full h-full object-cover" />
                             </div>
-                            {isSidebarOpen && <span className="font-black text-[22px] tracking-tighter text-slate-800 whitespace-nowrap">POTATO <span className="text-potato-magenta">SYNC</span></span>}
+                            {isSidebarOpen && <span className="font-black text-[22px] tracking-tighter text-slate-800 whitespace-nowrap uppercase">Potato <span className="text-potato-magenta">Admin</span></span>}
                         </div>
                         <nav className="flex-1 px-4 py-10 space-y-2">
                             {isSidebarOpen && <div className="text-[10px] font-black text-slate-300 uppercase tracking-widest mb-6 px-4">Menu Vận Hành</div>}
@@ -394,23 +414,23 @@
                     </aside>
 
                     {/* MAIN */}
-                    <div className="flex-1 flex flex-col min-w-0 bg-[#F8FAFC]">
-                        <header className="h-[72px] px-10 flex items-center justify-between border-b border-slate-100 bg-white/80 backdrop-blur-xl sticky top-0 z-40">
+                    <div className="flex-1 flex flex-col min-w-0">
+                        <header className="h-[72px] px-10 flex items-center justify-between border-b border-white/20 bg-white/30 backdrop-blur-xl sticky top-0 z-40">
                              <div className="relative w-80 hidden md:block">
-                                <Icon name="ph-magnifying-glass" className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" />
-                                <input type="text" placeholder="Tìm kiếm nhanh..." className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-transparent rounded-2xl text-[13px] focus:outline-none focus:bg-white focus:border-rose-100 transition-all font-bold text-slate-700" />
+                                <Icon name="ph-magnifying-glass" className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                                <input type="text" placeholder="Tìm kiếm nhanh..." className="w-full pl-12 pr-4 py-3 bg-white/40 border border-transparent rounded-2xl text-[13px] focus:outline-none focus:bg-white/60 focus:border-white/40 transition-all font-bold text-slate-700 placeholder-slate-400" />
                              </div>
                              <div className="flex items-center gap-8">
-                                <div className="relative cursor-pointer group p-2 rounded-xl hover:bg-slate-50 transition-all">
-                                    <Icon name="ph-bell-simple" className="text-xl text-slate-400 group-hover:text-slate-700" />
+                                <div className="relative cursor-pointer group p-2 rounded-xl hover:bg-white/40 transition-all">
+                                    <Icon name="ph-bell-simple" className="text-xl text-slate-500 group-hover:text-slate-800" />
                                     <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-rose-500 rounded-full border-2 border-white ring-2 ring-rose-500/20" />
                                 </div>
-                                <div className="flex items-center gap-4 border-l pl-8 border-slate-100">
+                                <div className="flex items-center gap-4 border-l pl-8 border-white/20">
                                     <div className="text-right hidden sm:block">
-                                        <p className="text-[13px] font-black text-slate-800 leading-tight">Master Admin</p>
-                                        <p className="text-[10px] text-rose-500 font-black uppercase tracking-widest mt-0.5">Potato Operator</p>
+                                        <p className="text-[13px] font-black text-slate-800 leading-tight">Potato Admin</p>
+                                        <p className="text-[10px] text-rose-500 font-black uppercase tracking-widest mt-0.5">Management</p>
                                     </div>
-                                    <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-potato-magenta to-potato-red border-2 border-white shadow-lg flex items-center justify-center font-black text-white text-xs ring-4 ring-rose-50">MA</div>
+                                    <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-potato-magenta to-potato-red border-2 border-white/50 shadow-lg flex items-center justify-center font-black text-white text-xs ring-4 ring-white/20">PA</div>
                                 </div>
                              </div>
                         </header>
@@ -419,15 +439,15 @@
                             <div className="max-w-7xl mx-auto space-y-10">
                                 <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-8">
                                     <div>
-                                        <p className="text-[10px] font-black text-rose-400 uppercase tracking-[0.2em] mb-2 leading-none">Management Dashboard / v6.1</p>
-                                        <h1 className="text-4xl font-black text-slate-900 tracking-tight leading-none">Xin chào Master Operator!</h1>
+                                        <p className="text-[10px] font-black text-rose-400 uppercase tracking-[0.2em] mb-2 leading-none">Management Dashboard / v6.2</p>
+                                        <h1 className="text-4xl font-black text-slate-900 tracking-tight leading-none">Welcome Potato Dashboard</h1>
                                     </div>
-                                    <div className="flex items-center bg-white p-2 rounded-[22px] shadow-sm border border-slate-100 ring-4 ring-slate-100/30">
-                                        <span className="px-5 py-2.5 text-[10px] font-black text-slate-400 uppercase border-r border-slate-100 tracking-widest">Tuần SOP Hiện Tại</span>
+                                    <div className="flex items-center glass-card p-2 rounded-[22px] ring-4 ring-white/20">
+                                        <span className="px-5 py-2.5 text-[10px] font-black text-slate-400 uppercase border-r border-white/20 tracking-widest">Tuần SOP Hiện Tại</span>
                                         <div className="flex items-center px-2">
-                                             <button onClick={() => setActiveWeek(w => Math.max(12, w-1))} className="p-2.5 text-slate-300 hover:text-potato-magenta hover:bg-rose-50 rounded-xl transition-all"><Icon name="ph-caret-left" /></button>
+                                             <button onClick={() => setActiveWeek(w => Math.max(12, w-1))} className="p-2.5 text-slate-400 hover:text-potato-magenta hover:bg-rose-50 rounded-xl transition-all"><Icon name="ph-caret-left" /></button>
                                              <span className="px-5 text-sm font-black text-slate-900 min-w-[80px] text-center">{activeWeek}</span>
-                                             <button onClick={() => setActiveWeek(w => Math.min(16, w+1))} className="p-2.5 text-slate-300 hover:text-potato-magenta hover:bg-rose-50 rounded-xl transition-all"><Icon name="ph-caret-right" /></button>
+                                             <button onClick={() => setActiveWeek(w => Math.min(16, w+1))} className="p-2.5 text-slate-400 hover:text-potato-magenta hover:bg-rose-50 rounded-xl transition-all"><Icon name="ph-caret-right" /></button>
                                         </div>
                                     </div>
                                 </div>
