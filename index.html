@@ -174,11 +174,22 @@
         };
 
         const LeaderReportView = () => {
-            const reports = [
+             const reports = [
                 { title: "Upload Ảnh Học Sinh", value: "90%", sub: "Trừ Movers HD & lý do cá nhân (5%)", icon: "ph-camera", color: "text-blue-600", border: "border-l-4 border-l-blue-500" },
                 { title: "Cập Nhật Lịch Khóa", value: "80%", sub: "Ngô Quyền đang cập nhật", icon: "ph-calendar", color: "text-emerald-600", border: "border-l-4 border-l-emerald-500" },
                 { title: "Đăng Ký Ôn Thi HK2", value: "13 HS", sub: "9 Ngô Quyền, 4 Hưng Định", icon: "ph-graduation-cap", color: "text-purple-600", border: "border-l-4 border-l-purple-500" },
                 { title: "Đề Ôn Thi HK2", value: "Đang Xử Lý", sub: "Dự kiến hoàn thành: 01-05/04", icon: "ph-books", color: "text-amber-600", border: "border-l-4 border-l-amber-500" }
+            ];
+
+            const uploadBreakdown = [
+                { label: "Đã có hình", value: "90%", color: "bg-blue-500", width: "w-[90%]" },
+                { label: "Thiếu: Movers - Hưng Định", value: "5%", color: "bg-amber-500", width: "w-[5%]" },
+                { label: "Thiếu: Lý do khác (vắng mặt/chưa chụp)", value: "5%", color: "bg-rose-500", width: "w-[5%]" }
+            ];
+
+            const semesterBreakdown = [
+                { campus: "Ngô Quyền", count: 9, percentage: "69%", pic: "Ms. Ngân", color: "bg-indigo-500" },
+                { campus: "Hưng Định", count: 4, percentage: "31%", pic: "Ms. Trân", color: "bg-potato-magenta" }
             ];
 
             const issues = [
@@ -188,52 +199,136 @@
             ];
 
             return (
-                <div className="space-y-8 animate-fade-in">
-                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center bg-white/40 p-6 rounded-[24px] border border-white/20 backdrop-blur-md gap-4">
+                <div className="space-y-8 animate-fade-in pb-12">
+                    {/* Header */}
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center bg-white/40 p-6 rounded-[24px] border border-white/20 backdrop-blur-md gap-4 shadow-sm">
                         <div>
                             <h2 className="text-2xl font-black text-slate-800 tracking-tight">Leader Weekly Report</h2>
                             <p className="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-[0.2em]">Latest Update: 30th March</p>
                         </div>
-                        <button className="px-6 py-2.5 bg-indigo-50 text-indigo-700 rounded-xl text-xs font-black flex items-center gap-2 hover:bg-indigo-100 transition-all border border-indigo-100 shadow-sm">
-                             <Icon name="ph-file-text" /> Management Overview
-                        </button>
+                        <div className="flex gap-3">
+                            <button className="px-5 py-2 bg-white/60 text-slate-700 rounded-xl text-xs font-black flex items-center gap-2 hover:bg-white transition-all border border-white/40 shadow-sm">
+                                <Icon name="ph-printer" /> Export
+                            </button>
+                            <button className="px-6 py-2.5 bg-indigo-50 text-indigo-700 rounded-xl text-xs font-black flex items-center gap-2 hover:bg-indigo-100 transition-all border border-indigo-100 shadow-sm">
+                                 <Icon name="ph-file-text" /> Management Overview
+                            </button>
+                        </div>
                     </div>
 
+                    {/* KPI Grid */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                         {reports.map((report, i) => (
-                            <div key={i} className={`glass-card rounded-[24px] p-6 flex flex-col justify-between group overflow-hidden relative ${report.border}`}>
+                            <div key={i} className={`glass-card rounded-[24px] p-6 flex flex-col justify-between group overflow-hidden relative ${report.border} hover:scale-[1.02] transition-all cursor-default`}>
                                 <div className="flex justify-between items-start relative z-10">
                                     <div>
                                         <p className="text-[11px] font-black text-slate-500 mb-1 uppercase tracking-wider">{report.title}</p>
                                         <h3 className="text-3xl font-black text-slate-800 tracking-tight">{report.value}</h3>
                                     </div>
-                                    <div className={`p-2.5 rounded-xl bg-white/50 text-2xl ${report.color} shadow-sm`}>
+                                    <div className={`p-2.5 rounded-xl bg-white/50 text-2xl shadow-sm ${report.color}`}>
                                         <Icon name={report.icon} />
                                     </div>
                                 </div>
                                 <p className="mt-4 text-[11px] font-bold text-slate-400 leading-tight relative z-10">{report.sub}</p>
-                                <div className={`absolute -right-4 -bottom-4 text-6xl opacity-[0.03] rotate-12 ${report.color}`}>
+                                <div className={`absolute -right-4 -bottom-4 text-7xl opacity-[0.03] rotate-12 ${report.color}`}>
                                     <Icon name={report.icon} />
                                 </div>
                             </div>
                         ))}
                     </div>
 
-                    <div className="glass-card rounded-[32px] p-8 border-l-4 border-l-rose-500 relative overflow-hidden">
+                    {/* Analytics Section */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        {/* Phân Bổ Upload */}
+                        <div className="glass-card rounded-[32px] p-8 flex flex-col h-full bg-white/30 backdrop-blur-xl border border-white/40">
+                            <h3 className="text-lg font-black text-slate-800 mb-8 flex items-center gap-2">
+                                <Icon name="ph-chart-pie-slice" className="text-blue-500" /> Phân Bổ Upload Ảnh Học Sinh
+                            </h3>
+                            <div className="flex flex-col md:flex-row items-center gap-10 flex-1">
+                                <div className="relative w-48 h-48 flex items-center justify-center shrink-0">
+                                    <svg className="w-full h-full transform -rotate-90">
+                                        <circle cx="96" cy="96" r="80" stroke="currentColor" strokeWidth="24" fill="transparent" className="text-slate-100" />
+                                        <circle cx="96" cy="96" r="80" stroke="currentColor" strokeWidth="24" fill="transparent" strokeDasharray="502 502" strokeDashoffset="50.2" className="text-blue-500" />
+                                        <circle cx="96" cy="96" r="80" stroke="currentColor" strokeWidth="24" fill="transparent" strokeDasharray="25.1 502" strokeDashoffset="-452" className="text-amber-500" />
+                                        <circle cx="96" cy="96" r="80" stroke="currentColor" strokeWidth="24" fill="transparent" strokeDasharray="25.1 502" strokeDashoffset="-477.1" className="text-rose-500" />
+                                    </svg>
+                                    <div className="absolute flex flex-col items-center">
+                                        <span className="text-4xl font-black text-slate-800 leading-none">90%</span>
+                                        <span className="text-[10px] font-bold text-slate-400 uppercase mt-1">Average</span>
+                                    </div>
+                                </div>
+                                <div className="flex-1 w-full space-y-4">
+                                    {uploadBreakdown.map((item, i) => (
+                                        <div key={i} className="space-y-1.5 group">
+                                            <div className="flex justify-between items-center text-[12px]">
+                                                <span className="font-bold text-slate-600 flex items-center gap-2">
+                                                    <div className={`w-2 h-2 rounded-full ${item.color}`} /> {item.label}
+                                                </span>
+                                                <span className="font-black text-slate-800 tracking-tight">{item.value}</span>
+                                            </div>
+                                            <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+                                                <div className={`h-full ${item.color} rounded-full transition-all duration-1000 ${item.width}`} />
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Phân Bổ Ôn Thi */}
+                        <div className="glass-card rounded-[32px] p-8 bg-white/30 backdrop-blur-xl border border-white/40">
+                             <h3 className="text-lg font-black text-slate-800 mb-8 flex items-center gap-2">
+                                <Icon name="ph-users-three" className="text-indigo-500" /> Phân Bổ Ôn Thi Học Kỳ 2
+                            </h3>
+                            <div className="space-y-8">
+                                {semesterBreakdown.map((item, i) => (
+                                    <div key={i} className="flex items-center gap-6 group">
+                                        <div className="w-16 h-16 rounded-[20px] bg-slate-50 border border-slate-100 flex flex-col items-center justify-center shrink-0">
+                                            <span className="text-2xl font-black text-slate-800">{item.count}</span>
+                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Students</span>
+                                        </div>
+                                        <div className="flex-1 space-y-2">
+                                            <div className="flex justify-between items-end">
+                                                <div>
+                                                    <h4 className="text-sm font-black text-slate-800">Chi nhánh {item.campus}</h4>
+                                                    <p className="text-[11px] font-bold text-slate-400 mt-0.5">PIC: <span className="text-indigo-600">{item.pic}</span></p>
+                                                </div>
+                                                <span className="text-lg font-black text-slate-800 tracking-tighter">{item.percentage}</span>
+                                            </div>
+                                            <div className="h-3 w-full bg-slate-50 rounded-full overflow-hidden border border-slate-100/50">
+                                                <div className={`h-full ${item.color} rounded-full group-hover:opacity-80 transition-all duration-700 w-[${item.percentage}]`} style={{ width: item.percentage }} />
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                                <div className="mt-4 p-4 rounded-2xl bg-indigo-50/50 border border-indigo-100/50">
+                                    <p className="text-[12px] font-bold text-indigo-700 leading-relaxed text-center">
+                                         Tổng cộng 13 học sinh đã đăng ký ôn thi (PIC quản lý sát tiến độ)
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Issues Alert Panel */}
+                    <div className="glass-card rounded-[32px] p-8 border-l-4 border-l-rose-500 relative overflow-hidden bg-white/40">
                         <div className="absolute top-0 right-0 p-8 opacity-[0.02] text-9xl text-rose-500 rotate-12 pointer-events-none">
                              <Icon name="ph-warning-octagon" />
                         </div>
                         <div className="flex items-center gap-4 mb-8 relative z-10">
-                             <div className="w-12 h-12 bg-rose-50 rounded-2xl flex items-center justify-center shadow-sm border border-rose-100">
+                             <div className="w-12 h-12 bg-rose-50 rounded-2xl flex items-center justify-center shadow-sm border border-rose-100 animate-pulse">
                                 <Icon name="ph-warning-octagon" className="text-2xl text-rose-500" />
                              </div>
-                             <h3 className="text-xl font-black text-slate-900 tracking-tight">Issues: Thiếu tư vấn viên trực ca</h3>
+                             <div>
+                                <h3 className="text-xl font-black text-slate-900 tracking-tight leading-none">Issues: Thiếu tư vấn viên trực ca</h3>
+                                <p className="text-[11px] font-bold text-rose-400 mt-2 uppercase tracking-wider">Critical staffing shortages detected</p>
+                             </div>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative z-10">
                             {issues.map((issue, i) => (
                                 <div key={i} className="bg-white/40 p-6 rounded-2xl border border-white/40 hover:bg-white/60 hover:shadow-md transition-all duration-300">
                                     <h4 className="text-[10px] font-black text-rose-500 uppercase tracking-[0.1em] mb-3 flex items-center gap-2">
-                                        <div className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" /> {issue.date}
+                                        <div className="w-1.5 h-1.5 rounded-full bg-rose-500" /> {issue.date}
                                     </h4>
                                     <p className="text-slate-800 text-[14px] font-bold leading-relaxed">{issue.detail}</p>
                                 </div>
@@ -349,10 +444,10 @@
 
             const navigation = [
                 { id: 'dashboard', name: 'Tổng Quan', icon: 'ph-gauge-high' },
-                { id: 'leader_report', name: 'Leader Weekly Report', icon: 'ph-clipboard-text' },
                 { id: 'teacher', name: 'Giáo Viên', icon: 'ph-users-three' },
                 { id: 'academic', name: 'Học Thuật', icon: 'ph-book-open' },
-                { id: 'operation', name: 'Vận Hành', icon: 'ph-briefcase' }
+                { id: 'operation', name: 'Vận Hành', icon: 'ph-briefcase' },
+                { id: 'leader_report', name: 'Leader Weekly Report', icon: 'ph-clipboard-text' }
             ];
 
             const renderContent = () => {
