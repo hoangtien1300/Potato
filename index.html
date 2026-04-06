@@ -65,8 +65,8 @@
                 extend: {
                     colors: {
                         potato: {
-                            magenta: '#D81B60',
-                            blue: '#1E88E5',
+                            magenta: '#00aeef',
+                            blue: '#00aeef',
                             yellow: '#FFC107',
                             dark: '#0F172A',
                             slate: '#F8F9FE'
@@ -983,10 +983,10 @@
 
         const Sidebar = ({ activeTab, setActiveTab, isOpen, toggleOpen, isMobile, setMobileOpen }) => {
             const menuItems = [
-                { id: 'dashboard', label: 'Tổng Quan', icon: 'ph-squares-four' },
-                { id: 'teacher', label: 'Giáo Viên', icon: 'ph-user-focus' },
-                { id: 'academic', label: 'Học Thuật', icon: 'ph-graduation-cap' },
-                { id: 'operation', label: 'Vận Hành', icon: 'ph-gear-six' }
+                { id: 'dashboard', label: 'Dashboard', icon: 'ph-squares-four' },
+                { id: 'teacher', label: 'Teacher', icon: 'ph-user-focus' },
+                { id: 'academic', label: 'Academic', icon: 'ph-graduation-cap' },
+                { id: 'operation', label: 'Operation', icon: 'ph-gear-six' }
             ];
 
             const sidebarContent = (
@@ -1106,7 +1106,7 @@
                                             change="+12.5%" 
                                             trend="up" 
                                             data={[30, 40, 35, 50, 49, 60, 70, 91]} 
-                                            colorClass="#D81B60" 
+                                            colorClass="#00aeef" 
                                         />
                                         <StatCardV2 
                                             title="Doanh Thu" 
@@ -1114,7 +1114,7 @@
                                             change="+8.2%" 
                                             trend="up" 
                                             data={[20, 35, 40, 30, 45, 50, 40, 65]} 
-                                            colorClass="#1E88E5" 
+                                            colorClass="#00aeef" 
                                         />
                                         <StatCardV2 
                                             title="Retention Rate" 
@@ -1147,9 +1147,9 @@
                                         {/* Simplified Graphic Representation of a Chart */}
                                         <div className="h-64 w-full relative group/chart">
                                             <svg viewBox="0 0 1000 300" className="w-full h-full overflow-visible">
-                                                <path d="M0,250 C100,220 200,280 300,200 C400,120 500,240 600,180 C700,120 800,160 900,100 L1000,80" fill="none" stroke="#D81B60" strokeWidth="4" strokeLinecap="round" className="drop-shadow-lg" />
-                                                <path d="M0,280 C150,260 250,220 350,250 C450,280 550,180 650,150 C750,120 850,200 1000,150" fill="none" stroke="#1E88E5" strokeWidth="4" strokeLinecap="round" className="drop-shadow-lg opacity-60" />
-                                                <circle cx="600" cy="180" r="6" fill="#D81B60" className="animate-pulse" />
+                                                <path d="M0,250 C100,220 200,280 300,200 C400,120 500,240 600,180 C700,120 800,160 900,100 L1000,80" fill="none" stroke="#00aeef" strokeWidth="4" strokeLinecap="round" className="drop-shadow-lg" />
+                                                <path d="M0,280 C150,260 250,220 350,250 C450,280 550,180 650,150 C750,120 850,200 1000,150" fill="none" stroke="#00aeef" strokeWidth="4" strokeLinecap="round" className="drop-shadow-lg opacity-60" />
+                                                <circle cx="600" cy="180" r="6" fill="#00aeef" className="animate-pulse" />
                                                 <rect x="580" y="80" width="80" height="40" rx="10" fill="white" className="shadow-2xl border border-slate-100 opacity-0 group-hover/chart:opacity-100 transition-opacity" />
                                                 <text x="620" y="105" textAnchor="middle" fontSize="12" fontWeight="900" fill="#0F172A" className="opacity-0 group-hover/chart:opacity-100 transition-opacity">142 Act</text>
                                             </svg>
@@ -1195,8 +1195,8 @@
                                                 <div className="relative w-36 h-36 shrink-0">
                                                     <svg viewBox="0 0 100 100" className="w-full h-full transform -rotate-90">
                                                         <circle cx="50" cy="50" r="40" fill="transparent" stroke="#F1F5F9" strokeWidth="12" />
-                                                        <circle cx="50" cy="50" r="40" fill="transparent" stroke="#D81B60" strokeWidth="12" strokeDasharray="251.2" strokeDashoffset="62.8" strokeLinecap="round" className="drop-shadow-lg" />
-                                                        <circle cx="50" cy="50" r="40" fill="transparent" stroke="#1E88E5" strokeWidth="12" strokeDasharray="251.2" strokeDashoffset="188.4" strokeLinecap="round" className="drop-shadow-lg" />
+                                                        <circle cx="50" cy="50" r="40" fill="transparent" stroke="#00aeef" strokeWidth="12" strokeDasharray="251.2" strokeDashoffset="62.8" strokeLinecap="round" className="drop-shadow-lg" />
+                                                        <circle cx="50" cy="50" r="40" fill="transparent" stroke="#00aeef" strokeWidth="12" strokeDasharray="251.2" strokeDashoffset="188.4" strokeLinecap="round" className="drop-shadow-lg" />
                                                         <circle cx="50" cy="50" r="40" fill="transparent" stroke="#FFC107" strokeWidth="12" strokeDasharray="251.2" strokeDashoffset="240.2" strokeLinecap="round" className="drop-shadow-lg" />
                                                     </svg>
                                                     <div className="absolute inset-0 flex flex-col items-center justify-center">
