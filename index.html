@@ -21,24 +21,25 @@
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #F8F9FE;
+            background-color: #FFFFFF;
             color: #1E293B;
             min-height: 100vh;
         }
-        .glass-panel {
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(10px);
-            border-right: 1px solid rgba(226, 232, 240, 0.8);
-        }
-        .glass-card {
+        .soft-panel {
             background: #FFFFFF;
-            border: 1px solid rgba(226, 232, 240, 0.5);
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.04), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 20px 0 60px rgba(0, 0, 0, 0.05);
         }
-        .glass-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 10px 10px -6px rgba(0, 0, 0, 0.04);
+        .soft-card {
+            background: #FFFFFF;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .soft-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.08);
+        }
+        .icon-gradient {
+            background: linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0) 100%);
         }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
@@ -65,11 +66,15 @@
                 extend: {
                     colors: {
                         potato: {
-                            magenta: '#00aeef',
-                            blue: '#00aeef',
-                            yellow: '#FFC107',
+                            magenta: '#2171B5',
+                            blue: '#2171B5',
+                            yellow: '#FBC02D',
+                            brown: '#D49A5B',
+                            red: '#E53935',
+                            green: '#4CAF50',
+                            pink: '#D81B60',
                             dark: '#0F172A',
-                            slate: '#F8F9FE'
+                            slate: '#FFFFFF'
                         }
                     }
                 }
@@ -108,15 +113,18 @@
         };
 
         const StatCardV2 = ({ title, value, change, trend, data, colorClass }) => (
-            <div className="glass-card rounded-[32px] p-8 flex flex-col justify-between group h-full">
+            <div className="soft-card rounded-[32px] p-8 flex flex-col justify-between group h-full border-none">
                 <div className="flex justify-between items-start mb-6">
                     <div>
                         <p className="text-[12px] font-black text-slate-400 mb-1 uppercase tracking-widest">{title}</p>
                         <h3 className="text-3xl font-black text-slate-900 tracking-tight">{value}</h3>
                     </div>
+                    <div className="w-12 h-12 rounded-2xl flex items-center justify-center icon-gradient shadow-sm" style={{ backgroundColor: `${colorClass}20` }}>
+                         <Icon name="ph-chart-line-up" className="text-xl" style={{ color: colorClass }} />
+                    </div>
                 </div>
                 <div className="flex justify-between items-end">
-                    <div className={`px-3 py-1 rounded-lg text-[11px] font-black ${trend === 'up' ? 'text-emerald-600 bg-emerald-50' : 'text-rose-600 bg-rose-50'} transition-all`}>
+                    <div className={`px-3 py-1.5 rounded-xl text-[11px] font-black ${trend === 'up' ? 'text-potato-green bg-potato-green/10' : 'text-potato-red bg-potato-red/10'} transition-all`}>
                         {change}
                     </div>
                     <Sparkline data={data} color={colorClass} />
@@ -125,44 +133,44 @@
         );
 
         const ReviewCard = ({ name, date, text, avatar, status }) => (
-            <div className="glass-card rounded-[32px] p-8 min-w-[320px] max-w-[320px] flex flex-col justify-between">
+            <div className="soft-card rounded-[32px] p-8 min-w-[320px] max-w-[320px] flex flex-col justify-between border-none">
                 <div>
                     <div className="flex items-center gap-4 mb-6">
-                        <img src={avatar} className="w-14 h-14 rounded-2xl object-cover shadow-lg border-2 border-white" />
+                        <img src={avatar} className="w-14 h-14 rounded-2xl object-cover shadow-lg" />
                         <div>
                             <h4 className="text-sm font-black text-slate-900 leading-tight">{name}</h4>
-                            <p className="text-[11px] font-bold text-slate-400 mt-0.5">{date}</p>
+                            <p className="text-[11px] font-bold text-slate-400 mt-0.5 italic">{date}</p>
                         </div>
                     </div>
                     <p className="text-[13px] font-medium text-slate-500 leading-relaxed italic line-clamp-4">"{text}"</p>
                 </div>
                 <div className="mt-8 flex justify-between items-center">
                     <div className="flex gap-4">
-                        <button className="text-[11px] font-black text-rose-500 hover:text-rose-700 uppercase tracking-widest">Archive</button>
-                        <button className="text-[11px] font-black text-emerald-600 hover:text-emerald-800 uppercase tracking-widest">Accept</button>
+                        <button className="text-[11px] font-black text-potato-red/60 hover:text-potato-red uppercase tracking-widest">Archive</button>
+                        <button className="text-[11px] font-black text-potato-green hover:text-potato-green/80 uppercase tracking-widest">Accept</button>
                     </div>
-                    {status && <span className="text-[10px] font-black text-indigo-600 italic">Published →</span>}
+                    {status && <span className="text-[10px] font-black text-potato-blue italic">Published →</span>}
                 </div>
             </div>
         );
 
         const RightSidebarV2 = () => {
             const serverStatus = [
-                { day: 'Sun', val: [40, 60, 30], color: 'bg-rose-400' },
-                { day: 'Mon', val: [70, 40, 50], color: 'bg-emerald-400' },
-                { day: 'Tue', val: [50, 80, 60], color: 'bg-emerald-500' },
-                { day: 'Wed', val: [80, 30, 40], color: 'bg-blue-400' },
-                { day: 'Thu', val: [90, 70, 50], color: 'bg-blue-500' },
-                { day: 'Fri', val: [30, 40, 20], color: 'bg-rose-300' },
-                { day: 'Sat', val: [60, 50, 70], color: 'bg-emerald-400' }
+                { day: 'Sun', val: [40, 60, 30], color: 'bg-potato-red/60' },
+                { day: 'Mon', val: [70, 40, 50], color: 'bg-potato-green/60' },
+                { day: 'Tue', val: [50, 80, 60], color: 'bg-potato-green/60' },
+                { day: 'Wed', val: [80, 30, 40], color: 'bg-potato-blue/60' },
+                { day: 'Thu', val: [90, 70, 50], color: 'bg-potato-blue/60' },
+                { day: 'Fri', val: [30, 40, 20], color: 'bg-potato-red/60' },
+                { day: 'Sat', val: [60, 50, 70], color: 'bg-potato-green/60' }
             ];
 
             return (
-                <aside className="hidden xl:flex flex-col w-[380px] p-8 bg-white border-l border-slate-100 overflow-y-auto no-scrollbar animate-fade-in group/sidebar">
+                <aside className="hidden xl:flex flex-col w-[380px] p-8 bg-white border-none overflow-y-auto no-scrollbar animate-fade-in group/sidebar soft-panel">
                     {/* Search Bar */}
                     <div className="relative mb-10 group/search">
-                         <Icon name="ph-magnifying-glass" className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within/search:text-potato-magenta transition-colors" />
-                         <input type="text" placeholder="Search here..." className="w-full pl-14 pr-6 py-4 bg-slate-50 border border-transparent rounded-[20px] text-xs font-bold text-slate-800 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-slate-200 transition-all shadow-inner focus:shadow-md" />
+                         <Icon name="ph-magnifying-glass" className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within/search:text-potato-blue transition-colors" />
+                         <input type="text" placeholder="Search here..." className="w-full pl-14 pr-6 py-4 bg-potato-blue/5 border-none rounded-[20px] text-xs font-bold text-slate-800 placeholder-slate-400 focus:outline-none focus:bg-white transition-all shadow-inner focus:shadow-md" />
                     </div>
 
                     {/* Server Status Visualization */}
@@ -197,13 +205,13 @@
                         </div>
                         <div className="space-y-4">
                             {[
-                                { name: 'Facebook Fanpage', url: 'https://www.facebook.com/HocAnhVanTotBinhDuong', icon: 'ph-facebook-logo', color: 'text-blue-600', sub: 'Học Anh Văn Tốt Bình Dương' },
-                                { name: 'Youtube Channel', url: '#', icon: 'ph-youtube-logo', color: 'text-rose-600', sub: 'Potato English Official' },
-                                { name: 'Google Support', url: '#', icon: 'ph-google-logo', color: 'text-red-500', sub: 'Help desk & resources' }
+                                { name: 'Facebook Fanpage', url: 'https://www.facebook.com/HocAnhVanTotBinhDuong', icon: 'ph-facebook-logo', bgColor: 'bg-potato-blue/10', color: 'text-potato-blue', sub: 'Học Anh Văn Tốt Bình Dương' },
+                                { name: 'Youtube Channel', url: '#', icon: 'ph-youtube-logo', bgColor: 'bg-potato-red/10', color: 'text-potato-red', sub: 'Potato English Official' },
+                                { name: 'Google Support', url: '#', icon: 'ph-google-logo', bgColor: 'bg-potato-yellow/10', color: 'text-potato-yellow', sub: 'Help desk & resources' }
                             ].map((link, i) => (
-                                <a key={i} href={link.url} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-4 bg-slate-50 border border-slate-100 rounded-[20px] hover:bg-white hover:shadow-md transition-all cursor-pointer group no-underline">
+                                <a key={i} href={link.url} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-5 bg-white rounded-[24px] soft-card hover:bg-slate-50 transition-all cursor-pointer group no-underline border-none">
                                     <div className="flex items-center gap-4">
-                                        <div className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center text-xl">
+                                        <div className={`w-12 h-12 rounded-2xl ${link.bgColor} flex items-center justify-center text-xl icon-gradient`}>
                                             <Icon name={link.icon} className={link.color} />
                                         </div>
                                         <div>
@@ -211,7 +219,7 @@
                                             <p className="text-[10px] font-bold text-slate-400 tracking-tighter mt-0.5">{link.sub}</p>
                                         </div>
                                     </div>
-                                    <Icon name="ph-arrow-up-right" className="text-slate-300 group-hover:text-potato-magenta transition-colors" />
+                                    <Icon name="ph-arrow-up-right" className="text-slate-300 group-hover:text-potato-blue transition-colors" />
                                 </a>
                             ))}
                         </div>
@@ -220,17 +228,17 @@
                     {/* Biên bản họp Section */}
                     <div className="space-y-6">
                         <h3 className="text-lg font-black text-slate-900 tracking-tight flex items-center gap-2">
-                             <Icon name="ph-article-medium" className="text-potato-magenta" /> Biên bản họp
+                             <Icon name="ph-article-medium" className="text-potato-blue" /> Biên bản họp
                         </h3>
                         <div className="space-y-8 relative pl-6">
-                            <div className="absolute left-2.5 top-2 bottom-2 w-0.5 bg-slate-100 rounded-full"></div>
+                            <div className="absolute left-2.5 top-2 bottom-2 w-0.5 bg-slate-50 rounded-full"></div>
                             {[
-                                { date: '05/04/2026 - 09:00 AM', title: 'Họp Vận Hành Tuần 14', text: 'Thống nhất kế hoạch dồn lực hoàn thiện album "Mùa hè rực rỡ" cho khối Kids.' },
-                                { date: '01/04/2026 - 14:30 PM', title: 'Họp Chuyên Môn Học Vụ', text: 'Review bộ đề Placement Test và cập nhật lộ trình KET/PET mới.' },
-                                { date: '28/03/2026 - 11:15 AM', title: 'Họp Chiến Lược Tuyển Sinh', text: 'Phân tích hiệu quả chiến dịch "Học thử 0 đồng" và kế hoạch tháng 4.' }
+                                { date: '05/04/2026 - 09:00 AM', title: 'Họp Vận Hành Tuần 14', text: 'Thống nhất kế hoạch dồn lực hoàn thiện album "Mùa hè rực rỡ" cho khối Kids.', hot: true },
+                                { date: '01/04/2026 - 14:30 PM', title: 'Họp Chuyên Môn Học Vụ', text: 'Review bộ đề Placement Test và cập nhật lộ trình KET/PET mới.', hot: false },
+                                { date: '28/03/2026 - 11:15 AM', title: 'Họp Chiến Lược Tuyển Sinh', text: 'Phân tích hiệu quả chiến dịch "Học thử 0 đồng" và kế hoạch tháng 4.', hot: false }
                             ].map((act, i) => (
                                 <div key={i} className="relative group">
-                                    <div className="absolute -left-[1.37rem] top-1.5 w-4 h-4 rounded-full bg-white border-4 border-potato-magenta shadow-sm z-10 transition-transform group-hover:scale-125"></div>
+                                    <div className={`absolute -left-[1.37rem] top-1.5 w-4 h-4 rounded-full bg-white border-4 ${act.hot ? 'border-potato-red animate-pulse' : 'border-potato-blue'} shadow-sm z-10 transition-transform group-hover:scale-125`}></div>
                                     <h4 className="text-[11px] font-black text-slate-900 mb-1 leading-none">{act.date}</h4>
                                     <p className="text-[13px] font-black text-slate-800 mt-1 uppercase tracking-tighter">{act.title}</p>
                                     <p className="text-[12px] font-medium text-slate-400 mt-1 leading-relaxed text-left line-clamp-2 italic">{act.text}</p>
@@ -245,49 +253,59 @@
         const MasterTable = ({ data }) => {
             const statusStyle = (status) => {
                 switch(status) {
-                    case 'Đúng Tiến Độ': return 'text-blue-700 bg-blue-50 border-blue-100';
-                    case 'Rủi Ro': return 'text-rose-700 bg-rose-50 border-rose-100';
-                    case 'Hoàn Thành': return 'text-emerald-700 bg-emerald-50 border-emerald-100';
-                    default: return 'text-slate-600 bg-slate-50 border-slate-100';
+                    case 'Đúng Tiến Độ': return 'text-potato-blue bg-potato-blue/10';
+                    case 'Rủi Ro': return 'text-potato-red bg-potato-red/10 animate-pulse';
+                    case 'Hoàn Thành': return 'text-potato-green bg-potato-green/10';
+                    default: return 'text-slate-600 bg-slate-100';
                 }
             };
 
             return (
-                <div className="glass-card rounded-[24px] overflow-hidden animate-fade-in">
-                    <div className="p-6 border-b border-white/20 flex justify-between items-center sm:flex-row flex-col gap-4">
-                        <h3 className="text-lg font-bold text-slate-800 tracking-tight">Danh sách Lớp & Vận Hành</h3>
-                        <div className="flex items-center gap-2">
-                             <span className="text-xs font-bold text-slate-400 uppercase">Sắp xếp:</span>
-                             <select className="text-xs font-bold text-slate-600 bg-white/50 border-none outline-none rounded-lg px-2 py-1">
-                                <option>Mã lớp</option>
-                                <option>Giáo viên</option>
-                             </select>
+                <div className="soft-card rounded-[32px] overflow-hidden border-none">
+                    <div className="p-8 flex justify-between items-center sm:flex-row flex-col gap-6 bg-white">
+                        <div>
+                            <h3 className="text-2xl font-black text-soft-blue tracking-tighter uppercase italic">Lớp Học & Vận Hành</h3>
+                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest italic mt-1 ml-1 leading-none">Weekly Operation Index</p>
+                        </div>
+                        <div className="flex items-center gap-4">
+                             <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Sắp xếp:</span>
+                             <div className="px-4 py-2 bg-slate-50 rounded-xl border-none">
+                                <select className="text-[11px] font-black text-slate-700 bg-transparent outline-none cursor-pointer">
+                                    <option>Mã lớp</option>
+                                    <option>Giáo viên</option>
+                                </select>
+                             </div>
                         </div>
                     </div>
                     <div className="overflow-x-auto no-scrollbar">
-                        <table className="w-full text-left border-collapse min-w-[600px]">
+                        <table className="w-full text-left border-collapse min-w-[700px]">
                             <thead>
-                                <tr className="bg-white/30 text-slate-500 text-[11px] uppercase tracking-wider font-extrabold">
-                                    <th className="p-4 pl-6">Mã Lớp / Tên Khóa</th>
-                                    <th className="p-4">Sĩ số</th>
-                                    <th className="p-4">Giáo Viên</th>
-                                    <th className="p-4">Trạng Thái SOP</th>
-                                    <th className="p-4 text-right pr-6">Hành động</th>
+                                <tr className="bg-potato-blue/5 text-slate-400 text-[10px] uppercase tracking-[0.2em] font-black">
+                                    <th className="p-5 pl-8">Mã Lớp / Tên Khóa</th>
+                                    <th className="p-5">Sĩ số</th>
+                                    <th className="p-5">Giáo Viên</th>
+                                    <th className="p-5 text-center">Trạng Thái SOP</th>
+                                    <th className="p-5 text-right pr-8">Hành động</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-white/10 text-[14px]">
                                 {data.map((item, idx) => (
-                                    <tr key={idx} className="hover:bg-white/40 transition-colors group">
-                                        <td className="p-4 pl-6 font-bold text-slate-800 group-hover:text-potato-blue">{item.name}</td>
-                                        <td className="p-4 text-slate-600 font-medium">{item.students} học viên</td>
-                                        <td className="p-4 text-slate-600">{item.teacher}</td>
-                                        <td className="p-4">
-                                            <span className={`px-2.5 py-1 rounded-lg text-[11px] font-bold border ${statusStyle(item.status)}`}>
+                                    <tr key={idx} className="hover:bg-slate-50 transition-all group cursor-pointer border-b border-slate-50 last:border-none">
+                                        <td className="p-5 pl-8">
+                                            <div className="flex flex-col">
+                                                <span className="text-[13px] font-black text-slate-800 italic group-hover:text-potato-blue transition-colors uppercase tracking-tight">{item.name}</span>
+                                                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">Potato Center</span>
+                                            </div>
+                                        </td>
+                                        <td className="p-5 text-slate-500 font-black text-xs italic">{item.students} HV</td>
+                                        <td className="p-5 text-slate-800 font-bold text-[13px]">{item.teacher}</td>
+                                        <td className="p-5 text-center">
+                                            <span className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border-none ${statusStyle(item.status)}`}>
                                                 {item.status}
                                             </span>
                                         </td>
-                                        <td className="p-4 text-right pr-6">
-                                            <button className="p-2 hover:bg-white hover:shadow-sm rounded-xl transition-all text-slate-400 hover:text-potato-blue">
+                                        <td className="p-5 text-right pr-8">
+                                            <button className="w-10 h-10 bg-potato-blue/5 rounded-xl flex items-center justify-center text-potato-blue/40 group-hover:text-potato-blue group-hover:bg-potato-blue group-hover:text-white transition-all shadow-sm">
                                                 <Icon name="ph-caret-right" className="text-xl" />
                                             </button>
                                         </td>
@@ -380,15 +398,23 @@
             return (
                 <div className="space-y-10 animate-fade-in pb-20">
                     {/* Header Banner */}
-                    <div className="glass-card rounded-[40px] p-10 bg-gradient-to-br from-slate-900 to-slate-800 text-white relative overflow-hidden shadow-2xl">
-                        <div className="absolute top-0 right-0 w-80 h-80 bg-blue-500/10 rounded-full blur-3xl -mr-40 -mt-40"></div>
+                    <div className="soft-card rounded-[40px] p-12 bg-gradient-to-br from-potato-blue to-soft-blue text-white relative overflow-hidden border-none">
+                        <div className="absolute top-0 right-0 w-80 h-80 bg-white/10 rounded-full blur-3xl -mr-40 -mt-40"></div>
+                        <div className="absolute bottom-0 left-0 w-64 h-64 bg-potato-pink/20 rounded-full blur-2xl -ml-32 -mb-32"></div>
                         <div className="relative z-10 text-center md:text-left">
-                            <h1 className="text-3xl font-black tracking-tight uppercase italic mb-2">
-                                {ACADEMIC_REPORT_DATA.title.split(' Quý')[0]} <span className="text-blue-400">Quý 2/2026</span>
+                            <h1 className="text-4xl font-black tracking-tighter uppercase italic mb-3">
+                                {ACADEMIC_REPORT_DATA.title.split(' Quý')[0]} <span className="text-white/60">Quý 2/2026</span>
                             </h1>
-                            <p className="text-slate-400 font-bold uppercase tracking-widest text-[11px] flex items-center justify-center md:justify-start gap-2">
-                                <Icon name="ph-shield-check" className="text-blue-400" /> {ACADEMIC_REPORT_DATA.subtitle}
-                            </p>
+                            <div className="flex items-center justify-center md:justify-start gap-4">
+                                <div className="px-4 py-2 bg-white/10 backdrop-blur-md rounded-xl border border-white/20">
+                                    <p className="text-white font-black uppercase tracking-widest text-[11px] flex items-center gap-2">
+                                        <Icon name="ph-shield-check" className="text-white" /> {ACADEMIC_REPORT_DATA.subtitle}
+                                    </p>
+                                </div>
+                                <div className="px-4 py-2 bg-potato-pink text-white rounded-xl shadow-lg shadow-potato-pink/20">
+                                     <p className="text-[10px] font-black uppercase tracking-widest">{ACADEMIC_REPORT_DATA.status}</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -402,20 +428,20 @@
                         </div>
                         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
                             {ACADEMIC_REPORT_DATA.rates.map((rate, idx) => (
-                                <div key={idx} className="glass-card p-6 rounded-[24px] text-center group hover:translate-y-[-4px] transition-all">
-                                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-tighter mb-4 h-8 flex items-center justify-center line-clamp-2">
+                                <div key={idx} className="soft-card p-6 rounded-[24px] text-center group hover:translate-y-[-6px] transition-all border-none">
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-tighter mb-4 h-8 flex items-center justify-center line-clamp-2 italic">
                                         {rate.label}
                                     </p>
                                     <div className="relative w-16 h-16 mx-auto mb-4">
                                         <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
-                                            <path className="text-slate-100" strokeWidth="3" stroke="currentColor" fill="transparent" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                                            <path className={`text-${rate.color}-500 transition-all duration-1000`} strokeWidth="3" strokeDasharray={`${rate.value}, 100`} strokeLinecap="round" stroke="currentColor" fill="transparent" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                            <circle cx="18" cy="18" r="16" fill="none" className="text-slate-50" strokeWidth="3" stroke="currentColor" />
+                                            <circle cx="18" cy="18" r="16" fill="none" className={rate.color === 'emerald' ? 'text-potato-green' : rate.color === 'amber' ? 'text-potato-yellow' : 'text-potato-red'} strokeWidth="3" strokeDasharray={`${rate.value}, 100`} strokeLinecap="round" stroke="currentColor" />
                                         </svg>
-                                        <div className="absolute inset-0 flex items-center justify-center text-xs font-black text-slate-800">
+                                        <div className="absolute inset-0 flex items-center justify-center text-xs font-black text-slate-900 italic tracking-tighter">
                                             {rate.value}%
                                         </div>
                                     </div>
-                                    <div className={`w-2 h-2 rounded-full mx-auto bg-${rate.color}-500 shadow-[0_0_8px_rgba(var(--tw-color-${rate.color}-500),0.4)]`}></div>
+                                    <div className={`w-2 h-2 rounded-full mx-auto ${rate.color === 'emerald' ? 'bg-potato-green shadow-potato-green/30' : rate.color === 'amber' ? 'bg-potato-yellow shadow-potato-yellow/30' : 'bg-potato-red shadow-potato-red/30'} shadow-lg`}></div>
                                 </div>
                             ))}
                         </div>
@@ -423,73 +449,67 @@
 
                     {/* Action Matrix Rows */}
                     <div className="space-y-8">
-                        <div className="flex items-center gap-4 px-4">
-                            <div className="h-[2px] flex-1 bg-slate-100"></div>
-                            <h2 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.3em]">Ma trận hành động chi tiết</h2>
-                            <div className="h-[2px] flex-1 bg-slate-100"></div>
-                        </div>
-
                         {ACADEMIC_REPORT_DATA.matrix.map((row, rIdx) => (
-                            <div key={rIdx} className="glass-card rounded-[32px] overflow-hidden border border-white/40 shadow-xl group">
+                            <div key={rIdx} className="soft-card rounded-[40px] overflow-hidden border-none group bg-white shadow-xl">
                                 <div className="grid grid-cols-1 lg:grid-cols-12">
                                     {/* Column 1: Category & Done */}
-                                    <div className="lg:col-span-4 p-8 border-r border-slate-50 bg-slate-50/30">
-                                        <div className="flex items-center gap-4 mb-8">
-                                            <div className={`w-12 h-12 rounded-2xl bg-${row.color}-600 text-white flex items-center justify-center shadow-lg shadow-${row.color}-200 group-hover:scale-110 transition-transform`}>
-                                                <Icon name={row.icon} className="text-2xl" />
+                                    <div className="lg:col-span-4 p-10 border-r border-slate-50 bg-potato-blue/5">
+                                        <div className="flex items-center gap-5 mb-10">
+                                            <div className="w-14 h-14 rounded-2xl bg-white text-potato-blue flex items-center justify-center shadow-md group-hover:scale-110 transition-transform">
+                                                <Icon name={row.icon} className="text-3xl" />
                                             </div>
-                                            <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight">{row.category}</h3>
+                                            <h3 className="text-2xl font-black text-soft-blue uppercase tracking-tighter italic">{row.category}</h3>
                                         </div>
-                                        <div className="space-y-4">
-                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Đã thực hiện tuần qua</p>
+                                        <div className="space-y-5">
+                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] italic">Đã thực hiện tuần qua</p>
                                             {row.done.map((task, tIdx) => (
-                                                <div key={tIdx} className="flex gap-3 items-start">
-                                                    <div className="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center shrink-0 mt-0.5">
-                                                        <Icon name="ph-check" className="text-emerald-600 text-[10px] font-bold" />
+                                                <div key={tIdx} className="flex gap-4 items-start">
+                                                    <div className="w-6 h-6 rounded-full bg-potato-green/10 flex items-center justify-center shrink-0 mt-0.5">
+                                                        <Icon name="ph-check" className="text-potato-green text-[11px] font-black" />
                                                     </div>
-                                                    <p className="text-xs font-bold text-slate-600 leading-relaxed text-justify">{task}</p>
+                                                    <p className="text-xs font-bold text-slate-600 leading-relaxed text-justify opacity-80">{task}</p>
                                                 </div>
                                             ))}
                                         </div>
                                     </div>
 
                                     {/* Column 2: Issues */}
-                                    <div className="lg:col-span-4 p-8 border-r border-slate-50">
-                                        <div className="space-y-6">
-                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Vấn đề tồn đọng</p>
+                                    <div className="lg:col-span-4 p-10 border-r border-slate-50 bg-white">
+                                        <div className="space-y-8">
+                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] italic">Vấn đề tồn đọng</p>
                                             {row.issues.length > 0 ? (
                                                 row.issues.map((issue, iIdx) => (
-                                                    <div key={iIdx} className="p-4 rounded-2xl bg-rose-50/50 border-l-4 border-rose-500 space-y-2">
-                                                        <h4 className="text-xs font-black text-rose-900 italic">{issue.title}</h4>
-                                                        <p className="text-[11px] font-medium text-rose-700 leading-relaxed text-justify">{issue.desc}</p>
+                                                    <div key={iIdx} className="p-6 rounded-3xl bg-potato-red/5 border-l-4 border-potato-red space-y-3">
+                                                        <h4 className="text-xs font-black text-potato-red italic uppercase">{issue.title}</h4>
+                                                        <p className="text-[11px] font-medium text-slate-500 leading-relaxed text-justify">{issue.desc}</p>
                                                     </div>
                                                 ))
                                             ) : (
-                                                <div className="p-8 rounded-2xl border-2 border-dashed border-slate-100 flex flex-col items-center justify-center text-center opacity-40">
-                                                    <Icon name="ph-shield-check" className="text-3xl text-emerald-500 mb-2" />
-                                                    <p className="text-[10px] font-black text-slate-400 uppercase">Chưa ghi nhận rủi ro</p>
+                                                <div className="p-10 rounded-3xl border-2 border-dashed border-slate-50 flex flex-col items-center justify-center text-center opacity-30">
+                                                    <Icon name="ph-shield-check" className="text-4xl text-potato-green mb-3" />
+                                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">Safe Zone</p>
                                                 </div>
                                             )}
                                         </div>
                                     </div>
 
                                     {/* Column 3: Actions & Timeline */}
-                                    <div className="lg:col-span-4 p-8 bg-white/20">
-                                        <div className="space-y-6">
-                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Hành động & Thời hạn</p>
-                                            <div className="space-y-6 relative">
-                                                <div className="absolute left-2.5 top-2 bottom-2 w-0.5 bg-slate-100"></div>
+                                    <div className="lg:col-span-4 p-10 bg-white">
+                                        <div className="space-y-8">
+                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] italic">Hành động & Thời hạn</p>
+                                            <div className="space-y-8 relative">
+                                                <div className="absolute left-[11px] top-2 bottom-2 w-0.5 bg-slate-50 rounded-full"></div>
                                                 {row.actions.map((action, aIdx) => (
-                                                    <div key={aIdx} className="relative pl-8">
-                                                        <div className={`absolute left-0 top-1.5 w-5 h-5 rounded-full bg-white border-2 border-${row.color}-400 z-10 flex items-center justify-center`}>
-                                                            <div className={`w-2 h-2 rounded-full bg-${row.color}-500`}></div>
+                                                    <div key={aIdx} className="relative pl-10">
+                                                        <div className="absolute left-0 top-1.5 w-6 h-6 rounded-full bg-white border-2 border-potato-blue shadow-sm z-10 flex items-center justify-center">
+                                                            <div className="w-2 h-2 rounded-full bg-potato-blue animate-pulse"></div>
                                                         </div>
-                                                        <h4 className="text-xs font-black text-slate-800 mb-2">{action.period}</h4>
-                                                        <ul className="space-y-1.5">
+                                                        <h4 className="text-xs font-black text-soft-blue mb-3 uppercase italic tracking-tight">{action.period}</h4>
+                                                        <ul className="space-y-2">
                                                             {action.tasks.map((task, kIdx) => (
-                                                                <li key={kIdx} className="text-[11px] font-bold text-slate-500 flex items-start gap-2">
-                                                                    <div className="w-1 h-1 rounded-full bg-slate-300 mt-1.5 shrink-0"></div>
-                                                                    <span>{task}</span>
+                                                                <li key={kIdx} className="text-[11px] font-bold text-slate-500 flex items-start gap-3">
+                                                                    <div className="w-1 h-1 rounded-full bg-slate-200 mt-2 shrink-0"></div>
+                                                                    <span className="opacity-80">{task}</span>
                                                                 </li>
                                                             ))}
                                                         </ul>
@@ -504,18 +524,18 @@
                     </div>
 
                     {/* Footer Status */}
-                    <div className="glass-card rounded-[40px] p-10 bg-slate-900 text-white relative overflow-hidden shadow-2xl flex flex-col md:flex-row justify-between items-center gap-8">
-                        <div className="absolute top-0 right-0 w-64 h-64 bg-blue-600/10 rounded-full blur-3xl -mr-32 -mt-32"></div>
+                    <div className="soft-card rounded-[40px] p-10 bg-gradient-to-br from-soft-blue to-potato-blue text-white relative overflow-hidden border-none flex flex-col md:flex-row justify-between items-center gap-8 shadow-inner">
+                        <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-32 -mt-32"></div>
                         <div className="relative z-10 text-center md:text-left">
-                            <h3 className="text-xl font-black mb-2 italic tracking-tight flex items-center justify-center md:justify-start gap-3">
-                                <Icon name="ph-rocket-launch" className="text-blue-400" /> Quản trị Vận hành & Chất lượng Q2
+                            <h3 className="text-xl font-black mb-2 italic tracking-tighter uppercase flex items-center justify-center md:justify-start gap-4">
+                                <Icon name="ph-rocket-launch" className="text-white animate-pulse" /> Quản trị Vận hành & Chất lượng Q2
                             </h3>
-                            <p className="text-xs text-slate-400 italic font-bold">Hệ thống hóa Lộ trình - Chuẩn hóa Đầu vào - Tối ưu hóa Học cụ</p>
+                            <p className="text-[11px] text-white/60 italic font-black uppercase tracking-widest">Hệ thống hóa Lộ trình - Chuẩn hóa Đầu vào - Tối ưu hóa Học cụ</p>
                         </div>
                         <div className="relative z-10 flex gap-4">
-                            <div className="px-10 py-4 bg-slate-800/80 rounded-2xl border border-slate-700/50 text-center shadow-inner group transition-all">
-                                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] mb-1 italic">Tình trạng</p>
-                                <p className="text-xl font-black text-blue-400 italic group-hover:scale-105 transition-transform">{ACADEMIC_REPORT_DATA.status}</p>
+                            <div className="px-10 py-5 bg-white/10 backdrop-blur-xl rounded-[28px] border border-white/20 text-center shadow-lg group transition-all">
+                                <p className="text-[10px] font-black text-white/50 uppercase tracking-[0.2em] mb-1 italic">Tình trạng</p>
+                                <p className="text-xl font-black text-white italic group-hover:scale-105 transition-transform">{ACADEMIC_REPORT_DATA.status}</p>
                             </div>
                         </div>
                     </div>
@@ -586,17 +606,17 @@
                     {/* Header / Executive Summary */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         {TEACHER_REPORT_DATA.summary.map((item, idx) => (
-                            <div key={idx} className={`glass-card p-6 border-l-4 border-${item.color}-500/50 hover:scale-[1.02] transition-all`}>
+                            <div key={idx} className={`soft-card p-8 border-none group hover:scale-[1.02] transition-all rounded-[32px]`}>
                                 <div className="flex justify-between items-start">
                                     <div>
-                                        <p className="text-[11px] font-black text-slate-500 uppercase tracking-widest">{item.label}</p>
-                                        <p className="text-3xl font-black text-slate-800 mt-2">{item.value}</p>
-                                        <p className={`text-[11px] font-bold mt-2 flex items-center gap-1 ${item.color === 'emerald' ? 'text-emerald-600' : item.color === 'amber' ? 'text-amber-600' : 'text-sky-600'}`}>
+                                        <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-1">{item.label}</p>
+                                        <p className="text-3xl font-black text-slate-900 leading-none tracking-tighter">{item.value}</p>
+                                        <div className={`mt-4 px-3 py-1.5 rounded-xl text-[10px] font-black inline-flex items-center gap-1 ${item.color === 'emerald' ? 'text-potato-green bg-potato-green/10' : item.color === 'amber' ? 'text-potato-yellow bg-potato-yellow/10' : 'text-potato-blue bg-potato-blue/10'}`}>
                                             {item.trend}
-                                        </p>
+                                        </div>
                                     </div>
-                                    <div className={`p-3 rounded-xl bg-white/50 text-2xl shadow-sm ${item.color === 'emerald' ? 'text-emerald-600' : item.color === 'amber' ? 'text-amber-600' : 'text-sky-600'}`}>
-                                        <Icon name={item.icon} />
+                                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center icon-gradient shadow-sm ${item.color === 'emerald' ? 'bg-potato-green/10 text-potato-green' : item.color === 'amber' ? 'bg-potato-yellow/10 text-potato-yellow' : 'bg-potato-blue/10 text-potato-blue'}`}>
+                                        <Icon name={item.icon} className="text-xl" />
                                     </div>
                                 </div>
                             </div>
@@ -604,9 +624,9 @@
                     </div>
 
                     {/* Health Analysis Chart */}
-                    <div className="glass-card p-8 rounded-[32px] bg-white/30 backdrop-blur-xl border border-white/40 relative overflow-visible">
-                        <h3 className="text-lg font-black text-slate-800 mb-10 flex items-center gap-2">
-                             <Icon name="ph-chart-bar" className="text-indigo-500" /> Sức Khỏe Lớp Học (Hệ 100 - Tuần 4)
+                    <div className="soft-card p-10 rounded-[40px] border-none relative overflow-visible">
+                        <h3 className="text-xl font-black text-soft-blue mb-10 flex items-center gap-3">
+                             <Icon name="ph-chart-bar" className="text-potato-blue" /> Sức Khỏe Lớp Học <span className="text-slate-300 font-medium">/ Tuần 4</span>
                         </h3>
                         
                         {/* Y-Axis Label */}
@@ -614,25 +634,18 @@
                             Chỉ số (%)
                         </div>
 
-                        <div className="h-64 flex items-end justify-between gap-2 px-8 border-l border-b border-slate-200/50 ml-6 relative">
+                        <div className="h-64 flex items-end justify-between gap-3 px-8 border-l border-b border-slate-50 ml-6 relative">
                             {TEACHER_REPORT_DATA.chartData.map((bar, idx) => (
                                 <div key={idx} className="flex-1 flex flex-col items-center group relative h-full justify-end">
                                     <div 
-                                        className="w-full rounded-t-xl transition-all duration-1000 ease-out hover:brightness-110 shadow-lg relative overflow-hidden group/bar" 
-                                        style={{ height: `${bar.value}%`, backgroundColor: bar.color }}
+                                        className="w-full rounded-t-2xl transition-all duration-1000 ease-out hover:brightness-110 shadow-lg relative overflow-hidden group/bar" 
+                                        style={{ height: `${bar.value}%`, background: bar.color }}
                                     >
-                                        <div className="absolute inset-0 bg-white/10 opacity-0 group-hover/bar:opacity-100 transition-opacity"></div>
-                                        <div className="absolute top-2 left-0 right-0 text-center text-[10px] font-black text-white drop-shadow-md opacity-0 group-hover/bar:opacity-100 transition-all transform -translate-y-2 group-hover/bar:translate-y-0">
-                                            {bar.value}%
-                                        </div>
+                                        <div className="absolute inset-x-0 bottom-0 h-1/2 icon-gradient opacity-30"></div>
                                     </div>
-                                    <p className="mt-4 text-[10px] font-black text-slate-500 text-center leading-tight h-8 flex items-center justify-center">
+                                    <p className="mt-4 text-[10px] font-black text-slate-400 text-center leading-tight h-8 flex items-center justify-center group-hover:text-slate-900 transition-colors uppercase italic">
                                         {bar.label}
                                     </p>
-                                    {/* Tooltip on hover */}
-                                    <div className="absolute -top-6 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-800 text-white text-[10px] font-black py-1 px-2 rounded-lg pointer-events-none z-10 whitespace-nowrap shadow-xl">
-                                        {bar.label}: {bar.value}%
-                                    </div>
                                 </div>
                             ))}
                         </div>
@@ -645,9 +658,12 @@
 
                     {/* Detailed Class Report - 4 Columns */}
                     <div className="space-y-6">
-                        <div className="border-l-4 border-amber-500 pl-4">
-                            <h2 className="text-xl font-black text-slate-800">I. Báo cáo chi tiết các lớp</h2>
-                            <p className="text-slate-400 text-[11px] font-bold uppercase tracking-wider">Academic Detailed Tracking</p>
+                        <div className="flex items-center gap-4">
+                            <div className="w-1.5 h-8 bg-potato-yellow rounded-full shadow-lg shadow-potato-yellow/20"></div>
+                            <div>
+                                <h2 className="text-2xl font-black text-soft-blue uppercase italic tracking-tighter">Báo cáo chi tiết các lớp</h2>
+                                <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest italic ml-1 leading-none">Academic Detailed Tracking</p>
+                            </div>
                         </div>
                         
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 items-start">
@@ -660,21 +676,21 @@
                                         </span>
                                     </div>
                                     
-                                    <div className="space-y-4">
+                                    <div className="space-y-5">
                                         {cat.classes.length > 0 ? (
                                             cat.classes.map((cls, idx) => (
-                                                <div key={idx} className={`glass-card p-5 border-l-4 rounded-[24px] border-${cat.color}-500/50 hover:translate-y-[-4px] transition-all shadow-sm group hover:shadow-md`}>
-                                                    <div className="flex justify-between items-start mb-3">
-                                                        <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-0.5 bg-white/80 text-slate-500 rounded-lg border border-slate-100`}>
+                                                <div key={idx} className={`soft-card p-6 rounded-[28px] border-none hover:translate-y-[-6px] transition-all group`}>
+                                                    <div className="flex justify-between items-start mb-4">
+                                                        <span className={`text-[9px] font-black uppercase tracking-widest px-3 py-1 bg-slate-50 text-slate-400 rounded-xl group-hover:bg-soft-blue group-hover:text-white transition-colors`}>
                                                             {cls.sub}
                                                         </span>
-                                                        <span className={`font-black text-${cat.color}-600 text-xs`}>{cls.name}</span>
+                                                        <span className={`font-black text-soft-blue text-xs uppercase italic tracking-tight`}>{cls.name}</span>
                                                     </div>
-                                                    <h4 className="font-black text-slate-800 text-[12px] mb-2">{cls.status}</h4>
-                                                    <p className="text-[10px] font-medium text-slate-500 mb-4 leading-relaxed italic border-l-2 border-slate-100 pl-2">"{cls.desc}"</p>
-                                                    <div className="bg-slate-50/50 p-3 rounded-xl border border-slate-100">
-                                                        <p className="text-[9px] font-black text-slate-400 uppercase mb-1">Giải pháp</p>
-                                                        <p className="text-[10px] font-bold text-slate-700 leading-tight">{cls.solution}</p>
+                                                    <h4 className="font-black text-slate-900 border-l-4 border-potato-pink pl-3 text-[13px] mb-3 leading-tight">{cls.status}</h4>
+                                                    <p className="text-[11px] font-medium text-slate-500 mb-5 leading-relaxed italic text-justify opacity-80">"{cls.desc}"</p>
+                                                    <div className="bg-potato-blue/5 p-4 rounded-2xl">
+                                                        <p className="text-[9px] font-black text-potato-blue uppercase mb-2 tracking-widest">Giải pháp</p>
+                                                        <p className="text-[11px] font-bold text-slate-700 leading-snug">{cls.solution}</p>
                                                     </div>
                                                 </div>
                                             ))
@@ -694,47 +710,45 @@
                     </div>
 
                     {/* Innovation Strategy */}
-                    <div className="glass-card rounded-[32px] p-8 relative overflow-hidden bg-white/40 border border-white/40">
-                        <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-50 rounded-full -mr-32 -mt-32 opacity-20 pointer-events-none blur-3xl"></div>
-                        <h2 className="text-xl font-black text-slate-800 mb-10 flex items-center gap-2">
-                            <Icon name="ph-sparkle" className="text-indigo-500" /> II. Chiến lược cải tiến chuyên môn
+                    <div className="soft-card rounded-[40px] p-10 relative overflow-hidden bg-white border-none shadow-xl">
+                        <div className="absolute top-0 right-0 w-80 h-80 bg-potato-blue/5 rounded-full -mr-40 -mt-40 blur-3xl"></div>
+                        <h2 className="text-2xl font-black text-soft-blue mb-10 flex items-center gap-4 italic uppercase tracking-tighter">
+                            <Icon name="ph-sparkle" className="text-potato-blue animate-pulse" /> Chiến lược cải tiến chuyên môn
                         </h2>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                            <div className="space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 relative z-10">
+                            <div className="space-y-8">
                                 {TEACHER_REPORT_DATA.strategies.map((strat, idx) => (
-                                    <div key={idx} className="flex items-start gap-5 p-6 rounded-[24px] bg-white/50 border border-white/60 hover:bg-white/80 transition-all group">
-                                        <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shrink-0 shadow-lg group-hover:scale-110 transition-transform">
-                                            <Icon name={strat.icon} className="text-2xl" />
+                                    <div key={idx} className="flex items-start gap-6 p-8 rounded-[32px] bg-slate-50/50 hover:bg-white transition-all group border border-transparent hover:border-slate-100 hover:shadow-lg">
+                                        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-potato-blue to-soft-blue flex items-center justify-center text-white shrink-0 shadow-lg group-hover:scale-110 transition-transform">
+                                            <Icon name={strat.icon} className="text-3xl" />
                                         </div>
-                                        <div className="space-y-1">
-                                            <h4 className="font-black text-slate-800 text-sm">{strat.title}</h4>
-                                            <p className="text-[12px] font-medium text-slate-500 leading-relaxed">{strat.desc}</p>
+                                        <div className="space-y-2">
+                                            <h4 className="font-black text-slate-900 text-sm italic uppercase tracking-tight">{strat.title}</h4>
+                                            <p className="text-[12px] font-medium text-slate-500 leading-relaxed text-justify opacity-80">{strat.desc}</p>
                                         </div>
                                     </div>
                                 ))}
                             </div>
-                            <div className="bg-indigo-50/30 p-8 rounded-[32px] border border-indigo-100/50 shadow-inner">
-                                <div className="flex items-center gap-3 mb-6">
-                                    <div className="p-2 bg-indigo-600 rounded-xl text-white shadow-md">
-                                        <Icon name="ph-users-three" className="text-lg" />
+                            <div className="bg-potato-blue/5 p-10 rounded-[40px] border border-white shadow-inner">
+                                <div className="flex items-center gap-4 mb-8">
+                                    <div className="w-12 h-12 bg-potato-blue rounded-2xl text-white flex items-center justify-center shadow-lg">
+                                        <Icon name="ph-users-three" className="text-2xl" />
                                     </div>
-                                    <h4 className="font-black text-[10px] uppercase tracking-widest text-indigo-700">Student Care: Ken & Hailey</h4>
+                                    <h4 className="font-black text-[11px] uppercase tracking-[0.2em] text-soft-blue italic">Student Care Focus</h4>
                                 </div>
-                                <div className="space-y-5">
+                                <div className="space-y-8">
                                     {[
-                                        { task: "Kết nối Phụ huynh", progress: 80, badge: "80%", color: "emerald" },
-                                        { task: "Bài tập cá nhân hóa", progress: 100, badge: "DONE", color: "indigo" },
-                                        { task: "Kiểm tra từ vựng", progress: 60, badge: "WEEKLY", color: "amber" }
+                                        { task: "Kết nối Phụ huynh", progress: 80, color: "bg-potato-green" },
+                                        { task: "Bài tập cá nhân hóa", progress: 100, color: "bg-potato-blue" },
+                                        { task: "Kiểm tra từ vựng", progress: 60, color: "bg-potato-yellow" }
                                     ].map((item, idx) => (
-                                        <div key={idx} className="space-y-2">
-                                            <div className="flex justify-between items-center px-1">
-                                                <span className="text-[12px] font-bold text-slate-700">{item.task}</span>
-                                                <span className={`text-[9px] font-black bg-${item.color}-100 text-${item.color}-700 px-2 py-0.5 rounded-full`}>
-                                                    {item.badge}
-                                                </span>
+                                        <div key={idx} className="space-y-3">
+                                            <div className="flex justify-between items-center">
+                                                <span className="text-[12px] font-black text-slate-700 italic uppercase tracking-tight">{item.task}</span>
+                                                <span className="text-[10px] font-black text-slate-400 italic">{item.progress}%</span>
                                             </div>
-                                            <div className="w-full bg-slate-200/50 h-2 rounded-full overflow-hidden shadow-inner">
-                                                <div className={`h-full bg-${item.color === 'emerald' ? 'emerald-500' : item.color === 'indigo' ? 'indigo-600' : 'amber-500'} transition-all duration-1000 shadow-sm`} style={{ width: `${item.progress}%` }}></div>
+                                            <div className="w-full bg-white h-2 rounded-full overflow-hidden shadow-inner">
+                                                <div className={`h-full ${item.color} transition-all duration-1000`} style={{ width: `${item.progress}%` }}></div>
                                             </div>
                                         </div>
                                     ))}
@@ -774,22 +788,19 @@
             return (
                 <div className="space-y-8 animate-fade-in pb-12">
                     {/* KPI Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                         {reports.map((report, i) => (
-                            <div key={i} className={`glass-card rounded-[24px] p-6 flex flex-col justify-between group overflow-hidden relative ${report.border} hover:scale-[1.02] transition-all cursor-default`}>
+                            <div key={i} className={`soft-card rounded-[32px] p-8 border-none flex flex-col justify-between group overflow-hidden relative hover:scale-[1.02] transition-all cursor-default`}>
                                 <div className="flex justify-between items-start relative z-10">
                                     <div>
-                                        <p className="text-[11px] font-black text-slate-500 mb-1 uppercase tracking-wider">{report.title}</p>
-                                        <h3 className="text-3xl font-black text-slate-800 tracking-tight">{report.value}</h3>
+                                        <p className="text-[11px] font-black text-slate-400 mb-1 uppercase tracking-widest">{report.title}</p>
+                                        <h3 className={`text-4xl font-black ${report.color.replace('text-', 'text-')} tracking-tighter`}>{report.value}</h3>
                                     </div>
-                                    <div className={`p-2.5 rounded-xl bg-white/50 text-2xl shadow-sm ${report.color}`}>
-                                        <Icon name={report.icon} />
+                                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center icon-gradient shadow-sm bg-white/50 ${report.color}`}>
+                                        <Icon name={report.icon} className="text-xl" />
                                     </div>
                                 </div>
-                                <p className="mt-4 text-[11px] font-bold text-slate-400 leading-tight relative z-10">{report.sub}</p>
-                                <div className={`absolute -right-4 -bottom-4 text-7xl opacity-[0.03] rotate-12 ${report.color}`}>
-                                    <Icon name={report.icon} />
-                                </div>
+                                <p className="mt-6 text-[11px] font-black text-slate-400 leading-tight relative z-10 uppercase italic opacity-60">{report.sub}</p>
                             </div>
                         ))}
                     </div>
@@ -797,34 +808,34 @@
                     {/* Analytics Section */}
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                         {/* Phân Bổ Upload */}
-                        <div className="glass-card rounded-[32px] p-8 flex flex-col h-full bg-white/30 backdrop-blur-xl border border-white/40">
-                            <h3 className="text-lg font-black text-slate-800 mb-8 flex items-center gap-2">
-                                <Icon name="ph-chart-pie-slice" className="text-blue-500" /> Phân Bổ Upload Ảnh Học Sinh
+                        <div className="soft-card rounded-[40px] p-10 flex flex-col h-full bg-white border-none">
+                            <h3 className="text-xl font-black text-soft-blue mb-10 flex items-center gap-3 italic">
+                                <Icon name="ph-chart-pie-slice" className="text-potato-blue" /> Phân Bổ Upload Ảnh
                             </h3>
-                            <div className="flex flex-col md:flex-row items-center gap-10 flex-1">
-                                <div className="relative w-48 h-48 flex items-center justify-center shrink-0">
+                            <div className="flex flex-col md:flex-row items-center gap-12 flex-1">
+                                <div className="relative w-56 h-56 flex items-center justify-center shrink-0">
                                     <svg className="w-full h-full transform -rotate-90">
-                                        <circle cx="96" cy="96" r="80" stroke="currentColor" strokeWidth="24" fill="transparent" className="text-slate-100" />
-                                        <circle cx="96" cy="96" r="80" stroke="currentColor" strokeWidth="24" fill="transparent" strokeDasharray="502 502" strokeDashoffset="50.2" className="text-blue-500" />
-                                        <circle cx="96" cy="96" r="80" stroke="currentColor" strokeWidth="24" fill="transparent" strokeDasharray="25.1 502" strokeDashoffset="-452" className="text-amber-500" />
-                                        <circle cx="96" cy="96" r="80" stroke="currentColor" strokeWidth="24" fill="transparent" strokeDasharray="25.1 502" strokeDashoffset="-477.1" className="text-rose-500" />
+                                        <circle cx="112" cy="112" r="90" stroke="currentColor" strokeWidth="20" fill="transparent" className="text-slate-50" />
+                                        <circle cx="112" cy="112" r="90" stroke="currentColor" strokeWidth="20" fill="transparent" strokeDasharray="565.48" strokeDashoffset="56.55" className="text-potato-blue" strokeLinecap="round" />
+                                        <circle cx="112" cy="112" r="90" stroke="currentColor" strokeWidth="20" fill="transparent" strokeDasharray="28.27 565.48" strokeDashoffset="-508.93" className="text-potato-yellow" strokeLinecap="round" />
+                                        <circle cx="112" cy="112" r="90" stroke="currentColor" strokeWidth="20" fill="transparent" strokeDasharray="28.27 565.48" strokeDashoffset="-537.20" className="text-potato-red" strokeLinecap="round" />
                                     </svg>
                                     <div className="absolute flex flex-col items-center">
-                                        <span className="text-4xl font-black text-slate-800 leading-none">90%</span>
-                                        <span className="text-[10px] font-bold text-slate-400 uppercase mt-1">Average</span>
+                                        <span className="text-5xl font-black text-slate-900 leading-none tracking-tighter italic">90%</span>
+                                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-2">Success</span>
                                     </div>
                                 </div>
-                                <div className="flex-1 w-full space-y-4">
+                                <div className="flex-1 w-full space-y-6">
                                     {uploadBreakdown.map((item, i) => (
-                                        <div key={i} className="space-y-1.5 group">
-                                            <div className="flex justify-between items-center text-[12px]">
-                                                <span className="font-bold text-slate-600 flex items-center gap-2">
-                                                    <div className={`w-2 h-2 rounded-full ${item.color}`} /> {item.label}
+                                        <div key={i} className="space-y-2 group">
+                                            <div className="flex justify-between items-center text-[11px]">
+                                                <span className="font-black text-slate-500 flex items-center gap-3 uppercase tracking-tighter">
+                                                    <div className={`w-3 h-3 rounded-full ${item.color.replace('blue', 'potato-blue').replace('amber', 'potato-yellow').replace('rose', 'potato-red')} shadow-sm`} /> {item.label.split(':')[0]}
                                                 </span>
-                                                <span className="font-black text-slate-800 tracking-tight">{item.value}</span>
+                                                <span className="font-black text-slate-900 italic">{item.value}</span>
                                             </div>
-                                            <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
-                                                <div className={`h-full ${item.color} rounded-full transition-all duration-1000 ${item.width}`} />
+                                            <div className="h-2 w-full bg-slate-50 rounded-full overflow-hidden">
+                                                <div className={`h-full ${item.color.replace('blue', 'potato-blue').replace('amber', 'potato-yellow').replace('rose', 'potato-red')} rounded-full transition-all duration-1000 ${item.width}`} />
                                             </div>
                                         </div>
                                     ))}
@@ -833,33 +844,33 @@
                         </div>
 
                         {/* Phân Bổ Ôn Thi */}
-                        <div className="glass-card rounded-[32px] p-8 bg-white/30 backdrop-blur-xl border border-white/40">
-                             <h3 className="text-lg font-black text-slate-800 mb-8 flex items-center gap-2">
-                                <Icon name="ph-users-three" className="text-indigo-500" /> Phân Bổ Ôn Thi Học Kỳ 2
+                        <div className="soft-card rounded-[40px] p-10 bg-white border-none shadow-xl flex flex-col h-full">
+                             <h3 className="text-xl font-black text-soft-blue mb-10 flex items-center gap-4 italic uppercase">
+                                <Icon name="ph-users-three" className="text-potato-blue" /> Phân Bổ Ôn Thi HK2
                             </h3>
-                            <div className="space-y-8">
+                            <div className="space-y-10 flex-1">
                                 {semesterBreakdown.map((item, i) => (
-                                    <div key={i} className="flex items-center gap-6 group">
-                                        <div className="w-16 h-16 rounded-[20px] bg-slate-50 border border-slate-100 flex flex-col items-center justify-center shrink-0">
-                                            <span className="text-2xl font-black text-slate-800">{item.count}</span>
-                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Students</span>
+                                    <div key={i} className="flex items-center gap-8 group">
+                                        <div className="w-20 h-20 rounded-[28px] bg-slate-50 border border-slate-100 flex flex-col items-center justify-center shrink-0 shadow-inner group-hover:bg-white transition-all">
+                                            <span className="text-3xl font-black text-slate-800 italic">{item.count}</span>
+                                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mt-1">Học sinh</span>
                                         </div>
-                                        <div className="flex-1 space-y-2">
+                                        <div className="flex-1 space-y-3">
                                             <div className="flex justify-between items-end">
                                                 <div>
-                                                    <h4 className="text-sm font-black text-slate-800">Chi nhánh {item.campus}</h4>
-                                                    <p className="text-[11px] font-bold text-slate-400 mt-0.5">PIC: <span className="text-indigo-600">{item.pic}</span></p>
+                                                    <h4 className="text-sm font-black text-slate-900 uppercase italic tracking-tight">Chi nhánh {item.campus}</h4>
+                                                    <p className="text-[10px] font-black text-slate-400 mt-1 uppercase tracking-widest italic leading-none">PIC: <span className="text-potato-blue">{item.pic}</span></p>
                                                 </div>
-                                                <span className="text-lg font-black text-slate-800 tracking-tighter">{item.percentage}</span>
+                                                <span className="text-xl font-black text-slate-900 tracking-tighter italic">{item.percentage}</span>
                                             </div>
-                                            <div className="h-3 w-full bg-slate-50 rounded-full overflow-hidden border border-slate-100/50">
-                                                <div className={`h-full ${item.color} rounded-full group-hover:opacity-80 transition-all duration-700 w-[${item.percentage}]`} style={{ width: item.percentage }} />
+                                            <div className="h-2 w-full bg-slate-50 rounded-full overflow-hidden shadow-inner">
+                                                <div className={`h-full ${item.color.replace('indigo', 'soft-blue').replace('potato-magenta', 'potato-pink')} rounded-full group-hover:opacity-100 opacity-80 transition-all duration-1000`} style={{ width: item.percentage }} />
                                             </div>
                                         </div>
                                     </div>
                                 ))}
-                                <div className="mt-4 p-4 rounded-2xl bg-indigo-50/50 border border-indigo-100/50">
-                                    <p className="text-[12px] font-bold text-indigo-700 leading-relaxed text-center">
+                                <div className="mt-6 p-6 rounded-[32px] bg-potato-blue/5 border border-potato-blue/10">
+                                    <p className="text-[11px] font-black text-soft-blue leading-relaxed text-center uppercase italic tracking-tight">
                                          Tổng cộng 13 học sinh đã đăng ký ôn thi (PIC quản lý sát tiến độ)
                                     </p>
                                 </div>
@@ -868,20 +879,20 @@
                     </div>
 
                     {/* Issues Alert Panel */}
-                    <div className="glass-card rounded-[32px] p-8 border-l-4 border-l-rose-500 relative overflow-hidden bg-white/40">
-                        <div className="absolute top-0 right-0 p-8 opacity-[0.02] text-9xl text-rose-500 rotate-12 pointer-events-none">
+                    <div className="soft-card rounded-[40px] p-10 border-none relative overflow-hidden bg-white">
+                        <div className="absolute top-0 right-0 p-12 opacity-[0.03] text-9xl text-potato-red rotate-12 pointer-events-none">
                              <Icon name="ph-warning-octagon" />
                         </div>
-                        <div className="flex items-center gap-4 mb-8 relative z-10">
-                             <div className="w-12 h-12 bg-rose-50 rounded-2xl flex items-center justify-center shadow-sm border border-rose-100 animate-pulse">
-                                <Icon name="ph-warning-octagon" className="text-2xl text-rose-500" />
+                        <div className="flex items-center gap-5 mb-10 relative z-10">
+                             <div className="w-16 h-16 bg-potato-red/10 rounded-3xl flex items-center justify-center shadow-lg shadow-potato-red/10 animate-pulse transition-transform hover:scale-105">
+                                <Icon name="ph-warning-octagon" className="text-3xl text-potato-red" />
                              </div>
                              <div>
-                                <h3 className="text-xl font-black text-slate-900 tracking-tight leading-none">Issues: Thiếu tư vấn viên trực ca</h3>
-                                <p className="text-[11px] font-bold text-rose-400 mt-2 uppercase tracking-wider">Critical staffing shortages detected</p>
+                                <h3 className="text-2xl font-black text-slate-900 tracking-tighter italic uppercase">Critical Issues: Thiếu tư vấn viên trực ca</h3>
+                                <p className="text-[11px] font-black text-potato-red mt-2 uppercase tracking-[0.2em] italic opacity-80">Staffing shortages detected</p>
                              </div>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative z-10">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative z-10">
                             {issues.map((issue, i) => (
                                 <div key={i} className="bg-white/40 p-6 rounded-2xl border border-white/40 hover:bg-white/60 hover:shadow-md transition-all duration-300">
                                     <h4 className="text-[10px] font-black text-rose-500 uppercase tracking-[0.1em] mb-3 flex items-center gap-2">
@@ -938,42 +949,42 @@
             const style = statusConfig[data.status] || statusConfig["Đúng Tiến Độ"];
 
             return (
-                <div className="glass-card rounded-[24px] p-1 relative overflow-hidden group animate-fade-in shadow-lg">
-                    <div className="rounded-[20px] p-6">
-                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 border-b border-white/20 pb-5">
+                <div className="soft-card rounded-[40px] p-2 relative overflow-hidden group animate-fade-in shadow-xl bg-white border-none">
+                    <div className="rounded-[36px] p-8">
+                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 border-b border-slate-50 pb-8">
                             <div>
-                                <div className="flex items-center gap-3 mb-2">
-                                    <span className="px-3 py-1 bg-gradient-to-r from-potato-magenta to-potato-red text-white text-[10px] font-black rounded-full uppercase tracking-tighter">Trọng tâm {department}</span>
-                                    <span className="text-xs font-black text-slate-400 flex items-center">
-                                        <Icon name="ph-calendar-blank" className="mr-1" /> Tuần {week}
+                                <div className="flex items-center gap-4 mb-4">
+                                    <span className="px-4 py-2 bg-gradient-to-r from-potato-pink to-potato-red text-white text-[11px] font-black rounded-xl uppercase tracking-[0.1em] italic shadow-lg shadow-potato-pink/20">Trọng tâm {department}</span>
+                                    <span className="text-[11px] font-black text-slate-400 flex items-center uppercase tracking-widest italic">
+                                        <Icon name="ph-calendar-blank" className="mr-2 text-potato-blue" /> Tuần {week}
                                     </span>
                                 </div>
-                                <h2 className="text-xl font-black text-slate-800 flex items-center gap-2 mt-2 leading-tight">
-                                    <Icon name="ph-target" className="text-potato-magenta" /> {data.theme}
+                                <h2 className="text-3xl font-black text-soft-blue flex items-center gap-4 leading-none italic uppercase tracking-tighter">
+                                    <Icon name="ph-target" className="text-potato-pink animate-pulse" /> {data.theme}
                                 </h2>
                             </div>
-                            <div className={`mt-4 md:mt-0 px-3 py-1 rounded-full border text-[11px] font-black flex items-center gap-2 ${style.bg} ${style.text} ${style.border}`}>
-                                <div className={`w-1.5 h-1.5 rounded-full ${style.dot} animate-pulse`} /> {data.status}
+                            <div className={`mt-6 md:mt-0 px-6 py-3 rounded-2xl text-[11px] font-black flex items-center gap-3 shadow-sm border-none ${style.bg} ${style.text}`}>
+                                <div className={`w-2 h-2 rounded-full ${style.dot} animate-pulse shadow-current shadow-lg`} /> {data.status}
                             </div>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            <div className="bg-white/40 rounded-2xl p-5 border border-white/40 hover:bg-white/60 transition-all duration-300">
-                                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-1.5 leading-none">
-                                    <Icon name="ph-sparkle" className="text-potato-yellow" /> Kế Hoạch
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                            <div className="bg-slate-50 rounded-[32px] p-8 border border-transparent hover:border-slate-100 hover:bg-white hover:shadow-lg transition-all duration-500 group/item">
+                                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-3 leading-none italic">
+                                    <Icon name="ph-sparkle" className="text-potato-yellow group-hover/item:rotate-12 transition-transform" /> Kế Hoạch
                                 </h4>
-                                <p className="text-slate-600 text-[13px] leading-relaxed font-medium">{data.plan}</p>
+                                <p className="text-slate-700 text-[14px] leading-relaxed font-bold italic opacity-80">{data.plan}</p>
                             </div>
-                            <div className="bg-white/40 rounded-2xl p-5 border border-white/40 hover:bg-white/60 transition-all duration-300">
-                                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-1.5 leading-none">
-                                    <Icon name="ph-chart-line-up" className="text-potato-blue" /> Kết Quả
+                            <div className="bg-slate-50 rounded-[32px] p-8 border border-transparent hover:border-slate-100 hover:bg-white hover:shadow-lg transition-all duration-500 group/item">
+                                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-3 leading-none italic">
+                                    <Icon name="ph-chart-line-up" className="text-potato-blue group-hover/item:scale-110 transition-transform" /> Kết Quả
                                 </h4>
-                                <p className="text-slate-600 text-[13px] leading-relaxed font-medium">{data.result}</p>
+                                <p className="text-slate-700 text-[14px] leading-relaxed font-bold italic opacity-80">{data.result}</p>
                             </div>
-                            <div className="bg-potato-magenta/5 rounded-2xl p-5 border border-potato-magenta/10 hover:bg-white/60 transition-all duration-300">
-                                <h4 className="text-[10px] font-black text-potato-magenta uppercase tracking-widest mb-3 flex items-center gap-1.5 leading-none">
-                                    <Icon name="ph-lightning" /> Hành Động
+                            <div className="bg-potato-pink/5 rounded-[32px] p-8 border border-transparent hover:border-potato-pink/10 hover:bg-white hover:shadow-lg transition-all duration-500 group/item">
+                                <h4 className="text-[10px] font-black text-potato-pink uppercase tracking-widest mb-4 flex items-center gap-3 leading-none italic">
+                                    <Icon name="ph-lightning" className="animate-pulse" /> Hành Động
                                 </h4>
-                                <p className="text-potato-magenta/80 text-[13px] font-bold leading-relaxed">{data.action}</p>
+                                <p className="text-potato-pink text-[14px] font-black leading-relaxed italic uppercase tracking-tight">{data.action}</p>
                             </div>
                         </div>
                     </div>
@@ -1005,15 +1016,15 @@
             };
 
             const sidebarContent = (
-                <aside className={`${isOpen ? 'translate-x-0 w-[280px]' : '-translate-x-full lg:translate-x-0 lg:w-[80px]'} h-screen bg-white border-r border-slate-100 flex flex-col transition-all duration-300 ease-in-out fixed lg:relative z-[60] overflow-hidden group/sidebar shadow-sm`}>
+                <aside className={`${isOpen ? 'translate-x-0 w-[260px]' : '-translate-x-full lg:translate-x-0 lg:w-[80px]'} h-screen bg-[#FDF8F3] flex flex-col transition-all duration-300 ease-in-out fixed lg:relative z-[60] overflow-hidden group/sidebar soft-panel border-none`}>
                     {/* Logo Section */}
                     <div className={`p-6 pb-12 flex items-center ${isOpen ? 'gap-4 px-8' : 'justify-center px-0'}`}>
-                        <div className="w-10 h-10 rounded-2xl overflow-hidden shadow-lg shadow-magenta-500/10 flex items-center justify-center bg-white shrink-0 border border-slate-100">
+                        <div className="w-10 h-10 rounded-2xl overflow-hidden shadow-lg shadow-potato-brown/20 flex items-center justify-center bg-white shrink-0">
                             <img src="https://raw.githubusercontent.com/hoangtien1300/Potato/main/logo_potato.jpg" alt="Potato Logo" className="w-full h-full object-contain p-1" />
                         </div>
                         {isOpen && (
                             <div className="animate-fade-in whitespace-nowrap">
-                                <h1 className="text-lg font-black text-slate-900 leading-none tracking-tighter uppercase italic">POTATO<span className="text-potato-magenta"> English</span></h1>
+                                <h1 className="text-lg font-black text-slate-900 leading-none tracking-tighter uppercase italic">POTATO<span className="text-potato-blue"> English</span></h1>
                                 <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-1">Never Stop Learning</p>
                             </div>
                         )}
@@ -1025,7 +1036,7 @@
                     </div>
 
                     {/* Navigation */}
-                    <nav className="flex-1 px-3 space-y-2 overflow-y-auto no-scrollbar">
+                    <nav className="flex-1 px-4 space-y-2 overflow-y-auto no-scrollbar">
                         {menuItems.map((item) => {
                             const isExpanded = expandedMenus.includes(item.id);
                             const hasChildren = item.children && item.children.length > 0;
@@ -1042,27 +1053,28 @@
                                                 if(isMobile) toggleOpen(); 
                                             }
                                         }}
-                                        className={`w-full flex items-center ${isOpen ? 'gap-4 px-6' : 'justify-center px-0'} py-4 rounded-[20px] transition-all duration-300 relative group ${
+                                        className={`w-full flex items-center ${isOpen ? 'gap-4 px-6' : 'justify-center px-0'} py-4 rounded-[22px] transition-all duration-300 relative group ${
                                             isActive 
-                                            ? 'bg-potato-magenta text-white shadow-xl shadow-magenta-500/20' 
-                                            : 'text-slate-400 hover:bg-slate-50 hover:text-slate-600'
+                                            ? 'bg-potato-blue/10 text-potato-blue' 
+                                            : 'text-slate-400 hover:bg-white hover:text-potato-brown'
                                         }`}
                                         title={!isOpen ? item.label : ""}
                                     >
-                                        <Icon name={item.icon} className={`text-xl transition-transform ${isActive ? 'scale-110' : 'group-hover:scale-110'}`} />
+                                        <Icon name={item.icon} className={`text-xl transition-all ${isActive ? 'scale-110' : 'group-hover:scale-110'}`} />
                                         {isOpen && (
                                             <>
-                                                <span className="text-sm font-black tracking-tight whitespace-nowrap animate-fade-in uppercase italic flex-1 text-left">{item.label}</span>
+                                                <span className="text-[12px] font-black tracking-tight whitespace-nowrap animate-fade-in uppercase italic flex-1 text-left">{item.label}</span>
                                                 {hasChildren && (
-                                                    <Icon name={isExpanded ? "ph-caret-up" : "ph-caret-down"} className="text-xs opacity-50" />
+                                                    <Icon name={isExpanded ? "ph-caret-up" : "ph-caret-down"} className="text-[10px] opacity-40 ml-2" />
                                                 )}
                                             </>
                                         )}
+                                        {isActive && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-6 bg-potato-blue rounded-r-full" />}
                                     </button>
 
                                     {/* Children Rendering */}
                                     {isOpen && hasChildren && isExpanded && (
-                                        <div className="space-y-1 ml-4 animate-fade-in">
+                                        <div className="space-y-1 ml-2 animate-fade-in">
                                             {item.children.map(child => (
                                                 <button
                                                     key={child.id}
@@ -1074,14 +1086,14 @@
                                                             if(isMobile) toggleOpen(); 
                                                         }
                                                     }}
-                                                    className={`w-full flex items-center gap-4 px-6 py-3 rounded-[15px] transition-all duration-300 relative group ${
+                                                    className={`w-full flex items-center gap-4 px-6 py-3.5 rounded-[18px] transition-all duration-300 relative group ${
                                                         activeTab === child.id 
-                                                        ? 'bg-slate-900 text-white shadow-md' 
-                                                        : 'text-slate-400 hover:bg-slate-50 hover:text-slate-600'
+                                                        ? 'bg-white text-potato-blue shadow-sm' 
+                                                        : 'text-slate-400 hover:text-potato-blue hover:bg-white/50'
                                                     }`}
                                                 >
                                                     <Icon name={child.icon} className={`text-lg transition-transform ${activeTab === child.id ? 'scale-110' : 'group-hover:scale-110'}`} />
-                                                    <span className="text-[11px] font-black tracking-tight whitespace-nowrap uppercase italic">{child.label}</span>
+                                                    <span className="text-[10px] font-black tracking-tight whitespace-nowrap uppercase italic">{child.label}</span>
                                                 </button>
                                             ))}
                                         </div>
@@ -1092,19 +1104,19 @@
                     </nav>
 
                     {/* Toggle Button & Footer */}
-                    <div className="p-4 border-t border-slate-50 space-y-4">
+                    <div className="p-4 space-y-4">
                         <button 
                             onClick={toggleOpen}
-                            className={`w-full hidden lg:flex items-center justify-center h-12 rounded-2xl bg-slate-50 text-slate-400 hover:text-potato-magenta hover:bg-rose-50 transition-all active:scale-95 shadow-inner group/toggle`}
+                            className={`w-full hidden lg:flex items-center justify-center h-12 rounded-2xl bg-white/50 text-slate-300 hover:text-potato-blue hover:bg-white transition-all shadow-sm group/toggle`}
                         >
                             <Icon name={isOpen ? "ph-caret-double-left" : "ph-caret-double-right"} className="text-xl group-hover:scale-110 transition-transform" />
                         </button>
                         
                         {isOpen && (
-                            <div className="bg-slate-50 rounded-2xl p-4 space-y-3 animate-fade-in">
+                            <div className="bg-white/40 rounded-2xl p-4 flex items-center justify-center animate-fade-in shadow-inner">
                                 <div className="flex items-center gap-2">
-                                    <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                                    <span className="text-[9px] font-black text-slate-800 uppercase tracking-widest">v6.5 PRO</span>
+                                    <div className="w-1.5 h-1.5 rounded-full bg-potato-green animate-pulse" />
+                                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">v6.5 PREMIUM</span>
                                 </div>
                             </div>
                         )}
@@ -1142,15 +1154,15 @@
             const renderContent = () => {
                 if (activeWeek < 14) {
                     return (
-                        <div className="flex flex-col items-center justify-center p-32 text-slate-300 space-y-6 animate-fade-in glass-card rounded-[40px]">
-                            <div className="w-24 h-24 bg-white/40 rounded-full flex items-center justify-center border border-white/20 shadow-inner">
+                        <div className="flex flex-col items-center justify-center p-32 text-slate-300 space-y-6 animate-fade-in soft-card rounded-[40px] border-none">
+                            <div className="w-24 h-24 bg-potato-blue/5 rounded-full flex items-center justify-center shadow-inner">
                                 <Icon name="ph-database" className="text-4xl opacity-20" />
                             </div>
                             <div className="text-center">
                                 <p className="font-black text-slate-800 text-2xl tracking-tight uppercase italic tracking-tighter">Dữ liệu chưa sẵn sàng</p>
                                 <p className="font-bold text-slate-400 mt-2">Hệ thống chưa có dữ liệu báo cáo cho Tuần {activeWeek}.</p>
                             </div>
-                            <button onClick={() => setActiveWeek(14)} className="px-8 py-3.5 bg-potato-magenta text-white rounded-2xl text-xs font-black uppercase tracking-widest shadow-xl shadow-magenta-500/20 hover:scale-105 transition-all">Quay lại Tuần 14</button>
+                            <button onClick={() => setActiveWeek(14)} className="px-8 py-3.5 bg-potato-blue/10 text-potato-blue rounded-2xl text-[11px] font-black uppercase tracking-widest hover:bg-potato-blue hover:text-white transition-all">Quay lại Tuần 14</button>
                         </div>
                     );
                 }
@@ -1190,19 +1202,19 @@
                                     </div>
 
                                     {/* Middle Row: Large Line Chart (Visualized Placeholder) */}
-                                    <div className="glass-card rounded-[40px] p-10 bg-white group shadow-xl">
+                                    <div className="soft-card rounded-[40px] p-10 bg-white group border-none">
                                         <div className="flex justify-between items-end mb-10">
                                             <div>
-                                                <h3 className="text-xl font-black text-slate-900 tracking-tight">Activity Summary</h3>
-                                                <p className="text-[11px] font-bold text-slate-400 mt-1 uppercase tracking-widest">Monthly operation flow</p>
+                                                <h3 className="text-xl font-black text-soft-blue tracking-tight">Activity Summary</h3>
+                                                <p className="text-[11px] font-bold text-slate-400 mt-1 uppercase tracking-widest italic">Monthly operation flow</p>
                                             </div>
                                             <div className="flex items-center gap-6">
                                                 <div className="flex items-center gap-2">
-                                                    <div className="w-2.5 h-2.5 rounded-full bg-potato-magenta shadow-lg shadow-magenta-500/20"></div>
+                                                    <div className="w-2.5 h-2.5 rounded-full bg-soft-blue shadow-lg shadow-soft-blue/20"></div>
                                                     <span className="text-[10px] font-black text-slate-500 uppercase">Học viên mới</span>
                                                 </div>
                                                 <div className="flex items-center gap-2">
-                                                    <div className="w-2.5 h-2.5 rounded-full bg-potato-blue shadow-lg shadow-blue-500/20"></div>
+                                                    <div className="w-2.5 h-2.5 rounded-full bg-soft-blue/40 shadow-lg shadow-soft-blue/10"></div>
                                                     <span className="text-[10px] font-black text-slate-500 uppercase">Dự án học vụ</span>
                                                 </div>
                                             </div>
@@ -1210,11 +1222,9 @@
                                         {/* Simplified Graphic Representation of a Chart */}
                                         <div className="h-64 w-full relative group/chart">
                                             <svg viewBox="0 0 1000 300" className="w-full h-full overflow-visible">
-                                                <path d="M0,250 C100,220 200,280 300,200 C400,120 500,240 600,180 C700,120 800,160 900,100 L1000,80" fill="none" stroke="#00aeef" strokeWidth="4" strokeLinecap="round" className="drop-shadow-lg" />
-                                                <path d="M0,280 C150,260 250,220 350,250 C450,280 550,180 650,150 C750,120 850,200 1000,150" fill="none" stroke="#00aeef" strokeWidth="4" strokeLinecap="round" className="drop-shadow-lg opacity-60" />
-                                                <circle cx="600" cy="180" r="6" fill="#00aeef" className="animate-pulse" />
-                                                <rect x="580" y="80" width="80" height="40" rx="10" fill="white" className="shadow-2xl border border-slate-100 opacity-0 group-hover/chart:opacity-100 transition-opacity" />
-                                                <text x="620" y="105" textAnchor="middle" fontSize="12" fontWeight="900" fill="#0F172A" className="opacity-0 group-hover/chart:opacity-100 transition-opacity">142 Act</text>
+                                                <path d="M0,250 C100,220 200,280 300,200 C400,120 500,240 600,180 C700,120 800,160 900,100 L1000,80" fill="none" stroke="#2171B5" strokeWidth="6" strokeLinecap="round" className="drop-shadow-2xl" />
+                                                <path d="M0,280 C150,260 250,220 350,250 C450,280 550,180 650,150 C750,120 850,200 1000,150" fill="none" stroke="#2171B5" strokeWidth="6" strokeLinecap="round" className="drop-shadow-2xl opacity-20" />
+                                                <circle cx="600" cy="180" r="8" fill="#2171B5" className="animate-pulse" />
                                             </svg>
                                             <div className="absolute bottom-0 left-0 right-0 flex justify-between px-2 pt-4">
                                                 {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'].map(m => (
@@ -1227,22 +1237,22 @@
                                     {/* Bottom Data Row: Complex Data visualization */}
                                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                                         {/* Left: Interactive Bar Chart Summary */}
-                                        <div className="glass-card rounded-[40px] p-8 space-y-8">
+                                        <div className="soft-card rounded-[40px] p-10 space-y-10 bg-white border-none shadow-xl">
                                             <div className="flex justify-between items-center px-2">
-                                                <h3 className="text-lg font-black text-slate-900 tracking-tight leading-none italic uppercase">Học Viên Theo Tuần</h3>
-                                                <button className="text-[10px] font-black text-indigo-500 uppercase tracking-widest border-b-2 border-indigo-100 pb-1">View Full Data</button>
+                                                <h3 className="text-xl font-black text-soft-blue tracking-tighter leading-none italic uppercase">Học Viên Theo Tuần</h3>
+                                                <button className="text-[10px] font-black text-potato-blue uppercase tracking-widest border-b-2 border-potato-blue/10 pb-1 hover:border-potato-blue transition-all">View Analytics</button>
                                             </div>
-                                            <div className="flex items-end justify-between h-48 px-2 gap-3">
+                                            <div className="flex items-end justify-between h-56 px-4 gap-4">
                                                 {[40, 60, 45, 90, 100, 65, 50].map((v, i) => (
-                                                    <div key={i} className="flex-1 flex flex-col items-center group/vbar">
-                                                        <div className="relative w-full bg-slate-50 rounded-2xl h-full flex items-end overflow-hidden shadow-inner cursor-pointer">
+                                                    <div key={i} className="flex-1 flex flex-col items-center group/vbar h-full justify-end">
+                                                        <div className="relative w-full bg-slate-50 rounded-[20px] transition-all duration-700 h-full flex items-end overflow-hidden shadow-inner cursor-pointer group-hover/vbar:bg-slate-100">
                                                             <div 
-                                                                className={`w-full rounded-2xl transition-all duration-1000 ${v > 80 ? 'bg-potato-magenta' : 'bg-slate-200'} shadow-lg group-hover/vbar:bg-indigo-500`} 
+                                                                className={`w-full rounded-[20px] transition-all duration-1000 ${v > 80 ? 'bg-potato-pink' : 'bg-potato-blue/40'} shadow-lg group-hover/vbar:scale-x-105`} 
                                                                 style={{ height: `${v}%` }}
                                                             />
-                                                            <div className="absolute inset-0 bg-white/20 opacity-0 group-hover/vbar:opacity-100 transition-opacity"></div>
+                                                            <div className="absolute inset-0 bg-white/10 opacity-0 group-hover/vbar:opacity-100 transition-opacity"></div>
                                                         </div>
-                                                        <span className="mt-4 text-[10px] font-black text-slate-300 uppercase">{['S', 'M', 'T', 'W', 'T', 'F', 'S'][i]}</span>
+                                                        <span className="mt-5 text-[10px] font-black text-slate-400 uppercase tracking-widest italic">{['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][i]}</span>
                                                     </div>
                                                 ))}
                                             </div>
@@ -1293,8 +1303,8 @@
                                     <div className="space-y-6">
                                         <div className="flex justify-between items-end px-4">
                                             <div>
-                                                <h3 className="text-xl font-black text-slate-900 tracking-tight underline decoration-potato-magenta decoration-4 underline-offset-8 uppercase italic">User Reviews</h3>
-                                                <p className="text-[10px] font-bold text-slate-400 mt-1 pl-1 uppercase tracking-widest">What parents say about Potato English</p>
+                                                <h3 className="text-xl font-black text-soft-blue underline decoration-potato-pink decoration-4 underline-offset-8 uppercase italic">User Reviews</h3>
+                                                <p className="text-[10px] font-bold text-slate-400 mt-2 pl-1 uppercase tracking-widest italic">What parents say about Potato English</p>
                                             </div>
                                             <div className="flex gap-2">
                                                 <button className="p-2 bg-white border border-slate-100 rounded-xl shadow-sm text-slate-400 hover:text-potato-magenta transition-colors"><Icon name="ph-caret-left" className="text-lg" /></button>
@@ -1341,24 +1351,24 @@
                         return <LeaderReportView />;
                     case 'playbook-teen':
                         return (
-                             <div className="flex flex-col items-center justify-center p-32 space-y-10 animate-fade-in glass-card rounded-[40px] bg-white/30 backdrop-blur-3xl border border-white/40">
+                             <div className="flex flex-col items-center justify-center p-32 space-y-10 soft-card rounded-[40px] bg-white border-none">
                                 <div className="relative">
-                                    <div className="w-32 h-32 bg-potato-magenta/10 rounded-[40px] flex items-center justify-center border border-potato-magenta/20 shadow-inner group overflow-hidden">
-                                        <div className="absolute inset-0 bg-gradient-to-br from-potato-magenta/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                                        <Icon name="ph-book-open-text" className="text-6xl text-potato-magenta animate-pulse relative z-10" />
+                                    <div className="w-32 h-32 bg-potato-blue/5 rounded-[40px] flex items-center justify-center shadow-inner group overflow-hidden">
+                                        <div className="absolute inset-0 bg-gradient-to-br from-potato-blue/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                        <Icon name="ph-book-open-text" className="text-6xl text-potato-blue animate-pulse relative z-10" />
                                     </div>
-                                    <div className="absolute -top-2 -right-2 w-10 h-10 bg-rose-500 text-white rounded-full flex items-center justify-center text-xs font-black shadow-lg border-4 border-white animate-bounce">
+                                    <div className="absolute -top-2 -right-2 w-10 h-10 bg-potato-red text-white rounded-full flex items-center justify-center text-xs font-black shadow-lg border-4 border-white animate-bounce">
                                         !
                                     </div>
                                 </div>
                                 <div className="text-center space-y-4">
                                     <h2 className="font-black text-slate-800 text-4xl tracking-tighter uppercase italic">Đang update</h2>
                                     <p className="font-bold text-slate-400 max-w-md mx-auto leading-relaxed">
-                                        Chức năng <span className="text-potato-magenta">POTATO Play book For Teen</span> đang được chúng tôi hoàn thiện. Vui lòng quay lại sau!
+                                        Chức năng <span className="text-potato-blue">POTATO Play book For Teen</span> đang được chúng tôi hoàn thiện. Vui lòng quay lại sau!
                                     </p>
                                 </div>
                                 <div className="flex gap-4">
-                                    <button onClick={() => setActiveTab('dashboard')} className="px-8 py-4 bg-slate-900 text-white rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] shadow-xl hover:scale-105 transition-all active:scale-95">Quay lại Home</button>
+                                    <button onClick={() => setActiveTab('dashboard')} className="px-8 py-4 bg-potato-blue/10 text-potato-blue rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] hover:bg-potato-blue hover:text-white transition-all active:scale-95">Quay lại Home</button>
                                     <button onClick={() => setActiveTab('teacher')} className="px-8 py-4 bg-white border border-slate-100 text-slate-600 rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] shadow-sm hover:bg-slate-50 transition-all active:scale-95">Teacher Dashboard</button>
                                 </div>
                             </div>
@@ -1380,7 +1390,7 @@
             };
 
             return (
-                <div className="flex h-screen overflow-hidden bg-[#F8F9FE]">
+                <div className="flex h-screen overflow-hidden bg-white">
                     <Sidebar 
                         activeTab={activeTab} 
                         setActiveTab={setActiveTab} 
@@ -1389,16 +1399,16 @@
                         isMobile={isMobile}
                     />
                     <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
-                        <header className="h-[70px] lg:h-[80px] px-4 lg:px-10 flex items-center justify-between border-b border-slate-100 bg-white sticky top-0 z-40">
+                        <header className="h-[70px] lg:h-[80px] px-6 lg:px-10 flex items-center justify-between border-b border-slate-50 bg-white sticky top-0 z-40">
                              <div className="flex items-center gap-4">
                                 {isMobile && (
-                                    <button onClick={() => setSidebarOpen(true)} className="p-2 text-slate-400 hover:text-potato-magenta">
+                                    <button onClick={() => setSidebarOpen(true)} className="p-2 text-slate-400 hover:text-potato-blue">
                                         <Icon name="ph-list" className="text-2xl" />
                                     </button>
                                 )}
                                 <div className="flex flex-col">
-                                    <p className="text-[9px] font-black text-rose-500 uppercase tracking-[0.2em] mb-0.5">v6.5 PRO</p>
-                                    <h1 className="text-sm lg:text-2xl font-black text-slate-900 tracking-tight leading-none italic uppercase truncate max-w-[150px] lg:max-w-none">
+                                    <p className="text-[10px] font-black text-potato-red uppercase tracking-[0.2em] mb-0.5 animate-pulse">v6.5 PREMIUM</p>
+                                    <h1 className="text-sm lg:text-2xl font-black text-soft-blue tracking-tighter leading-none italic uppercase truncate max-w-[150px] lg:max-w-none">
                                         {activeTab === 'dashboard' ? 'Welcome Potato Dashboard' : 
                                          activeTab === 'teacher' ? 'Teacher Dashboard' : 
                                          activeTab === 'academic' ? 'Academic Dashboard' : 
@@ -1408,31 +1418,31 @@
                                 </div>
                              </div>
                              <div className="flex items-center gap-4 lg:gap-10">
-                                <div className="hidden sm:flex items-center px-4 py-2 bg-slate-50 rounded-2xl border border-slate-100 shadow-inner">
+                                <div className="hidden sm:flex items-center px-4 py-2 bg-potato-blue/5 rounded-2xl shadow-inner border-none">
                                     <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest border-r border-slate-200 pr-3 mr-3">Week</span>
                                     <div className="flex items-center gap-3">
-                                         <button onClick={() => setActiveWeek(w => Math.max(12, w-1))} className="text-slate-400 hover:text-potato-magenta transition-colors"><Icon name="ph-caret-left" /></button>
+                                         <button onClick={() => setActiveWeek(w => Math.max(12, w-1))} className="text-slate-300 hover:text-potato-blue transition-colors"><Icon name="ph-caret-left" /></button>
                                          <span className="text-xs font-black text-slate-900 min-w-[20px] text-center">{activeWeek}</span>
-                                         {activeWeek < 14 && <button onClick={() => setActiveWeek(w => Math.min(14, w+1))} className="text-slate-400 hover:text-potato-magenta transition-colors"><Icon name="ph-caret-right" /></button>}
+                                         {activeWeek < 14 && <button onClick={() => setActiveWeek(w => Math.min(14, w+1))} className="text-slate-300 hover:text-potato-blue transition-colors"><Icon name="ph-caret-right" /></button>}
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-3 lg:gap-6 border-l pl-4 lg:pl-10 border-slate-100">
-                                    <div className="relative p-2 rounded-xl bg-slate-50 text-slate-400 hover:text-slate-800 transition-colors cursor-pointer group">
+                                <div className="flex items-center gap-3 lg:gap-6 border-l pl-4 lg:pl-10 border-slate-50">
+                                    <div className="relative p-2.5 rounded-xl bg-potato-blue/5 text-slate-400 hover:text-potato-blue transition-colors cursor-pointer group">
                                         <Icon name="ph-bell-simple" className="text-lg lg:text-xl" />
-                                        <span className="absolute top-2 right-2 w-1.5 h-1.5 bg-rose-500 rounded-full border-2 border-white" />
+                                        <span className="absolute top-2.5 right-2.5 w-1.5 h-1.5 bg-potato-red rounded-full border-2 border-white" />
                                     </div>
                                     <div className="flex items-center gap-3">
                                         <div className="text-right hidden lg:block">
                                             <p className="text-[12px] font-black text-slate-900 leading-tight">Admin Potato</p>
-                                            <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">Ops Lead</p>
+                                            <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-0.5 italic">Ops Lead</p>
                                         </div>
-                                        <div className="w-9 h-9 lg:w-11 lg:h-11 rounded-xl lg:rounded-2xl bg-slate-900 flex items-center justify-center text-white text-[10px] lg:text-xs font-black shadow-lg shadow-slate-900/20 shrink-0">AP</div>
+                                        <div className="w-9 h-9 lg:w-11 lg:h-11 rounded-xl lg:rounded-2xl bg-potato-blue text-white shadow-xl shadow-potato-blue/20 flex items-center justify-center text-[10px] lg:text-xs font-black shrink-0">AP</div>
                                     </div>
                                 </div>
                              </div>
                         </header>
 
-                        <main className="flex-1 overflow-y-auto no-scrollbar p-4 lg:p-10 bg-[#F8F9FE]">
+                        <main className="flex-1 overflow-y-auto no-scrollbar p-6 lg:p-10 bg-white">
                             <div className="max-w-[1600px] mx-auto space-y-8 lg:space-y-12">
                                 {renderContent()}
                             </div>
