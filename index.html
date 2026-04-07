@@ -982,12 +982,27 @@
         };
 
         const Sidebar = ({ activeTab, setActiveTab, isOpen, toggleOpen, isMobile, setMobileOpen }) => {
+            const [expandedMenus, setExpandedMenus] = useState(['teacher']);
+
             const menuItems = [
                 { id: 'dashboard', label: 'Dashboard', icon: 'ph-squares-four' },
-                { id: 'teacher', label: 'Teacher', icon: 'ph-user-focus' },
+                { 
+                    id: 'teacher', 
+                    label: 'Teacher', 
+                    icon: 'ph-user-focus',
+                    children: [
+                        { id: 'playbook-teen', label: 'POTATO Play book For Teen', icon: 'ph-book-open' }
+                    ]
+                },
                 { id: 'academic', label: 'Academic', icon: 'ph-graduation-cap' },
                 { id: 'operation', label: 'Operation', icon: 'ph-gear-six' }
             ];
+
+            const toggleExpanded = (id) => {
+                setExpandedMenus(prev => 
+                    prev.includes(id) ? prev.filter(m => m !== id) : [...prev, id]
+                );
+            };
 
             const sidebarContent = (
                 <aside className={`${isOpen ? 'translate-x-0 w-[280px]' : '-translate-x-full lg:translate-x-0 lg:w-[80px]'} h-screen bg-white border-r border-slate-100 flex flex-col transition-all duration-300 ease-in-out fixed lg:relative z-[60] overflow-hidden group/sidebar shadow-sm`}>
@@ -1011,21 +1026,62 @@
 
                     {/* Navigation */}
                     <nav className="flex-1 px-3 space-y-2 overflow-y-auto no-scrollbar">
-                        {menuItems.map((item) => (
-                            <button
-                                key={item.id}
-                                onClick={() => { setActiveTab(item.id); if(isMobile) toggleOpen(); }}
-                                className={`w-full flex items-center ${isOpen ? 'gap-4 px-6' : 'justify-center px-0'} py-4 rounded-[20px] transition-all duration-300 relative group ${
-                                    activeTab === item.id 
-                                    ? 'bg-potato-magenta text-white shadow-xl shadow-magenta-500/20' 
-                                    : 'text-slate-400 hover:bg-slate-50 hover:text-slate-600'
-                                }`}
-                                title={!isOpen ? item.label : ""}
-                            >
-                                <Icon name={item.icon} className={`text-xl transition-transform ${activeTab === item.id ? 'scale-110' : 'group-hover:scale-110'}`} />
-                                {isOpen && <span className="text-sm font-black tracking-tight whitespace-nowrap animate-fade-in uppercase italic">{item.label}</span>}
-                            </button>
-                        ))}
+                        {menuItems.map((item) => {
+                            const isExpanded = expandedMenus.includes(item.id);
+                            const hasChildren = item.children && item.children.length > 0;
+                            const isActive = activeTab === item.id || (hasChildren && item.children.some(child => child.id === activeTab));
+
+                            return (
+                                <div key={item.id} className="space-y-1">
+                                    <button
+                                        onClick={() => { 
+                                            if (hasChildren) {
+                                                toggleExpanded(item.id);
+                                            } else {
+                                                setActiveTab(item.id); 
+                                                if(isMobile) toggleOpen(); 
+                                            }
+                                        }}
+                                        className={`w-full flex items-center ${isOpen ? 'gap-4 px-6' : 'justify-center px-0'} py-4 rounded-[20px] transition-all duration-300 relative group ${
+                                            isActive 
+                                            ? 'bg-potato-magenta text-white shadow-xl shadow-magenta-500/20' 
+                                            : 'text-slate-400 hover:bg-slate-50 hover:text-slate-600'
+                                        }`}
+                                        title={!isOpen ? item.label : ""}
+                                    >
+                                        <Icon name={item.icon} className={`text-xl transition-transform ${isActive ? 'scale-110' : 'group-hover:scale-110'}`} />
+                                        {isOpen && (
+                                            <>
+                                                <span className="text-sm font-black tracking-tight whitespace-nowrap animate-fade-in uppercase italic flex-1 text-left">{item.label}</span>
+                                                {hasChildren && (
+                                                    <Icon name={isExpanded ? "ph-caret-up" : "ph-caret-down"} className="text-xs opacity-50" />
+                                                )}
+                                            </>
+                                        )}
+                                    </button>
+
+                                    {/* Children Rendering */}
+                                    {isOpen && hasChildren && isExpanded && (
+                                        <div className="space-y-1 ml-4 animate-fade-in">
+                                            {item.children.map(child => (
+                                                <button
+                                                    key={child.id}
+                                                    onClick={() => { setActiveTab(child.id); if(isMobile) toggleOpen(); }}
+                                                    className={`w-full flex items-center gap-4 px-6 py-3 rounded-[15px] transition-all duration-300 relative group ${
+                                                        activeTab === child.id 
+                                                        ? 'bg-slate-900 text-white shadow-md' 
+                                                        : 'text-slate-400 hover:bg-slate-50 hover:text-slate-600'
+                                                    }`}
+                                                >
+                                                    <Icon name={child.icon} className={`text-lg transition-transform ${activeTab === child.id ? 'scale-110' : 'group-hover:scale-110'}`} />
+                                                    <span className="text-[11px] font-black tracking-tight whitespace-nowrap uppercase italic">{child.label}</span>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        })}
                     </nav>
 
                     {/* Toggle Button & Footer */}
@@ -1276,6 +1332,30 @@
                         return <AcademicView />;
                     case 'operation':
                         return <LeaderReportView />;
+                    case 'playbook-teen':
+                        return (
+                             <div className="flex flex-col items-center justify-center p-32 space-y-10 animate-fade-in glass-card rounded-[40px] bg-white/30 backdrop-blur-3xl border border-white/40">
+                                <div className="relative">
+                                    <div className="w-32 h-32 bg-potato-magenta/10 rounded-[40px] flex items-center justify-center border border-potato-magenta/20 shadow-inner group overflow-hidden">
+                                        <div className="absolute inset-0 bg-gradient-to-br from-potato-magenta/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                        <Icon name="ph-book-open-text" className="text-6xl text-potato-magenta animate-pulse relative z-10" />
+                                    </div>
+                                    <div className="absolute -top-2 -right-2 w-10 h-10 bg-rose-500 text-white rounded-full flex items-center justify-center text-xs font-black shadow-lg border-4 border-white animate-bounce">
+                                        !
+                                    </div>
+                                </div>
+                                <div className="text-center space-y-4">
+                                    <h2 className="font-black text-slate-800 text-4xl tracking-tighter uppercase italic">Đang update</h2>
+                                    <p className="font-bold text-slate-400 max-w-md mx-auto leading-relaxed">
+                                        Chức năng <span className="text-potato-magenta">POTATO Play book For Teen</span> đang được chúng tôi hoàn thiện. Vui lòng quay lại sau!
+                                    </p>
+                                </div>
+                                <div className="flex gap-4">
+                                    <button onClick={() => setActiveTab('dashboard')} className="px-8 py-4 bg-slate-900 text-white rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] shadow-xl hover:scale-105 transition-all active:scale-95">Quay lại Home</button>
+                                    <button onClick={() => setActiveTab('teacher')} className="px-8 py-4 bg-white border border-slate-100 text-slate-600 rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] shadow-sm hover:bg-slate-50 transition-all active:scale-95">Teacher Dashboard</button>
+                                </div>
+                            </div>
+                        );
                     default:
                         return (
                             <div className="flex flex-col items-center justify-center p-32 text-slate-300 space-y-6 animate-fade-in">
@@ -1283,7 +1363,7 @@
                                     <Icon name="ph-sparkle" className="text-3xl opacity-20" />
                                 </div>
                                 <div className="text-center">
-                                    <p className="font-black text-slate-800 text-xl tracking-tight">Module {activeTab.toUpperCase()}</p>
+                                    <p className="font-black text-slate-800 text-xl tracking-tight uppercase italic">{activeTab.toUpperCase()}</p>
                                     <p className="font-bold text-slate-400 mt-1">Đang trong quá trình hoàn thiện thiết kế...</p>
                                 </div>
                                 <button onClick={() => setActiveTab('dashboard')} className="px-6 py-3 bg-white border border-slate-100 text-slate-600 rounded-2xl text-xs font-black uppercase tracking-widest shadow-sm hover:bg-slate-50 transition-all">Quay lại Dashboard</button>
