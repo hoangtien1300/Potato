@@ -991,7 +991,7 @@
                     label: 'Teacher', 
                     icon: 'ph-user-focus',
                     children: [
-                        { id: 'playbook-teen', label: 'POTATO Play book For Teen', icon: 'ph-book-open' }
+                        { id: 'playbook-teen', label: 'POTATO Play book For Teen', icon: 'ph-book-open', link: 'https://potato-teacher.vercel.app/' }
                     ]
                 },
                 { id: 'academic', label: 'Academic', icon: 'ph-graduation-cap' },
@@ -1066,7 +1066,14 @@
                                             {item.children.map(child => (
                                                 <button
                                                     key={child.id}
-                                                    onClick={() => { setActiveTab(child.id); if(isMobile) toggleOpen(); }}
+                                                    onClick={() => { 
+                                                        if (child.link) {
+                                                            window.open(child.link, '_blank');
+                                                        } else {
+                                                            setActiveTab(child.id); 
+                                                            if(isMobile) toggleOpen(); 
+                                                        }
+                                                    }}
                                                     className={`w-full flex items-center gap-4 px-6 py-3 rounded-[15px] transition-all duration-300 relative group ${
                                                         activeTab === child.id 
                                                         ? 'bg-slate-900 text-white shadow-md' 
