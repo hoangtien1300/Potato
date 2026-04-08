@@ -16,13 +16,15 @@
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
 
     <style>
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: #FFFFFF;
-            color: #1E293B;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #f8f9fe;
+            color: #1e293b;
             min-height: 100vh;
         }
         .soft-panel {
@@ -64,17 +66,28 @@
         tailwind.config = {
             theme: {
                 extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    },
                     colors: {
+                        brand: {
+                            50: '#f5f3ff',
+                            100: '#ede9fe',
+                            500: '#8b5cf6',
+                            600: '#7c3aed',
+                            700: '#6d28d9',
+                        },
+                        bgLight: '#f8f9fe',
                         potato: {
-                            magenta: '#2171B5',
-                            blue: '#2171B5',
-                            yellow: '#FBC02D',
-                            brown: '#D49A5B',
-                            red: '#E53935',
-                            green: '#4CAF50',
-                            pink: '#D81B60',
-                            dark: '#0F172A',
-                            slate: '#FFFFFF'
+                            magenta: '#7c3aed',
+                            blue: '#7c3aed',
+                            yellow: '#fbbf24',
+                            brown: '#d97706',
+                            red: '#ef4444',
+                            green: '#10b981',
+                            pink: '#ec4899',
+                            dark: '#1e1b4b',
+                            slate: '#f8fafc'
                         }
                     }
                 }
@@ -90,7 +103,21 @@
         
         // --- REDESIGNED COMPONENTS (Geex Style) ---
 
-        const Icon = ({ name, className = "" }) => <i className={`ph ${name} ${className}`} style={{ fontSize: 'inherit' }} />;
+        const LucideIcon = ({ name, className = "", size = 20 }) => {
+            useEffect(() => {
+                if (window.lucide) {
+                    window.lucide.createIcons();
+                }
+            }, [name]);
+            return <i data-lucide={name} className={`${className}`} style={{ width: size, height: size }} />;
+        };
+
+        const Icon = ({ name, className = "", size = 20 }) => {
+            if (name.startsWith('ph-')) {
+                return <i className={`ph ${name} ${className}`} style={{ fontSize: size }} />;
+            }
+            return <LucideIcon name={name} className={className} size={size} />;
+        };
 
         // Helper for SVG Sparkline
         const Sparkline = ({ data, color }) => {
@@ -112,44 +139,36 @@
             );
         };
 
-        const StatCardV2 = ({ title, value, change, trend, data, colorClass }) => (
-            <div className="soft-card rounded-[32px] p-8 flex flex-col justify-between group h-full border-none">
-                <div className="flex justify-between items-start mb-6">
-                    <div>
-                        <p className="text-[12px] font-black text-slate-400 mb-1 uppercase tracking-widest">{title}</p>
-                        <h3 className="text-3xl font-black text-slate-900 tracking-tight">{value}</h3>
-                    </div>
-                    <div className="w-12 h-12 rounded-2xl flex items-center justify-center icon-gradient shadow-sm" style={{ backgroundColor: `${colorClass}20` }}>
-                         <Icon name="ph-chart-line-up" className="text-xl" style={{ color: colorClass }} />
-                    </div>
+        const StatCardV3 = ({ title, value, label, icon, color, iconbg }) => (
+            <div className="bg-white rounded-2xl p-6 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] border border-gray-50 flex justify-between items-center group hover:shadow-md transition-all duration-300">
+                <div>
+                    <p className="text-gray-500 text-sm font-medium mb-1">{label}</p>
+                    <h3 className="text-3xl font-extrabold text-gray-800">{value}</h3>
                 </div>
-                <div className="flex justify-between items-end">
-                    <div className={`px-3 py-1.5 rounded-xl text-[11px] font-black ${trend === 'up' ? 'text-potato-green bg-potato-green/10' : 'text-potato-red bg-potato-red/10'} transition-all`}>
-                        {change}
-                    </div>
-                    <Sparkline data={data} color={colorClass} />
+                <div className={`w-12 h-12 rounded-xl ${iconbg.replace('bg-', 'bg-').replace('potato-', 'brand-').replace('blue', '50').replace('yellow', '50').replace('pink', '50').replace('green', '50')} flex items-center justify-center ${iconbg.replace('bg-', 'text-').replace('potato-', 'brand-').replace('blue', '500').replace('yellow', '500').replace('pink', '500').replace('green', '500')}`}>
+                    <Icon name={icon.replace('ph-', '')} size={24} />
                 </div>
             </div>
         );
 
         const ReviewCard = ({ name, date, text, avatar, status }) => (
-            <div className="soft-card rounded-[32px] p-8 min-w-[320px] max-w-[320px] flex flex-col justify-between border-none">
+            <div className="bg-white rounded-2xl p-6 min-w-[320px] max-w-[320px] flex flex-col justify-between border border-gray-50 shadow-sm transition-all hover:shadow-md">
                 <div>
-                    <div className="flex items-center gap-4 mb-6">
-                        <img src={avatar} className="w-14 h-14 rounded-2xl object-cover shadow-lg" />
+                    <div className="flex items-center gap-4 mb-5">
+                        <img src={avatar} className="w-12 h-12 rounded-xl object-cover shadow-sm bg-gray-100" />
                         <div>
-                            <h4 className="text-sm font-black text-slate-900 leading-tight">{name}</h4>
-                            <p className="text-[11px] font-bold text-slate-400 mt-0.5 italic">{date}</p>
+                            <h4 className="text-sm font-bold text-gray-800 leading-tight">{name}</h4>
+                            <p className="text-[11px] font-medium text-gray-400 mt-0.5">{date}</p>
                         </div>
                     </div>
-                    <p className="text-[13px] font-medium text-slate-500 leading-relaxed italic line-clamp-4">"{text}"</p>
+                    <p className="text-xs font-medium text-gray-600 leading-relaxed line-clamp-4">"{text}"</p>
                 </div>
-                <div className="mt-8 flex justify-between items-center">
+                <div className="mt-6 flex justify-between items-center">
                     <div className="flex gap-4">
-                        <button className="text-[11px] font-black text-potato-red/60 hover:text-potato-red uppercase tracking-widest">Archive</button>
-                        <button className="text-[11px] font-black text-potato-green hover:text-potato-green/80 uppercase tracking-widest">Accept</button>
+                        <button className="text-[10px] font-bold text-gray-400 hover:text-red-500 uppercase tracking-wider transition-colors">Archive</button>
+                        <button className="text-[10px] font-bold text-brand-600 hover:text-brand-700 uppercase tracking-wider transition-colors">Accept</button>
                     </div>
-                    {status && <span className="text-[10px] font-black text-potato-blue italic">Published →</span>}
+                    {status && <span className="text-[10px] font-bold text-brand-500 italic">Published →</span>}
                 </div>
             </div>
         );
@@ -173,27 +192,6 @@
                          <input type="text" placeholder="Search here..." className="w-full pl-14 pr-6 py-4 bg-potato-blue/5 border-none rounded-[20px] text-xs font-bold text-slate-800 placeholder-slate-400 focus:outline-none focus:bg-white transition-all shadow-inner focus:shadow-md" />
                     </div>
 
-                    {/* Server Status Visualization */}
-                    <div className="space-y-6 mb-12">
-                        <div className="flex justify-between items-end">
-                            <h3 className="text-lg font-black text-slate-900 tracking-tight">Server Status</h3>
-                            <p className="text-[10px] font-bold text-slate-400 leading-none">Last 7 Days</p>
-                        </div>
-                        <div className="flex items-end justify-between h-40 pt-4 px-2">
-                             {serverStatus.map((s, i) => (
-                                 <div key={i} className="flex flex-col items-center gap-2 flex-1">
-                                     <div className="relative w-2 bg-slate-50 rounded-full h-24 overflow-hidden shadow-inner cursor-pointer group/bar">
-                                         <div 
-                                             className={`absolute bottom-0 w-full rounded-full transition-all duration-1000 ${s.color}`} 
-                                             style={{ height: `${s.val[0]}%` }}
-                                         />
-                                         <div className="absolute inset-0 bg-white/20 opacity-0 group-hover/bar:opacity-100 transition-opacity"></div>
-                                     </div>
-                                     <span className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">{s.day}</span>
-                                 </div>
-                             ))}
-                        </div>
-                    </div>
 
                     {/* Quick Links Section */}
                     <div className="space-y-6 mb-12">
@@ -253,64 +251,63 @@
         const MasterTable = ({ data }) => {
             const statusStyle = (status) => {
                 switch(status) {
-                    case 'Đúng Tiến Độ': return 'text-potato-blue bg-potato-blue/10';
-                    case 'Rủi Ro': return 'text-potato-red bg-potato-red/10 animate-pulse';
-                    case 'Hoàn Thành': return 'text-potato-green bg-potato-green/10';
-                    default: return 'text-slate-600 bg-slate-100';
+                    case 'Đúng Tiến Độ': return 'text-brand-600 bg-brand-50';
+                    case 'Rủi Ro': return 'text-red-600 bg-red-50 animate-pulse';
+                    case 'Hoàn Thành': return 'text-green-600 bg-green-50';
+                    default: return 'text-gray-500 bg-gray-50';
                 }
             };
 
             return (
-                <div className="soft-card rounded-[32px] overflow-hidden border-none">
-                    <div className="p-8 flex justify-between items-center sm:flex-row flex-col gap-6 bg-white">
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div className="p-6 flex justify-between items-center bg-white border-b border-gray-50">
                         <div>
-                            <h3 className="text-2xl font-black text-soft-blue tracking-tighter uppercase italic">Lớp Học & Vận Hành</h3>
-                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest italic mt-1 ml-1 leading-none">Weekly Operation Index</p>
+                            <h3 className="text-lg font-bold text-gray-800">Lớp Học & Vận Hành</h3>
+                            <p className="text-xs text-gray-400 mt-0.5">Báo cáo vận hành hàng tuần</p>
                         </div>
-                        <div className="flex items-center gap-4">
-                             <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Sắp xếp:</span>
-                             <div className="px-4 py-2 bg-slate-50 rounded-xl border-none">
-                                <select className="text-[11px] font-black text-slate-700 bg-transparent outline-none cursor-pointer">
-                                    <option>Mã lớp</option>
-                                    <option>Giáo viên</option>
-                                </select>
-                             </div>
+                        <div className="flex items-center gap-3">
+                             <span className="text-xs font-medium text-gray-400">Lọc:</span>
+                             <select className="text-xs font-bold text-gray-700 bg-gray-50 border border-gray-100 px-3 py-1.5 rounded-lg outline-none cursor-pointer">
+                                 <option>Mã lớp</option>
+                                 <option>Giáo viên</option>
+                             </select>
                         </div>
                     </div>
                     <div className="overflow-x-auto no-scrollbar">
-                        <table className="w-full text-left border-collapse min-w-[700px]">
+                        <table className="w-full text-left border-collapse">
                             <thead>
-                                <tr className="bg-potato-blue/5 text-slate-400 text-[10px] uppercase tracking-[0.2em] font-black">
-                                    <th className="p-5 pl-8">Mã Lớp / Tên Khóa</th>
-                                    <th className="p-5">Sĩ số</th>
-                                    <th className="p-5">Giáo Viên</th>
-                                    <th className="p-5 text-center">Trạng Thái SOP</th>
-                                    <th className="p-5 text-right pr-8">Hành động</th>
+                                <tr className="bg-gray-50 text-gray-400 text-[10px] uppercase tracking-wider font-bold border-b border-gray-50">
+                                    <th className="p-4 pl-6">Mã Lớp / Tên Khóa</th>
+                                    <th className="p-4">Sĩ số</th>
+                                    <th className="p-4">Giáo Viên</th>
+                                    <th className="p-4 text-center">Trạng Thái SOP</th>
+                                    <th className="p-4 text-right pr-6">Thao tác</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-white/10 text-[14px]">
+                            <tbody className="divide-y divide-gray-50">
                                 {data.map((item, idx) => (
-                                    <tr key={idx} className="hover:bg-slate-50 transition-all group cursor-pointer border-b border-slate-50 last:border-none">
-                                        <td className="p-5 pl-8">
+                                    <tr key={idx} className="hover:bg-gray-50/50 transition-all border-b border-gray-50 last:border-none group">
+                                        <td className="p-4 pl-6">
                                             <div className="flex flex-col">
-                                                <span className="text-[13px] font-black text-slate-800 italic group-hover:text-potato-blue transition-colors uppercase tracking-tight">{item.name}</span>
-                                                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">Potato Center</span>
+                                                <span className="text-xs font-bold text-gray-800 group-hover:text-brand-600 transition-colors uppercase">{item.name}</span>
+                                                <span className="text-[10px] text-gray-400 mt-0.5">POTATO English</span>
                                             </div>
                                         </td>
-                                        <td className="p-5 text-slate-500 font-black text-xs italic">{item.students} HV</td>
-                                        <td className="p-5 text-slate-800 font-bold text-[13px]">{item.teacher}</td>
-                                        <td className="p-5 text-center">
-                                            <span className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border-none ${statusStyle(item.status)}`}>
+                                        <td className="p-4 text-gray-500 font-bold text-xs">{item.students} HV</td>
+                                        <td className="p-4 text-gray-700 font-semibold text-xs">{item.teacher}</td>
+                                        <td className="p-4 text-center">
+                                            <span className={`px-3 py-1 rounded-lg text-[10px] font-bold uppercase transition-all ${statusStyle(item.status)}`}>
                                                 {item.status}
                                             </span>
                                         </td>
-                                        <td className="p-5 text-right pr-8">
-                                            <button className="w-10 h-10 bg-potato-blue/5 rounded-xl flex items-center justify-center text-potato-blue/40 group-hover:text-potato-blue group-hover:bg-potato-blue group-hover:text-white transition-all shadow-sm">
-                                                <Icon name="ph-caret-right" className="text-xl" />
+                                        <td className="p-4 text-right pr-6">
+                                            <button className="w-8 h-8 bg-gray-50 text-gray-400 rounded-lg flex items-center justify-center hover:bg-brand-600 hover:text-white transition-all">
+                                                <Icon name="chevron-right" size={16} />
                                             </button>
                                         </td>
                                     </tr>
                                 ))}
+                                <tr><td colSpan="5" className="h-4"></td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -325,12 +322,11 @@
             completionRates: [
                 { label: "KID", value: 95, color: "emerald" },
                 { label: "JUNIOR", value: 80, color: "amber" },
-                { label: "JUNIOR+", value: 90, color: "emerald" }, // Simple data mapping
+                { label: "JUNIOR+", value: 90, color: "emerald" },
                 { label: "TEEN", value: 100, color: "emerald" },
                 { label: "TEEN+ / PRE-IELTS", value: 50, color: "rose" },
                 { label: "IELTS", value: 100, color: "emerald" }
             ],
-            // Simplified for rendering
             rates: [
                 { label: "KID", value: 95, color: "emerald" },
                 { label: "JUNIOR", value: 80, color: "amber" },
@@ -342,8 +338,8 @@
             matrix: [
                 {
                     category: "Lộ trình",
-                    icon: "ph-map",
-                    color: "blue",
+                    icon: "map",
+                    color: "brand",
                     done: [
                         "Kiểm tra đánh giá trình độ & viết lộ trình phù hợp cho các lớp.",
                         "Tìm sách bổ sung Ngữ pháp + Từ vựng cho TEEN+: B1 Destination cho PET."
@@ -361,13 +357,13 @@
                 },
                 {
                     category: "Đề thi",
-                    icon: "ph-clipboard-check",
+                    icon: "clipboard-list",
                     color: "emerald",
                     done: [
                         "Hoàn thành 90% đề thi còn thiếu (Khối KID & PRE-IELTS 2)."
                     ],
                     issues: [
-                        { title: "Tối ưu quy trình Đầu vào", desc: "Chuẩn hóa lại bộ đề Placement Test và tiêu chí đánh giá để phân loại học sinh chính xác hơn, không dựa trên cảm tính." }
+                        { title: "Tối ưu quy trình Đầu vào", desc: "Chuẩn hóa lại bộ đề Placement Test và tiêu chí đánh giá để phân loại học sinh chính xác hơn." }
                     ],
                     actions: [
                         { period: "Tháng 4 (06/04)", tasks: ["Review và hoàn tất bộ đề kiểm tra hiện hữu."] },
@@ -377,7 +373,7 @@
                 },
                 {
                     category: "Học cụ",
-                    icon: "ph-package",
+                    icon: "package",
                     color: "purple",
                     done: [
                         "Bổ sung Flashcards cho lớp JUNIOR 6+ Hưng Định.",
@@ -385,10 +381,10 @@
                     ],
                     issues: [], 
                     actions: [
-                        { period: "Tuần 1 (06/04)", tasks: ["Hoàn tất học cụ cơ bản Junior+.", "Stories Spark: Trích bài giảng + Danh sách 8 buổi hoạt động."] },
+                        { period: "Tuần 1 (06/04)", tasks: ["Hoàn tất học cụ cơ bản Junior+.", "Stories Spark: Trích bài giảng + Hoạt động."] },
                         { period: "Tuần 2 (13/04)", tasks: ["Hoàn tất học cụ Teen+."] },
                         { period: "Tuần 3 (20/04)", tasks: ["Học cụ số PRE-IELTS."] },
-                        { period: "Tháng 5", tasks: ["Stories Spark vận hành chính thức cho các lớp khối JUNIOR."] }
+                        { period: "Tháng 5", tasks: ["Stories Spark vận hành chính thức cho các khối JUNIOR."] }
                     ]
                 }
             ]
@@ -396,23 +392,23 @@
 
         const AcademicView = () => {
             return (
-                <div className="space-y-10 animate-fade-in pb-20">
+                <div className="space-y-10 pb-20">
                     {/* Header Banner */}
-                    <div className="soft-card rounded-[40px] p-12 bg-gradient-to-br from-potato-blue to-soft-blue text-white relative overflow-hidden border-none">
+                    <div className="rounded-2xl p-10 bg-gradient-to-br from-brand-600 to-brand-700 text-white relative overflow-hidden shadow-lg shadow-brand-100">
                         <div className="absolute top-0 right-0 w-80 h-80 bg-white/10 rounded-full blur-3xl -mr-40 -mt-40"></div>
-                        <div className="absolute bottom-0 left-0 w-64 h-64 bg-potato-pink/20 rounded-full blur-2xl -ml-32 -mb-32"></div>
+                        <div className="absolute bottom-0 left-0 w-64 h-64 bg-white/5 rounded-full blur-2xl -ml-32 -mb-32"></div>
                         <div className="relative z-10 text-center md:text-left">
-                            <h1 className="text-4xl font-black tracking-tighter uppercase italic mb-3">
-                                {ACADEMIC_REPORT_DATA.title.split(' Quý')[0]} <span className="text-white/60">Quý 2/2026</span>
+                            <h1 className="text-3xl font-extrabold tracking-tight uppercase mb-4">
+                                {ACADEMIC_REPORT_DATA.title.split(' Quý')[0]} <span className="opacity-60">Quý 2/2026</span>
                             </h1>
-                            <div className="flex items-center justify-center md:justify-start gap-4">
-                                <div className="px-4 py-2 bg-white/10 backdrop-blur-md rounded-xl border border-white/20">
-                                    <p className="text-white font-black uppercase tracking-widest text-[11px] flex items-center gap-2">
-                                        <Icon name="ph-shield-check" className="text-white" /> {ACADEMIC_REPORT_DATA.subtitle}
+                            <div className="flex flex-wrap items-center justify-center md:justify-start gap-3">
+                                <div className="px-4 py-2 bg-white/10 backdrop-blur-md rounded-xl border border-white/20 whitespace-nowrap">
+                                    <p className="text-white font-bold uppercase tracking-wider text-[10px] flex items-center gap-2">
+                                        <Icon name="shield-check" size={14} /> {ACADEMIC_REPORT_DATA.subtitle}
                                     </p>
                                 </div>
-                                <div className="px-4 py-2 bg-potato-pink text-white rounded-xl shadow-lg shadow-potato-pink/20">
-                                     <p className="text-[10px] font-black uppercase tracking-widest">{ACADEMIC_REPORT_DATA.status}</p>
+                                <div className="px-4 py-2 bg-pink-500 text-white rounded-xl shadow-md whitespace-nowrap">
+                                     <p className="text-[10px] font-bold uppercase tracking-wider">{ACADEMIC_REPORT_DATA.status}</p>
                                 </div>
                             </div>
                         </div>
@@ -420,28 +416,28 @@
 
                     {/* Completion Rates Grid */}
                     <div className="space-y-6">
-                        <div className="flex items-center justify-between px-4">
-                            <h2 className="text-xl font-black text-slate-800 flex items-center gap-2">
-                                <Icon name="ph-chart-pie-slice" className="text-emerald-500" /> Hoàn thiện học cụ theo khối
+                        <div className="flex items-center justify-between px-2">
+                            <h2 className="text-xl font-extrabold text-gray-800 flex items-center gap-2">
+                                <Icon name="BarChart" className="text-green-500" size={20} /> Hoàn thiện học cụ theo khối
                             </h2>
-                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest italic">Live Status Update</span>
+                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Live Status Update</span>
                         </div>
                         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
                             {ACADEMIC_REPORT_DATA.rates.map((rate, idx) => (
-                                <div key={idx} className="soft-card p-6 rounded-[24px] text-center group hover:translate-y-[-6px] transition-all border-none">
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-tighter mb-4 h-8 flex items-center justify-center line-clamp-2 italic">
+                                <div key={idx} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 text-center group hover:border-brand-200 transition-all">
+                                    <p className="text-[9px] font-extrabold text-gray-400 uppercase tracking-tight mb-4 h-8 flex items-center justify-center leading-tight">
                                         {rate.label}
                                     </p>
                                     <div className="relative w-16 h-16 mx-auto mb-4">
                                         <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
-                                            <circle cx="18" cy="18" r="16" fill="none" className="text-slate-50" strokeWidth="3" stroke="currentColor" />
-                                            <circle cx="18" cy="18" r="16" fill="none" className={rate.color === 'emerald' ? 'text-potato-green' : rate.color === 'amber' ? 'text-potato-yellow' : 'text-potato-red'} strokeWidth="3" strokeDasharray={`${rate.value}, 100`} strokeLinecap="round" stroke="currentColor" />
+                                            <circle cx="18" cy="18" r="16" fill="none" className="text-gray-50" strokeWidth="4" stroke="currentColor" />
+                                            <circle cx="18" cy="18" r="16" fill="none" className={rate.color === 'emerald' ? 'text-green-500' : rate.color === 'amber' ? 'text-amber-500' : 'text-red-500'} strokeWidth="4" strokeDasharray={`${rate.value}, 100`} strokeLinecap="round" stroke="currentColor" />
                                         </svg>
-                                        <div className="absolute inset-0 flex items-center justify-center text-xs font-black text-slate-900 italic tracking-tighter">
+                                        <div className="absolute inset-0 flex items-center justify-center text-[10px] font-extrabold text-gray-800">
                                             {rate.value}%
                                         </div>
                                     </div>
-                                    <div className={`w-2 h-2 rounded-full mx-auto ${rate.color === 'emerald' ? 'bg-potato-green shadow-potato-green/30' : rate.color === 'amber' ? 'bg-potato-yellow shadow-potato-yellow/30' : 'bg-potato-red shadow-potato-red/30'} shadow-lg`}></div>
+                                    <div className={`w-1.5 h-1.5 rounded-full mx-auto ${rate.color === 'emerald' ? 'bg-green-500 shadow-green-100' : rate.color === 'amber' ? 'bg-amber-500 shadow-amber-100' : 'bg-red-500 shadow-red-100'} shadow-md`}></div>
                                 </div>
                             ))}
                         </div>
@@ -450,69 +446,69 @@
                     {/* Action Matrix Rows */}
                     <div className="space-y-8">
                         {ACADEMIC_REPORT_DATA.matrix.map((row, rIdx) => (
-                            <div key={rIdx} className="soft-card rounded-[40px] overflow-hidden border-none group bg-white shadow-xl">
+                            <div key={rIdx} className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 group">
                                 <div className="grid grid-cols-1 lg:grid-cols-12">
                                     {/* Column 1: Category & Done */}
-                                    <div className="lg:col-span-4 p-10 border-r border-slate-50 bg-potato-blue/5">
-                                        <div className="flex items-center gap-5 mb-10">
-                                            <div className="w-14 h-14 rounded-2xl bg-white text-potato-blue flex items-center justify-center shadow-md group-hover:scale-110 transition-transform">
-                                                <Icon name={row.icon} className="text-3xl" />
+                                    <div className="lg:col-span-4 p-8 border-r border-gray-50 bg-gray-50/30">
+                                        <div className="flex items-center gap-4 mb-8">
+                                            <div className="w-12 h-12 rounded-xl bg-white text-brand-600 flex items-center justify-center shadow-sm border border-gray-50">
+                                                <Icon name={row.icon} size={24} />
                                             </div>
-                                            <h3 className="text-2xl font-black text-soft-blue uppercase tracking-tighter italic">{row.category}</h3>
+                                            <h3 className="text-xl font-extrabold text-gray-800 uppercase tracking-tight">{row.category}</h3>
                                         </div>
-                                        <div className="space-y-5">
-                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] italic">Đã thực hiện tuần qua</p>
+                                        <div className="space-y-4">
+                                            <p className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">Đã thực hiện tuần qua</p>
                                             {row.done.map((task, tIdx) => (
-                                                <div key={tIdx} className="flex gap-4 items-start">
-                                                    <div className="w-6 h-6 rounded-full bg-potato-green/10 flex items-center justify-center shrink-0 mt-0.5">
-                                                        <Icon name="ph-check" className="text-potato-green text-[11px] font-black" />
+                                                <div key={tIdx} className="flex gap-3 items-start">
+                                                    <div className="w-5 h-5 rounded-full bg-green-50 flex items-center justify-center shrink-0 mt-0.5">
+                                                        <Icon name="check" className="text-green-600" size={10} />
                                                     </div>
-                                                    <p className="text-xs font-bold text-slate-600 leading-relaxed text-justify opacity-80">{task}</p>
+                                                    <p className="text-[11px] font-medium text-gray-600 leading-relaxed">{task}</p>
                                                 </div>
                                             ))}
                                         </div>
                                     </div>
 
                                     {/* Column 2: Issues */}
-                                    <div className="lg:col-span-4 p-10 border-r border-slate-50 bg-white">
-                                        <div className="space-y-8">
-                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] italic">Vấn đề tồn đọng</p>
+                                    <div className="lg:col-span-4 p-8 border-r border-gray-50 bg-white">
+                                        <div className="space-y-6">
+                                            <p className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">Vấn đề tồn đọng</p>
                                             {row.issues.length > 0 ? (
                                                 row.issues.map((issue, iIdx) => (
-                                                    <div key={iIdx} className="p-6 rounded-3xl bg-potato-red/5 border-l-4 border-potato-red space-y-3">
-                                                        <h4 className="text-xs font-black text-potato-red italic uppercase">{issue.title}</h4>
-                                                        <p className="text-[11px] font-medium text-slate-500 leading-relaxed text-justify">{issue.desc}</p>
+                                                    <div key={iIdx} className="p-5 rounded-xl bg-red-50 border-l-3 border-red-500 space-y-2">
+                                                        <h4 className="text-[11px] font-extrabold text-red-600 uppercase tracking-tight">{issue.title}</h4>
+                                                        <p className="text-[11px] font-medium text-gray-500 leading-relaxed">{issue.desc}</p>
                                                     </div>
                                                 ))
                                             ) : (
-                                                <div className="p-10 rounded-3xl border-2 border-dashed border-slate-50 flex flex-col items-center justify-center text-center opacity-30">
-                                                    <Icon name="ph-shield-check" className="text-4xl text-potato-green mb-3" />
-                                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">Safe Zone</p>
+                                                <div className="p-10 rounded-xl border border-dashed border-gray-100 flex flex-col items-center justify-center text-center opacity-40">
+                                                    <Icon name="ShieldCheck" className="text-green-500 mb-2" size={32} />
+                                                    <p className="text-[10px] font-bold text-gray-400 uppercase">Safe Zone</p>
                                                 </div>
                                             )}
                                         </div>
                                     </div>
 
                                     {/* Column 3: Actions & Timeline */}
-                                    <div className="lg:col-span-4 p-10 bg-white">
-                                        <div className="space-y-8">
-                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] italic">Hành động & Thời hạn</p>
-                                            <div className="space-y-8 relative">
-                                                <div className="absolute left-[11px] top-2 bottom-2 w-0.5 bg-slate-50 rounded-full"></div>
+                                    <div className="lg:col-span-4 p-8 bg-white">
+                                        <div className="space-y-6">
+                                            <p className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">Hành động & Thời hạn</p>
+                                            <div className="space-y-6 relative pl-4">
+                                                <div className="absolute left-1.5 top-2 bottom-2 w-0.5 bg-gray-50 rounded-full"></div>
                                                 {row.actions.map((action, aIdx) => (
-                                                    <div key={aIdx} className="relative pl-10">
-                                                        <div className="absolute left-0 top-1.5 w-6 h-6 rounded-full bg-white border-2 border-potato-blue shadow-sm z-10 flex items-center justify-center">
-                                                            <div className="w-2 h-2 rounded-full bg-potato-blue animate-pulse"></div>
+                                                    <div key={aIdx} className="relative pl-6">
+                                                        <div className="absolute left-[-1.1rem] top-1.5 w-4 h-4 rounded-full bg-white border border-brand-500 flex items-center justify-center">
+                                                            <div className="w-1.5 h-1.5 rounded-full bg-brand-500"></div>
                                                         </div>
-                                                        <h4 className="text-xs font-black text-soft-blue mb-3 uppercase italic tracking-tight">{action.period}</h4>
-                                                        <ul className="space-y-2">
+                                                        <h4 className="text-[10px] font-extrabold text-brand-600 mb-2 uppercase tracking-tight">{action.period}</h4>
+                                                        <div className="space-y-1.5">
                                                             {action.tasks.map((task, kIdx) => (
-                                                                <li key={kIdx} className="text-[11px] font-bold text-slate-500 flex items-start gap-3">
-                                                                    <div className="w-1 h-1 rounded-full bg-slate-200 mt-2 shrink-0"></div>
-                                                                    <span className="opacity-80">{task}</span>
-                                                                </li>
+                                                                <p key={kIdx} className="text-[10px] font-bold text-gray-500 flex items-start gap-2">
+                                                                    <span className="mt-1.5 w-1 h-1 rounded-full bg-gray-300 shrink-0"></span>
+                                                                    {task}
+                                                                </p>
                                                             ))}
-                                                        </ul>
+                                                        </div>
                                                     </div>
                                                 ))}
                                             </div>
@@ -524,18 +520,18 @@
                     </div>
 
                     {/* Footer Status */}
-                    <div className="soft-card rounded-[40px] p-10 bg-gradient-to-br from-soft-blue to-potato-blue text-white relative overflow-hidden border-none flex flex-col md:flex-row justify-between items-center gap-8 shadow-inner">
-                        <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-32 -mt-32"></div>
+                    <div className="bg-gradient-to-br from-brand-600 to-indigo-700 rounded-2xl p-8 text-white relative overflow-hidden shadow-lg shadow-brand-100 flex flex-col md:flex-row justify-between items-center gap-6">
+                        <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl -mr-32 -mt-32"></div>
                         <div className="relative z-10 text-center md:text-left">
-                            <h3 className="text-xl font-black mb-2 italic tracking-tighter uppercase flex items-center justify-center md:justify-start gap-4">
-                                <Icon name="ph-rocket-launch" className="text-white animate-pulse" /> Quản trị Vận hành & Chất lượng Q2
+                            <h3 className="text-lg font-extrabold mb-2 uppercase tracking-tight flex items-center justify-center md:justify-start gap-3">
+                                <Icon name="Rocket" size={24} className="animate-pulse" /> Quản trị Vận hành & Chất lượng Q2
                             </h3>
-                            <p className="text-[11px] text-white/60 italic font-black uppercase tracking-widest">Hệ thống hóa Lộ trình - Chuẩn hóa Đầu vào - Tối ưu hóa Học cụ</p>
+                            <p className="text-[10px] text-white/70 font-bold uppercase tracking-widest">Hệ thống hóa Lộ trình - Chuẩn hóa Đầu vào - Tối ưu hóa Học cụ</p>
                         </div>
-                        <div className="relative z-10 flex gap-4">
-                            <div className="px-10 py-5 bg-white/10 backdrop-blur-xl rounded-[28px] border border-white/20 text-center shadow-lg group transition-all">
-                                <p className="text-[10px] font-black text-white/50 uppercase tracking-[0.2em] mb-1 italic">Tình trạng</p>
-                                <p className="text-xl font-black text-white italic group-hover:scale-105 transition-transform">{ACADEMIC_REPORT_DATA.status}</p>
+                        <div className="relative z-10">
+                            <div className="px-8 py-4 bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 text-center">
+                                <p className="text-[9px] font-bold text-white/50 uppercase tracking-widest mb-1">Tình trạng</p>
+                                <p className="text-lg font-extrabold italic uppercase">{ACADEMIC_REPORT_DATA.status}</p>
                             </div>
                         </div>
                     </div>
@@ -547,9 +543,9 @@
             week: "Tuần 4 - Tháng 3",
             seniorTeacher: "Phan Trần Khôi",
             summary: [
-                { label: "Chỉ số ổn định", value: "85%", trend: "↑ 3% so với tuần trước", color: "emerald", icon: "ph-chart-line-up" },
-                { label: "Tỷ lệ làm HW", value: "78%", trend: "Cần cải thiện khối Junior", color: "amber", icon: "ph-notebook" },
-                { label: "Tiến độ Final Test", value: "100%", trend: "Đã hoàn tất soạn đề", color: "sky", icon: "ph-check-circle" }
+                { label: "Chỉ số ổn định", value: "85%", trend: "↑ 3% so với tuần trước", color: "emerald", icon: "trending-up" },
+                { label: "Tỷ lệ làm HW", value: "78%", trend: "Cần cải thiện khối Junior", color: "amber", icon: "book" },
+                { label: "Tiến độ Final Test", value: "100%", trend: "Đã hoàn tất soạn đề", color: "sky", icon: "check-circle" }
             ],
             chartData: [
                 { label: "Kids 2", value: 85, color: "#10B981" },
@@ -591,32 +587,31 @@
                 {
                     name: "IELTS",
                     color: "rose",
-                    classes: [] // Placeholder as per Teacher.html source
+                    classes: []
                 }
             ],
             strategies: [
-                { title: "New Grammar & Vocab Method", desc: "Hệ thống hóa lại cách tiếp cận từ vựng thông qua hình ảnh và bối cảnh (Contextual Learning), áp dụng cho toàn bộ khối Teen.", icon: "ph-sparkle" },
                 { title: "Story Spark Integration", desc: "Đã áp dụng vào lớp Junior 2, bước đầu nhận được sự hào hứng từ học sinh. Sẽ theo dõi tiến độ tiếp thu trong 2 tuần tới.", icon: "ph-book-open" }
             ]
         };
 
         const TeacherView = () => {
             return (
-                <div className="space-y-8 animate-fade-in pb-12">
+                <div className="space-y-8 pb-12">
                     {/* Header / Executive Summary */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         {TEACHER_REPORT_DATA.summary.map((item, idx) => (
-                            <div key={idx} className={`soft-card p-8 border-none group hover:scale-[1.02] transition-all rounded-[32px]`}>
+                            <div key={idx} className="bg-white p-6 border border-gray-100 shadow-sm rounded-2xl group hover:shadow-md transition-all">
                                 <div className="flex justify-between items-start">
                                     <div>
-                                        <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-1">{item.label}</p>
-                                        <p className="text-3xl font-black text-slate-900 leading-none tracking-tighter">{item.value}</p>
-                                        <div className={`mt-4 px-3 py-1.5 rounded-xl text-[10px] font-black inline-flex items-center gap-1 ${item.color === 'emerald' ? 'text-potato-green bg-potato-green/10' : item.color === 'amber' ? 'text-potato-yellow bg-potato-yellow/10' : 'text-potato-blue bg-potato-blue/10'}`}>
+                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">{item.label}</p>
+                                        <p className="text-2xl font-extrabold text-gray-800 leading-none tracking-tight">{item.value}</p>
+                                        <div className={`mt-3 px-2 py-1 rounded-lg text-[9px] font-bold inline-flex items-center gap-1 ${item.color === 'emerald' ? 'text-green-600 bg-green-50' : item.color === 'amber' ? 'text-amber-600 bg-amber-50' : 'text-brand-600 bg-brand-50'}`}>
                                             {item.trend}
                                         </div>
                                     </div>
-                                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center icon-gradient shadow-sm ${item.color === 'emerald' ? 'bg-potato-green/10 text-potato-green' : item.color === 'amber' ? 'bg-potato-yellow/10 text-potato-yellow' : 'bg-potato-blue/10 text-potato-blue'}`}>
-                                        <Icon name={item.icon} className="text-xl" />
+                                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${item.color === 'emerald' ? 'bg-green-50 text-green-500' : item.color === 'amber' ? 'bg-amber-50 text-amber-500' : 'bg-brand-50 text-brand-500'}`}>
+                                        <Icon name={item.icon.replace('ph-', '')} size={24} />
                                     </div>
                                 </div>
                             </div>
@@ -624,83 +619,70 @@
                     </div>
 
                     {/* Health Analysis Chart */}
-                    <div className="soft-card p-10 rounded-[40px] border-none relative overflow-visible">
-                        <h3 className="text-xl font-black text-soft-blue mb-10 flex items-center gap-3">
-                             <Icon name="ph-chart-bar" className="text-potato-blue" /> Sức Khỏe Lớp Học <span className="text-slate-300 font-medium">/ Tuần 4</span>
-                        </h3>
-                        
-                        {/* Y-Axis Label */}
-                        <div className="absolute left-4 top-1/2 -rotate-90 origin-left text-[10px] font-black text-slate-400 uppercase tracking-widest pointer-events-none">
-                            Chỉ số (%)
+                    <div className="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm relative overflow-visible">
+                        <div className="flex justify-between items-center mb-10">
+                            <h3 className="text-lg font-bold text-gray-800 flex items-center gap-3 lowercase first-letter:uppercase">
+                                <Icon name="BarChart2" className="text-brand-500" size={20} /> Sức khỏe lớp học <span className="text-gray-300 font-medium">/ Tuần 4</span>
+                            </h3>
+                            <div className="flex items-center gap-2">
+                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Hiển thị: 100%</span>
+                            </div>
                         </div>
-
-                        <div className="h-64 flex items-end justify-between gap-3 px-8 border-l border-b border-slate-50 ml-6 relative">
+                        
+                        <div className="h-64 flex items-end justify-between gap-3 px-4 border-b border-gray-50 relative">
                             {TEACHER_REPORT_DATA.chartData.map((bar, idx) => (
                                 <div key={idx} className="flex-1 flex flex-col items-center group relative h-full justify-end">
                                     <div 
-                                        className="w-full rounded-t-2xl transition-all duration-1000 ease-out hover:brightness-110 shadow-lg relative overflow-hidden group/bar" 
-                                        style={{ height: `${bar.value}%`, background: bar.color }}
-                                    >
-                                        <div className="absolute inset-x-0 bottom-0 h-1/2 icon-gradient opacity-30"></div>
-                                    </div>
-                                    <p className="mt-4 text-[10px] font-black text-slate-400 text-center leading-tight h-8 flex items-center justify-center group-hover:text-slate-900 transition-colors uppercase italic">
+                                        className="w-full rounded-t-xl transition-all duration-700 ease-out hover:brightness-110 shadow-sm relative overflow-hidden" 
+                                        style={{ height: `${bar.value}%`, background: bar.color === '#10B981' ? '#10b981' : bar.color === '#F43F5E' ? '#ef4444' : '#8b5cf6' }}
+                                    ></div>
+                                    <p className="mt-3 text-[9px] font-extrabold text-gray-400 text-center leading-tight uppercase group-hover:text-gray-800 transition-colors">
                                         {bar.label}
                                     </p>
                                 </div>
                             ))}
-                        </div>
-
-                        {/* X-Axis Label */}
-                        <div className="text-center mt-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                            Học viên/Lớp
                         </div>
                     </div>
 
                     {/* Detailed Class Report - 4 Columns */}
                     <div className="space-y-6">
                         <div className="flex items-center gap-4">
-                            <div className="w-1.5 h-8 bg-potato-yellow rounded-full shadow-lg shadow-potato-yellow/20"></div>
-                            <div>
-                                <h2 className="text-2xl font-black text-soft-blue uppercase italic tracking-tighter">Báo cáo chi tiết các lớp</h2>
-                                <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest italic ml-1 leading-none">Academic Detailed Tracking</p>
-                            </div>
+                            <div className="w-1.5 h-6 bg-brand-500 rounded-full"></div>
+                            <h2 className="text-xl font-extrabold text-gray-800 uppercase tracking-tight">Báo cáo chi tiết các lớp</h2>
                         </div>
                         
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 items-start">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-start">
                             {TEACHER_REPORT_DATA.categories.map((cat, cIdx) => (
-                                <div key={cIdx} className="space-y-6">
-                                    <div className={`px-4 py-2 rounded-xl bg-${cat.color}-50 border border-${cat.color}-100 flex items-center justify-between`}>
-                                        <h3 className={`font-black text-sm text-${cat.color}-700 uppercase tracking-widest`}>{cat.name}</h3>
-                                        <span className={`text-[10px] font-bold px-2 py-0.5 bg-white rounded-full text-${cat.color}-600 shadow-sm border border-${cat.color}-100`}>
+                                <div key={cIdx} className="space-y-4">
+                                    <div className={`px-4 py-2 rounded-xl bg-${cat.color === 'emerald' ? 'green' : cat.color === 'rose' ? 'red' : 'brand'}-50 flex items-center justify-between border border-${cat.color === 'emerald' ? 'green' : cat.color === 'rose' ? 'red' : 'brand'}-100`}>
+                                        <h3 className={`font-bold text-xs text-${cat.color === 'emerald' ? 'green' : cat.color === 'rose' ? 'red' : 'brand'}-700 uppercase tracking-wider`}>{cat.name}</h3>
+                                        <span className={`text-[9px] font-bold px-2 py-0.5 bg-white rounded-lg text-${cat.color === 'emerald' ? 'green' : cat.color === 'rose' ? 'red' : 'brand'}-600 shadow-sm border border-${cat.color === 'emerald' ? 'green' : cat.color === 'rose' ? 'red' : 'brand'}-100`}>
                                             {cat.classes.length} Lớp
                                         </span>
                                     </div>
                                     
-                                    <div className="space-y-5">
+                                    <div className="space-y-4">
                                         {cat.classes.length > 0 ? (
                                             cat.classes.map((cls, idx) => (
-                                                <div key={idx} className={`soft-card p-6 rounded-[28px] border-none hover:translate-y-[-6px] transition-all group`}>
-                                                    <div className="flex justify-between items-start mb-4">
-                                                        <span className={`text-[9px] font-black uppercase tracking-widest px-3 py-1 bg-slate-50 text-slate-400 rounded-xl group-hover:bg-soft-blue group-hover:text-white transition-colors`}>
+                                                <div key={idx} className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm group hover:border-brand-200 transition-all">
+                                                    <div className="flex justify-between items-start mb-3">
+                                                        <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 bg-gray-50 text-gray-400 rounded-lg group-hover:bg-brand-50 group-hover:text-brand-600 transition-colors">
                                                             {cls.sub}
                                                         </span>
-                                                        <span className={`font-black text-soft-blue text-xs uppercase italic tracking-tight`}>{cls.name}</span>
+                                                        <span className="font-extrabold text-brand-600 text-[10px] uppercase">{cls.name}</span>
                                                     </div>
-                                                    <h4 className="font-black text-slate-900 border-l-4 border-potato-pink pl-3 text-[13px] mb-3 leading-tight">{cls.status}</h4>
-                                                    <p className="text-[11px] font-medium text-slate-500 mb-5 leading-relaxed italic text-justify opacity-80">"{cls.desc}"</p>
-                                                    <div className="bg-potato-blue/5 p-4 rounded-2xl">
-                                                        <p className="text-[9px] font-black text-potato-blue uppercase mb-2 tracking-widest">Giải pháp</p>
-                                                        <p className="text-[11px] font-bold text-slate-700 leading-snug">{cls.solution}</p>
+                                                    <h4 className="font-bold text-gray-800 border-l-3 border-pink-500 pl-3 text-xs mb-2 leading-tight uppercase tracking-tight">{cls.status}</h4>
+                                                    <p className="text-[11px] font-medium text-gray-500 mb-4 leading-relaxed line-clamp-3">"{cls.desc}"</p>
+                                                    <div className="bg-brand-50 p-3 rounded-xl border border-brand-100">
+                                                        <p className="text-[9px] font-bold text-brand-600 uppercase mb-1 tracking-wider">Giải pháp</p>
+                                                        <p className="text-[10px] font-bold text-gray-700 leading-snug">{cls.solution}</p>
                                                     </div>
                                                 </div>
                                             ))
                                         ) : (
-                                            <div className="glass-card p-8 rounded-[24px] border-dashed border-slate-200 flex flex-col items-center justify-center text-center opacity-60">
-                                                <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center mb-3">
-                                                    <Icon name="ph-calendar-x" className="text-slate-400 text-xl" />
-                                                </div>
-                                                <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Không có báo cáo</p>
-                                                <p className="text-[10px] font-medium text-slate-300">Tuần hiện tại</p>
+                                            <div className="bg-gray-50/50 p-6 rounded-2xl border border-dashed border-gray-200 flex flex-col items-center justify-center text-center opacity-60">
+                                                <Icon name="calendar-off" className="text-gray-300 mb-2" size={24} />
+                                                <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Trống</p>
                                             </div>
                                         )}
                                     </div>
@@ -710,42 +692,42 @@
                     </div>
 
                     {/* Innovation Strategy */}
-                    <div className="soft-card rounded-[40px] p-10 relative overflow-hidden bg-white border-none shadow-xl">
-                        <div className="absolute top-0 right-0 w-80 h-80 bg-potato-blue/5 rounded-full -mr-40 -mt-40 blur-3xl"></div>
-                        <h2 className="text-2xl font-black text-soft-blue mb-10 flex items-center gap-4 italic uppercase tracking-tighter">
-                            <Icon name="ph-sparkle" className="text-potato-blue animate-pulse" /> Chiến lược cải tiến chuyên môn
+                    <div className="bg-white rounded-2xl p-8 relative overflow-hidden shadow-sm border border-gray-100">
+                        <div className="absolute top-0 right-0 w-64 h-64 bg-brand-50 rounded-full -mr-32 -mt-32 blur-3xl opacity-50"></div>
+                        <h2 className="text-xl font-extrabold text-gray-800 mb-8 flex items-center gap-3 uppercase tracking-tight">
+                            <Icon name="sparkles" className="text-brand-500 animate-pulse" /> Chiến lược cải tiến chuyên môn
                         </h2>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 relative z-10">
-                            <div className="space-y-8">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 relative z-10">
+                            <div className="space-y-4">
                                 {TEACHER_REPORT_DATA.strategies.map((strat, idx) => (
-                                    <div key={idx} className="flex items-start gap-6 p-8 rounded-[32px] bg-slate-50/50 hover:bg-white transition-all group border border-transparent hover:border-slate-100 hover:shadow-lg">
-                                        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-potato-blue to-soft-blue flex items-center justify-center text-white shrink-0 shadow-lg group-hover:scale-110 transition-transform">
-                                            <Icon name={strat.icon} className="text-3xl" />
+                                    <div key={idx} className="flex items-start gap-4 p-5 rounded-2xl bg-gray-50/50 hover:bg-white transition-all group border border-transparent hover:border-gray-100 hover:shadow-md">
+                                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-brand-500 to-brand-600 flex items-center justify-center text-white shrink-0 shadow-md">
+                                            <Icon name={strat.icon.replace('ph-', '')} size={24} />
                                         </div>
-                                        <div className="space-y-2">
-                                            <h4 className="font-black text-slate-900 text-sm italic uppercase tracking-tight">{strat.title}</h4>
-                                            <p className="text-[12px] font-medium text-slate-500 leading-relaxed text-justify opacity-80">{strat.desc}</p>
+                                        <div className="space-y-1">
+                                            <h4 className="font-bold text-gray-800 text-sm uppercase tracking-tight">{strat.title}</h4>
+                                            <p className="text-[11px] font-medium text-gray-500 leading-relaxed text-justify">{strat.desc}</p>
                                         </div>
                                     </div>
                                 ))}
                             </div>
-                            <div className="bg-potato-blue/5 p-10 rounded-[40px] border border-white shadow-inner">
-                                <div className="flex items-center gap-4 mb-8">
-                                    <div className="w-12 h-12 bg-potato-blue rounded-2xl text-white flex items-center justify-center shadow-lg">
-                                        <Icon name="ph-users-three" className="text-2xl" />
+                            <div className="bg-brand-50 p-6 rounded-2xl border border-brand-100 shadow-inner">
+                                <div className="flex items-center gap-3 mb-6">
+                                    <div className="w-10 h-10 bg-brand-500 rounded-xl text-white flex items-center justify-center shadow-md">
+                                        <Icon name="users" size={20} />
                                     </div>
-                                    <h4 className="font-black text-[11px] uppercase tracking-[0.2em] text-soft-blue italic">Student Care Focus</h4>
+                                    <h4 className="font-bold text-[10px] uppercase tracking-wider text-brand-600">Student Care Focus</h4>
                                 </div>
-                                <div className="space-y-8">
+                                <div className="space-y-6">
                                     {[
-                                        { task: "Kết nối Phụ huynh", progress: 80, color: "bg-potato-green" },
-                                        { task: "Bài tập cá nhân hóa", progress: 100, color: "bg-potato-blue" },
-                                        { task: "Kiểm tra từ vựng", progress: 60, color: "bg-potato-yellow" }
+                                        { task: "Kết nối Phụ huynh", progress: 80, color: "bg-green-500" },
+                                        { task: "Bài tập cá nhân hóa", progress: 100, color: "bg-brand-500" },
+                                        { task: "Kiểm tra từ vựng", progress: 60, color: "bg-amber-500" }
                                     ].map((item, idx) => (
-                                        <div key={idx} className="space-y-3">
-                                            <div className="flex justify-between items-center">
-                                                <span className="text-[12px] font-black text-slate-700 italic uppercase tracking-tight">{item.task}</span>
-                                                <span className="text-[10px] font-black text-slate-400 italic">{item.progress}%</span>
+                                        <div key={idx} className="space-y-2">
+                                            <div className="flex justify-between items-center px-1">
+                                                <span className="text-[11px] font-bold text-gray-700 uppercase tracking-tight">{item.task}</span>
+                                                <span className="text-[10px] font-extrabold text-gray-400">{item.progress}%</span>
                                             </div>
                                             <div className="w-full bg-white h-2 rounded-full overflow-hidden shadow-inner">
                                                 <div className={`h-full ${item.color} transition-all duration-1000`} style={{ width: `${item.progress}%` }}></div>
@@ -762,21 +744,21 @@
 
         const LeaderReportView = () => {
              const reports = [
-                { title: "Upload Ảnh Học Sinh", value: "90%", sub: "Trừ Movers HD & lý do cá nhân (5%)", icon: "ph-camera", color: "text-blue-600", border: "border-l-4 border-l-blue-500" },
-                { title: "Cập Nhật Lịch Khóa", value: "80%", sub: "Ngô Quyền đang cập nhật", icon: "ph-calendar", color: "text-emerald-600", border: "border-l-4 border-l-emerald-500" },
-                { title: "Đăng Ký Ôn Thi HK2", value: "13 HS", sub: "9 Ngô Quyền, 4 Hưng Định", icon: "ph-graduation-cap", color: "text-purple-600", border: "border-l-4 border-l-purple-500" },
-                { title: "Đề Ôn Thi HK2", value: "Đang Xử Lý", sub: "Dự kiến hoàn thành: 01-05/04", icon: "ph-books", color: "text-amber-600", border: "border-l-4 border-l-amber-500" }
+                { title: "Upload Ảnh Học Sinh", value: "90%", sub: "Trừ Movers HD & lý do cá nhân (5%)", icon: "camera", color: "text-blue-600", bg: "bg-blue-50" },
+                { title: "Cập Nhật Lịch Khóa", value: "80%", sub: "Ngô Quyền đang cập nhật", icon: "calendar", color: "text-green-600", bg: "bg-green-50" },
+                { title: "Đăng Ký Ôn Thi HK2", value: "13 HS", sub: "9 Ngô Quyền, 4 Hưng Định", icon: "graduation-cap", color: "text-purple-600", bg: "bg-purple-50" },
+                { title: "Đề Ôn Thi HK2", value: "Đang Xử Lý", sub: "Dự kiến: 01-05/04", icon: "book", color: "text-amber-600", bg: "bg-amber-50" }
             ];
 
             const uploadBreakdown = [
-                { label: "Đã có hình", value: "90%", color: "bg-blue-500", width: "w-[90%]" },
+                { label: "Đã có hình", value: "90%", color: "bg-brand-500", width: "w-[90%]" },
                 { label: "Thiếu: Movers - Hưng Định", value: "5%", color: "bg-amber-500", width: "w-[5%]" },
-                { label: "Thiếu: Lý do khác (vắng mặt/chưa chụp)", value: "5%", color: "bg-rose-500", width: "w-[5%]" }
+                { label: "Thiếu: Lý do khác", value: "5%", color: "bg-red-500", width: "w-[5%]" }
             ];
 
             const semesterBreakdown = [
-                { campus: "Ngô Quyền", count: 9, percentage: "69%", pic: "Ms. Ngân", color: "bg-indigo-500" },
-                { campus: "Hưng Định", count: 4, percentage: "31%", pic: "Ms. Trân", color: "bg-potato-magenta" }
+                { campus: "Ngô Quyền", count: 9, percentage: "69%", pic: "Ms. Ngân", color: "bg-brand-500" },
+                { campus: "Hưng Định", count: 4, percentage: "31%", pic: "Ms. Trân", color: "bg-pink-500" }
             ];
 
             const issues = [
@@ -786,21 +768,21 @@
             ];
 
             return (
-                <div className="space-y-8 animate-fade-in pb-12">
+                <div className="space-y-8 pb-12">
                     {/* KPI Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                         {reports.map((report, i) => (
-                            <div key={i} className={`soft-card rounded-[32px] p-8 border-none flex flex-col justify-between group overflow-hidden relative hover:scale-[1.02] transition-all cursor-default`}>
-                                <div className="flex justify-between items-start relative z-10">
-                                    <div>
-                                        <p className="text-[11px] font-black text-slate-400 mb-1 uppercase tracking-widest">{report.title}</p>
-                                        <h3 className={`text-4xl font-black ${report.color.replace('text-', 'text-')} tracking-tighter`}>{report.value}</h3>
+                            <div key={i} className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm flex flex-col justify-between group hover:shadow-md transition-all">
+                                <div className="flex justify-between items-start">
+                                    <div className="space-y-1">
+                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{report.title}</p>
+                                        <h3 className={`text-2xl font-extrabold ${report.color} tracking-tight`}>{report.value}</h3>
                                     </div>
-                                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center icon-gradient shadow-sm bg-white/50 ${report.color}`}>
-                                        <Icon name={report.icon} className="text-xl" />
+                                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${report.bg} ${report.color}`}>
+                                        <Icon name={report.icon} size={24} />
                                     </div>
                                 </div>
-                                <p className="mt-6 text-[11px] font-black text-slate-400 leading-tight relative z-10 uppercase italic opacity-60">{report.sub}</p>
+                                <p className="mt-4 text-[10px] font-medium text-gray-400 leading-tight uppercase tracking-tight">{report.sub}</p>
                             </div>
                         ))}
                     </div>
@@ -808,34 +790,32 @@
                     {/* Analytics Section */}
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                         {/* Phân Bổ Upload */}
-                        <div className="soft-card rounded-[40px] p-10 flex flex-col h-full bg-white border-none">
-                            <h3 className="text-xl font-black text-soft-blue mb-10 flex items-center gap-3 italic">
-                                <Icon name="ph-chart-pie-slice" className="text-potato-blue" /> Phân Bổ Upload Ảnh
+                        <div className="bg-white rounded-2xl p-8 border border-gray-100 shadow-sm">
+                            <h3 className="text-lg font-bold text-gray-800 mb-8 flex items-center gap-3">
+                                <Icon name="PieChart" className="text-brand-500" size={20} /> Phân bổ Upload ảnh
                             </h3>
-                            <div className="flex flex-col md:flex-row items-center gap-12 flex-1">
-                                <div className="relative w-56 h-56 flex items-center justify-center shrink-0">
+                            <div className="flex flex-col md:flex-row items-center gap-10">
+                                <div className="relative w-48 h-48 flex items-center justify-center shrink-0">
                                     <svg className="w-full h-full transform -rotate-90">
-                                        <circle cx="112" cy="112" r="90" stroke="currentColor" strokeWidth="20" fill="transparent" className="text-slate-50" />
-                                        <circle cx="112" cy="112" r="90" stroke="currentColor" strokeWidth="20" fill="transparent" strokeDasharray="565.48" strokeDashoffset="56.55" className="text-potato-blue" strokeLinecap="round" />
-                                        <circle cx="112" cy="112" r="90" stroke="currentColor" strokeWidth="20" fill="transparent" strokeDasharray="28.27 565.48" strokeDashoffset="-508.93" className="text-potato-yellow" strokeLinecap="round" />
-                                        <circle cx="112" cy="112" r="90" stroke="currentColor" strokeWidth="20" fill="transparent" strokeDasharray="28.27 565.48" strokeDashoffset="-537.20" className="text-potato-red" strokeLinecap="round" />
+                                        <circle cx="96" cy="96" r="80" stroke="#f8fafc" strokeWidth="16" fill="transparent" />
+                                        <circle cx="96" cy="96" r="80" stroke="#8b5cf6" strokeWidth="16" fill="transparent" strokeDasharray="502.65" strokeDashoffset="50.26" strokeLinecap="round" />
                                     </svg>
                                     <div className="absolute flex flex-col items-center">
-                                        <span className="text-5xl font-black text-slate-900 leading-none tracking-tighter italic">90%</span>
-                                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-2">Success</span>
+                                        <span className="text-4xl font-extrabold text-gray-800 tracking-tight">90%</span>
+                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Done</span>
                                     </div>
                                 </div>
-                                <div className="flex-1 w-full space-y-6">
+                                <div className="flex-1 w-full space-y-5">
                                     {uploadBreakdown.map((item, i) => (
-                                        <div key={i} className="space-y-2 group">
-                                            <div className="flex justify-between items-center text-[11px]">
-                                                <span className="font-black text-slate-500 flex items-center gap-3 uppercase tracking-tighter">
-                                                    <div className={`w-3 h-3 rounded-full ${item.color.replace('blue', 'potato-blue').replace('amber', 'potato-yellow').replace('rose', 'potato-red')} shadow-sm`} /> {item.label.split(':')[0]}
+                                        <div key={i} className="space-y-2">
+                                            <div className="flex justify-between items-center text-xs">
+                                                <span className="font-bold text-gray-500 flex items-center gap-2 uppercase tracking-tighter">
+                                                    <div className={`w-2 h-2 rounded-full ${item.color}`} /> {item.label}
                                                 </span>
-                                                <span className="font-black text-slate-900 italic">{item.value}</span>
+                                                <span className="font-extrabold text-gray-800">{item.value}</span>
                                             </div>
-                                            <div className="h-2 w-full bg-slate-50 rounded-full overflow-hidden">
-                                                <div className={`h-full ${item.color.replace('blue', 'potato-blue').replace('amber', 'potato-yellow').replace('rose', 'potato-red')} rounded-full transition-all duration-1000 ${item.width}`} />
+                                            <div className="h-1.5 w-full bg-gray-50 rounded-full overflow-hidden">
+                                                <div className={`h-full ${item.color} rounded-full transition-all duration-1000 ${item.width}`} />
                                             </div>
                                         </div>
                                     ))}
@@ -844,88 +824,83 @@
                         </div>
 
                         {/* Phân Bổ Ôn Thi */}
-                        <div className="soft-card rounded-[40px] p-10 bg-white border-none shadow-xl flex flex-col h-full">
-                             <h3 className="text-xl font-black text-soft-blue mb-10 flex items-center gap-4 italic uppercase">
-                                <Icon name="ph-users-three" className="text-potato-blue" /> Phân Bổ Ôn Thi HK2
+                        <div className="bg-white rounded-2xl p-8 border border-gray-100 shadow-sm">
+                             <h3 className="text-lg font-bold text-gray-800 mb-8 flex items-center gap-3">
+                                <Icon name="users" className="text-brand-500" size={20} /> Phân bổ ôn thi HK2
                             </h3>
-                            <div className="space-y-10 flex-1">
+                            <div className="space-y-8">
                                 {semesterBreakdown.map((item, i) => (
-                                    <div key={i} className="flex items-center gap-8 group">
-                                        <div className="w-20 h-20 rounded-[28px] bg-slate-50 border border-slate-100 flex flex-col items-center justify-center shrink-0 shadow-inner group-hover:bg-white transition-all">
-                                            <span className="text-3xl font-black text-slate-800 italic">{item.count}</span>
-                                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mt-1">Học sinh</span>
+                                    <div key={i} className="flex items-center gap-6 group">
+                                        <div className="w-16 h-16 rounded-xl bg-gray-50 flex flex-col items-center justify-center shrink-0 border border-gray-100 group-hover:bg-brand-50 group-hover:border-brand-100 transition-all">
+                                            <span className="text-2xl font-extrabold text-gray-800">{item.count}</span>
+                                            <span className="text-[9px] font-bold text-gray-400 uppercase leading-none mt-1">Học sinh</span>
                                         </div>
-                                        <div className="flex-1 space-y-3">
+                                        <div className="flex-1 space-y-2">
                                             <div className="flex justify-between items-end">
                                                 <div>
-                                                    <h4 className="text-sm font-black text-slate-900 uppercase italic tracking-tight">Chi nhánh {item.campus}</h4>
-                                                    <p className="text-[10px] font-black text-slate-400 mt-1 uppercase tracking-widest italic leading-none">PIC: <span className="text-potato-blue">{item.pic}</span></p>
+                                                    <h4 className="text-xs font-bold text-gray-800 uppercase tracking-tight">Chi nhánh {item.campus}</h4>
+                                                    <p className="text-[10px] font-medium text-gray-400 mt-0.5">PIC: <span className="text-brand-600 font-bold">{item.pic}</span></p>
                                                 </div>
-                                                <span className="text-xl font-black text-slate-900 tracking-tighter italic">{item.percentage}</span>
+                                                <span className="text-lg font-extrabold text-gray-800 tracking-tight">{item.percentage}</span>
                                             </div>
-                                            <div className="h-2 w-full bg-slate-50 rounded-full overflow-hidden shadow-inner">
-                                                <div className={`h-full ${item.color.replace('indigo', 'soft-blue').replace('potato-magenta', 'potato-pink')} rounded-full group-hover:opacity-100 opacity-80 transition-all duration-1000`} style={{ width: item.percentage }} />
+                                            <div className="h-1.5 w-full bg-gray-50 rounded-full overflow-hidden">
+                                                <div className={`h-full ${item.color} rounded-full transition-all duration-1000`} style={{ width: item.percentage }} />
                                             </div>
                                         </div>
                                     </div>
                                 ))}
-                                <div className="mt-6 p-6 rounded-[32px] bg-potato-blue/5 border border-potato-blue/10">
-                                    <p className="text-[11px] font-black text-soft-blue leading-relaxed text-center uppercase italic tracking-tight">
-                                         Tổng cộng 13 học sinh đã đăng ký ôn thi (PIC quản lý sát tiến độ)
-                                    </p>
-                                </div>
                             </div>
                         </div>
                     </div>
 
                     {/* Issues Alert Panel */}
-                    <div className="soft-card rounded-[40px] p-10 border-none relative overflow-hidden bg-white">
-                        <div className="absolute top-0 right-0 p-12 opacity-[0.03] text-9xl text-potato-red rotate-12 pointer-events-none">
-                             <Icon name="ph-warning-octagon" />
+                    <div className="bg-white rounded-2xl p-8 border border-red-100 shadow-sm relative overflow-hidden bg-gradient-to-br from-white to-red-50/30">
+                        <div className="absolute top-0 right-0 p-8 opacity-5 text-8xl text-red-500 pointer-events-none">
+                             <Icon name="AlertOctagon" size={120} />
                         </div>
-                        <div className="flex items-center gap-5 mb-10 relative z-10">
-                             <div className="w-16 h-16 bg-potato-red/10 rounded-3xl flex items-center justify-center shadow-lg shadow-potato-red/10 animate-pulse transition-transform hover:scale-105">
-                                <Icon name="ph-warning-octagon" className="text-3xl text-potato-red" />
+                        <div className="flex items-center gap-5 mb-8 relative z-10">
+                             <div className="w-14 h-14 bg-red-100 rounded-xl flex items-center justify-center shadow-lg shadow-red-100/50">
+                                <Icon name="AlertTriangle" className="text-red-600" size={28} />
                              </div>
                              <div>
-                                <h3 className="text-2xl font-black text-slate-900 tracking-tighter italic uppercase">Critical Issues: Thiếu tư vấn viên trực ca</h3>
-                                <p className="text-[11px] font-black text-potato-red mt-2 uppercase tracking-[0.2em] italic opacity-80">Staffing shortages detected</p>
+                                <h3 className="text-xl font-extrabold text-gray-800 tracking-tight uppercase">Critical Issues: Thiếu tư vấn viên trực ca</h3>
+                                <p className="text-[10px] font-bold text-red-500 mt-1 uppercase tracking-widest">Staffing shortages detected</p>
                              </div>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative z-10">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative z-10">
                             {issues.map((issue, i) => (
-                                <div key={i} className="bg-white/40 p-6 rounded-2xl border border-white/40 hover:bg-white/60 hover:shadow-md transition-all duration-300">
-                                    <h4 className="text-[10px] font-black text-rose-500 uppercase tracking-[0.1em] mb-3 flex items-center gap-2">
-                                        <div className="w-1.5 h-1.5 rounded-full bg-rose-500" /> {issue.date}
+                                <div key={i} className="bg-white p-5 rounded-xl border border-gray-100 hover:shadow-md transition-all">
+                                    <h4 className="text-[10px] font-bold text-red-500 uppercase tracking-wider mb-2 flex items-center gap-2">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" /> {issue.date}
                                     </h4>
-                                    <p className="text-slate-800 text-[14px] font-bold leading-relaxed">{issue.detail}</p>
+                                    <p className="text-gray-800 text-[13px] font-bold leading-relaxed">{issue.detail}</p>
                                 </div>
                             ))}
                         </div>
                     </div>
 
                     {/* Next Actions */}
-                    <div className="rounded-[32px] p-8 bg-gradient-to-br from-indigo-600 to-indigo-800 text-white relative overflow-hidden shadow-2xl border border-white/20 transition-all hover:shadow-[0_20px_50px_rgba(79,70,229,0.4)] hover:scale-[1.01] duration-500">
-                        <div className="absolute top-0 right-0 p-12 opacity-10 text-9xl rotate-12 pointer-events-none">
-                            <Icon name="ph-rocket-launch" />
+                    <div className="rounded-2xl p-8 bg-gradient-to-br from-brand-600 to-indigo-700 text-white relative overflow-hidden shadow-lg shadow-brand-100">
+                        <div className="absolute top-0 right-0 p-8 opacity-10 text-9xl pointer-events-none">
+                            <Icon name="Rocket" size={140} />
                         </div>
-                        <h3 className="text-xl font-black mb-8 flex items-center gap-3 relative z-10">
-                            <div className="p-2 bg-white/20 rounded-xl backdrop-blur-md">
-                                <Icon name="ph-lightning" />
+                        <h3 className="text-xl font-extrabold mb-8 flex items-center gap-3 relative z-10 tracking-tight">
+                            <div className="p-2 bg-white/20 rounded-xl">
+                                <Icon name="Zap" size={20} />
                             </div>
-                            Công Việc Sắp Tới (Next Actions)
+                            CÔNG VIỆC SẮP TỚI
                         </h3>
-                        <div className="space-y-4 relative z-10">
+                        <div className="space-y-3 relative z-10">
                             {[
-                                { icon: "ph-check-square", text: "Tiếp tục dồn lực hoàn thiện album \"Mùa hè rực rỡ\" cho khối Kids (Target: 05/04)." },
-                                { icon: "ph-users-four", text: "Tổ chức buổi ôn tập thử (Mock Test) cho nhóm học sinh đăng ký thi HK2 vào tối Thứ 7." },
-                                { icon: "ph-chart-line-up", text: "Hoàn thiện báo cáo phân tích hiệu quả chiến dịch \"Học thử 0 đồng\"." }
+                                { text: "Hoàn thiện album \"Mùa hè rực rỡ\" cho khối Kids (Target: 05/04)." },
+                                { text: "Tổ chức Mock Test cho học sinh đăng ký thi HK2 vào tối Thứ 7." },
+                                { text: "Hoàn thiện báo cáo chiến dịch \"Học thử 0 đồng\"." }
                             ].map((action, i) => (
-                                <div key={i} className="flex items-center gap-4 p-5 bg-white/10 rounded-2xl border border-white/10 hover:bg-white/20 transition-all group">
-                                    <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
-                                        <Icon name={action.icon} className="text-xl" />
+                                <div key={i} className="flex items-center gap-4 p-4 bg-white/10 rounded-xl border border-white/10 hover:bg-white/20 transition-all cursor-default">
+                                    <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center shrink-0">
+                                        <Icon name="CheckCircle" size={16} />
                                     </div>
-                                    <p className="text-base font-bold leading-relaxed">{action.text}</p>
+                                    <p className="text-sm font-bold leading-relaxed">{action.text}</p>
                                 </div>
                             ))}
                         </div>
@@ -936,56 +911,54 @@
 
         const WeeklyFocusCard = ({ department, week, data }) => {
             if (!data) return (
-                <div className="bg-white rounded-[24px] p-10 border border-slate-100 border-dashed text-center text-slate-300">
+                <div className="bg-white rounded-2xl p-8 border border-gray-100 border-dashed text-center text-gray-300 shadow-sm">
                      <p className="font-bold uppercase tracking-widest text-[10px]">Chưa có tiêu điểm tuần {week}</p>
                 </div>
             );
             
             const statusConfig = {
-                "Đúng Tiến Độ": { bg: "bg-blue-100/50", text: "text-blue-700", border: "border-blue-200", dot: "bg-blue-500" },
-                "Rủi Ro": { bg: "bg-rose-100/50", text: "text-rose-700", border: "border-rose-200", dot: "bg-rose-500" },
-                "Hoàn Thành": { bg: "bg-emerald-100/50", text: "text-emerald-700", border: "border-emerald-200", dot: "bg-emerald-500" }
+                "Đúng Tiến Độ": { bg: "bg-blue-50", text: "text-blue-600", border: "border-blue-100", dot: "bg-blue-400" },
+                "Rủi Ro": { bg: "bg-red-50", text: "text-red-600", border: "border-red-100", dot: "bg-red-400" },
+                "Hoàn Thành": { bg: "bg-green-50", text: "text-green-600", border: "border-green-100", dot: "bg-green-400" }
             };
             const style = statusConfig[data.status] || statusConfig["Đúng Tiến Độ"];
 
             return (
-                <div className="soft-card rounded-[40px] p-2 relative overflow-hidden group animate-fade-in shadow-xl bg-white border-none">
-                    <div className="rounded-[36px] p-8">
-                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 border-b border-slate-50 pb-8">
-                            <div>
-                                <div className="flex items-center gap-4 mb-4">
-                                    <span className="px-4 py-2 bg-gradient-to-r from-potato-pink to-potato-red text-white text-[11px] font-black rounded-xl uppercase tracking-[0.1em] italic shadow-lg shadow-potato-pink/20">Trọng tâm {department}</span>
-                                    <span className="text-[11px] font-black text-slate-400 flex items-center uppercase tracking-widest italic">
-                                        <Icon name="ph-calendar-blank" className="mr-2 text-potato-blue" /> Tuần {week}
-                                    </span>
-                                </div>
-                                <h2 className="text-3xl font-black text-soft-blue flex items-center gap-4 leading-none italic uppercase tracking-tighter">
-                                    <Icon name="ph-target" className="text-potato-pink animate-pulse" /> {data.theme}
-                                </h2>
+                <div className="bg-white rounded-2xl p-8 border border-gray-100 shadow-sm relative overflow-hidden group">
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 pb-8 border-b border-gray-50">
+                        <div className="space-y-4">
+                            <div className="flex items-center gap-3">
+                                <span className="px-3 py-1 bg-gradient-to-r from-pink-500 to-rose-500 text-white text-[9px] font-extrabold rounded-lg uppercase tracking-wider shadow-sm">Trọng tâm {department}</span>
+                                <span className="text-[10px] font-bold text-gray-400 flex items-center uppercase tracking-widest">
+                                    <Icon name="calendar" size={14} className="mr-1.5 text-brand-500" /> Tuần {week}
+                                </span>
                             </div>
-                            <div className={`mt-6 md:mt-0 px-6 py-3 rounded-2xl text-[11px] font-black flex items-center gap-3 shadow-sm border-none ${style.bg} ${style.text}`}>
-                                <div className={`w-2 h-2 rounded-full ${style.dot} animate-pulse shadow-current shadow-lg`} /> {data.status}
-                            </div>
+                            <h2 className="text-2xl font-extrabold text-gray-800 flex items-center gap-3 uppercase tracking-tight">
+                                <Icon name="Target" className="text-pink-500" size={24} /> {data.theme}
+                            </h2>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                            <div className="bg-slate-50 rounded-[32px] p-8 border border-transparent hover:border-slate-100 hover:bg-white hover:shadow-lg transition-all duration-500 group/item">
-                                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-3 leading-none italic">
-                                    <Icon name="ph-sparkle" className="text-potato-yellow group-hover/item:rotate-12 transition-transform" /> Kế Hoạch
-                                </h4>
-                                <p className="text-slate-700 text-[14px] leading-relaxed font-bold italic opacity-80">{data.plan}</p>
-                            </div>
-                            <div className="bg-slate-50 rounded-[32px] p-8 border border-transparent hover:border-slate-100 hover:bg-white hover:shadow-lg transition-all duration-500 group/item">
-                                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-3 leading-none italic">
-                                    <Icon name="ph-chart-line-up" className="text-potato-blue group-hover/item:scale-110 transition-transform" /> Kết Quả
-                                </h4>
-                                <p className="text-slate-700 text-[14px] leading-relaxed font-bold italic opacity-80">{data.result}</p>
-                            </div>
-                            <div className="bg-potato-pink/5 rounded-[32px] p-8 border border-transparent hover:border-potato-pink/10 hover:bg-white hover:shadow-lg transition-all duration-500 group/item">
-                                <h4 className="text-[10px] font-black text-potato-pink uppercase tracking-widest mb-4 flex items-center gap-3 leading-none italic">
-                                    <Icon name="ph-lightning" className="animate-pulse" /> Hành Động
-                                </h4>
-                                <p className="text-potato-pink text-[14px] font-black leading-relaxed italic uppercase tracking-tight">{data.action}</p>
-                            </div>
+                        <div className={`mt-6 md:mt-0 px-4 py-2 rounded-xl text-[10px] font-extrabold flex items-center gap-2 border ${style.bg} ${style.text} ${style.border}`}>
+                            <div className={`w-2 h-2 rounded-full ${style.dot} animate-pulse`} /> {data.status}
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="bg-gray-50/50 rounded-xl p-6 border border-transparent hover:border-gray-100 hover:bg-white transition-all group/item">
+                            <h4 className="text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                                <Icon name="Sparkles" className="text-amber-500" size={14} /> Kế hoạch
+                            </h4>
+                            <p className="text-gray-700 text-[13px] leading-relaxed font-bold italic opacity-90">{data.plan}</p>
+                        </div>
+                        <div className="bg-gray-50/50 rounded-xl p-6 border border-transparent hover:border-gray-100 hover:bg-white transition-all group/item">
+                            <h4 className="text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                                <Icon name="BarChart2" className="text-brand-500" size={14} /> Kết quả
+                            </h4>
+                            <p className="text-gray-700 text-[13px] leading-relaxed font-bold italic opacity-90">{data.result}</p>
+                        </div>
+                        <div className="bg-pink-50/30 rounded-xl p-6 border border-transparent hover:border-pink-100 hover:bg-white transition-all group/item">
+                            <h4 className="text-[10px] font-extrabold text-pink-500 uppercase tracking-widest mb-3 flex items-center gap-2">
+                                <Icon name="Zap" size={14} /> Hành động
+                            </h4>
+                            <p className="text-pink-600 text-[13px] font-extrabold leading-relaxed uppercase tracking-tight">{data.action}</p>
                         </div>
                     </div>
                 </div>
@@ -996,17 +969,17 @@
             const [expandedMenus, setExpandedMenus] = useState(['teacher']);
 
             const menuItems = [
-                { id: 'dashboard', label: 'Dashboard', icon: 'ph-squares-four' },
+                { id: 'dashboard', label: 'Dashboard', icon: 'layout-dashboard' },
                 { 
                     id: 'teacher', 
-                    label: 'Teacher', 
-                    icon: 'ph-user-focus',
+                    label: 'Teachers', 
+                    icon: 'book-open',
                     children: [
-                        { id: 'playbook-teen', label: 'POTATO Play book For Teen', icon: 'ph-book-open', link: 'https://potato-teacher.vercel.app/' }
+                        { id: 'playbook-teen', label: 'POTATO Play book', icon: 'graduation-cap', link: 'https://potato-teacher.vercel.app/' }
                     ]
                 },
-                { id: 'academic', label: 'Academic', icon: 'ph-graduation-cap' },
-                { id: 'operation', label: 'Operation', icon: 'ph-gear-six' }
+                { id: 'academic', label: 'Academic', icon: 'users' },
+                { id: 'operation', label: 'Operation', icon: 'settings' }
             ];
 
             const toggleExpanded = (id) => {
@@ -1016,27 +989,24 @@
             };
 
             const sidebarContent = (
-                <aside className={`${isOpen ? 'translate-x-0 w-[260px]' : '-translate-x-full lg:translate-x-0 lg:w-[80px]'} h-screen bg-[#FDF8F3] flex flex-col transition-all duration-300 ease-in-out fixed lg:relative z-[60] overflow-hidden group/sidebar soft-panel border-none`}>
+                <aside className={`${isOpen ? 'translate-x-0 w-64' : '-translate-x-full lg:translate-x-0 lg:w-20'} h-screen bg-white flex flex-col transition-all duration-300 ease-in-out fixed lg:relative z-[60] overflow-hidden border-r border-gray-100 shrink-0`}>
                     {/* Logo Section */}
-                    <div className={`p-6 pb-12 flex items-center ${isOpen ? 'gap-4 px-8' : 'justify-center px-0'}`}>
-                        <div className="w-10 h-10 rounded-2xl overflow-hidden shadow-lg shadow-potato-brown/20 flex items-center justify-center bg-white shrink-0">
-                            <img src="https://raw.githubusercontent.com/hoangtien1300/Potato/main/logo_potato.jpg" alt="Potato Logo" className="w-full h-full object-contain p-1" />
+                    <div className="h-24 flex items-center px-6">
+                        <div className="flex items-center gap-3">
+                            <img src="logo_potato.jpg" alt="Potato Logo" className="h-10 w-auto object-contain rounded-lg shrink-0" />
+                            {isOpen && (
+                                <h1 className="text-xl font-extrabold text-brand-700 tracking-tight animate-fade-in">POTATO</h1>
+                            )}
                         </div>
-                        {isOpen && (
-                            <div className="animate-fade-in whitespace-nowrap">
-                                <h1 className="text-lg font-black text-slate-900 leading-none tracking-tighter uppercase italic">POTATO<span className="text-potato-blue"> English</span></h1>
-                                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-1">Never Stop Learning</p>
-                            </div>
-                        )}
-                        {isMobile && (
-                            <button onClick={toggleOpen} className="ml-auto lg:hidden p-2 text-slate-400">
-                                <Icon name="ph-x" />
+                        {isMobile && isOpen && (
+                            <button onClick={toggleOpen} className="ml-auto lg:hidden p-2 text-gray-400">
+                                <Icon name="x" />
                             </button>
                         )}
                     </div>
 
                     {/* Navigation */}
-                    <nav className="flex-1 px-4 space-y-2 overflow-y-auto no-scrollbar">
+                    <nav className="flex-1 px-4 space-y-1 overflow-y-auto no-scrollbar pb-4">
                         {menuItems.map((item) => {
                             const isExpanded = expandedMenus.includes(item.id);
                             const hasChildren = item.children && item.children.length > 0;
@@ -1053,28 +1023,26 @@
                                                 if(isMobile) toggleOpen(); 
                                             }
                                         }}
-                                        className={`w-full flex items-center ${isOpen ? 'gap-4 px-6' : 'justify-center px-0'} py-4 rounded-[22px] transition-all duration-300 relative group ${
+                                        className={`w-full flex items-center ${isOpen ? 'gap-3 px-4' : 'justify-center px-0'} py-3 rounded-xl transition-all duration-200 group ${
                                             isActive 
-                                            ? 'bg-potato-blue/10 text-potato-blue' 
-                                            : 'text-slate-400 hover:bg-white hover:text-potato-brown'
+                                            ? 'bg-brand-50 text-brand-700 font-semibold' 
+                                            : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900 font-medium'
                                         }`}
-                                        title={!isOpen ? item.label : ""}
                                     >
-                                        <Icon name={item.icon} className={`text-xl transition-all ${isActive ? 'scale-110' : 'group-hover:scale-110'}`} />
+                                        <Icon name={item.icon} size={20} className={isActive ? "text-brand-600" : "text-gray-400 group-hover:text-gray-600"} />
                                         {isOpen && (
                                             <>
-                                                <span className="text-[12px] font-black tracking-tight whitespace-nowrap animate-fade-in uppercase italic flex-1 text-left">{item.label}</span>
+                                                <span className="text-sm tracking-tight flex-1 text-left">{item.label}</span>
                                                 {hasChildren && (
-                                                    <Icon name={isExpanded ? "ph-caret-up" : "ph-caret-down"} className="text-[10px] opacity-40 ml-2" />
+                                                    <Icon name={isExpanded ? "chevron-up" : "chevron-down"} size={16} className="text-gray-300" />
                                                 )}
                                             </>
                                         )}
-                                        {isActive && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-6 bg-potato-blue rounded-r-full" />}
                                     </button>
 
                                     {/* Children Rendering */}
                                     {isOpen && hasChildren && isExpanded && (
-                                        <div className="space-y-1 ml-2 animate-fade-in">
+                                        <div className="space-y-1 ml-4 animate-fade-in border-l border-gray-50 pl-2">
                                             {item.children.map(child => (
                                                 <button
                                                     key={child.id}
@@ -1086,14 +1054,14 @@
                                                             if(isMobile) toggleOpen(); 
                                                         }
                                                     }}
-                                                    className={`w-full flex items-center gap-4 px-6 py-3.5 rounded-[18px] transition-all duration-300 relative group ${
+                                                    className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all duration-200 ${
                                                         activeTab === child.id 
-                                                        ? 'bg-white text-potato-blue shadow-sm' 
-                                                        : 'text-slate-400 hover:text-potato-blue hover:bg-white/50'
+                                                        ? 'text-brand-600 font-semibold' 
+                                                        : 'text-gray-400 hover:text-gray-700 font-medium'
                                                     }`}
                                                 >
-                                                    <Icon name={child.icon} className={`text-lg transition-transform ${activeTab === child.id ? 'scale-110' : 'group-hover:scale-110'}`} />
-                                                    <span className="text-[10px] font-black tracking-tight whitespace-nowrap uppercase italic">{child.label}</span>
+                                                    <Icon name={child.icon} size={18} />
+                                                    <span className="text-xs tracking-tight">{child.label}</span>
                                                 </button>
                                             ))}
                                         </div>
@@ -1103,23 +1071,17 @@
                         })}
                     </nav>
 
-                    {/* Toggle Button & Footer */}
-                    <div className="p-4 space-y-4">
-                        <button 
-                            onClick={toggleOpen}
-                            className={`w-full hidden lg:flex items-center justify-center h-12 rounded-2xl bg-white/50 text-slate-300 hover:text-potato-blue hover:bg-white transition-all shadow-sm group/toggle`}
-                        >
-                            <Icon name={isOpen ? "ph-caret-double-left" : "ph-caret-double-right"} className="text-xl group-hover:scale-110 transition-transform" />
-                        </button>
-                        
-                        {isOpen && (
-                            <div className="bg-white/40 rounded-2xl p-4 flex items-center justify-center animate-fade-in shadow-inner">
-                                <div className="flex items-center gap-2">
-                                    <div className="w-1.5 h-1.5 rounded-full bg-potato-green animate-pulse" />
-                                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">v6.5 PREMIUM</span>
-                                </div>
-                            </div>
-                        )}
+                    {/* Footer Info / Toggle */}
+                    <div className="p-6">
+                        <div className="p-4 rounded-2xl bg-gradient-to-br from-brand-500 to-brand-600 text-white relative overflow-hidden shadow-lg shadow-brand-100">
+                             <div className="absolute -top-4 -right-4 w-16 h-16 bg-white opacity-10 rounded-full"></div>
+                             <div className="relative z-10 flex flex-col items-center text-center">
+                                 <p className="text-[10px] font-medium opacity-90 mb-2 whitespace-nowrap">PREMIUM SYSTEM</p>
+                                 <button className="bg-white text-brand-600 w-full py-1.5 rounded-lg font-bold text-[10px] shadow-sm hover:bg-gray-50 transition-colors">
+                                     v6.5 PRO
+                                 </button>
+                             </div>
+                        </div>
                     </div>
                 </aside>
             );
@@ -1134,9 +1096,237 @@
             );
         };
 
+        const SHIFT_DATA = {
+            "Operation": {
+                14: [
+                    { day: "Thứ 2", staff: "Ms. Ngân", time: "08:00 - 17:00", role: "Manager" },
+                    { day: "Thứ 3", staff: "Ms. Trân", time: "08:00 - 17:00", role: "Staff" },
+                    { day: "Thứ 4", staff: "Ms. Ngân", time: "08:00 - 17:00", role: "Manager" },
+                    { day: "Thứ 5", staff: "Ms. Trân", time: "08:00 - 17:00", role: "Staff" },
+                    { day: "Thứ 6", staff: "Ms. Ngân", time: "08:00 - 17:00", role: "Manager" },
+                    { day: "Thứ 7", staff: "Ms. Trân", time: "08:00 - 12:00", role: "Staff" },
+                    { day: "Chủ Nhật", staff: "OFF", time: "-", role: "-" }
+                ],
+                15: [
+                    { day: "Thứ 2", staff: "Ms. Trân", time: "08:00 - 17:00", role: "Staff" },
+                    { day: "Thứ 3", staff: "Ms. Ngân", time: "08:00 - 17:00", role: "Manager" },
+                    { day: "Thứ 4", staff: "Ms. Trân", time: "08:00 - 17:00", role: "Staff" },
+                    { day: "Thứ 5", staff: "Ms. Ngân", time: "08:00 - 17:00", role: "Manager" },
+                    { day: "Thứ 6", staff: "Ms. Trân", time: "08:00 - 17:00", role: "Staff" },
+                    { day: "Thứ 7", staff: "Ms. Ngân", time: "08:00 - 12:00", role: "Manager" },
+                    { day: "Chủ Nhật", staff: "OFF", time: "-", role: "-" }
+                ]
+            },
+            "Teacher": {
+                14: [
+                    { day: "Thứ 2", staff: "Mr. Khôi", time: "17:30 - 21:00", role: "Senior" },
+                    { day: "Thứ 3", staff: "Ms. Sue", time: "17:30 - 21:00", role: "Teacher" },
+                    { day: "Thứ 4", staff: "Mr. Khôi", time: "17:30 - 21:00", role: "Senior" },
+                    { day: "Thứ 5", staff: "Ms. Lib", time: "17:30 - 21:00", role: "Teacher" },
+                    { day: "Thứ 6", staff: "Mr. Khôi", time: "17:30 - 21:00", role: "Senior" },
+                    { day: "Thứ 7", staff: "Ms. Sue", time: "08:00 - 20:00", role: "Teacher" },
+                    { day: "Chủ Nhật", staff: "Ms. Lib", time: "08:00 - 12:00", role: "Teacher" }
+                ]
+            },
+            "Academic": {
+               14: [
+                    { day: "Thứ 2", staff: "Ms. Hoa", time: "09:00 - 18:00", role: "Academic" },
+                    { day: "Thứ 3", staff: "Ms. Hoa", time: "09:00 - 18:00", role: "Academic" },
+                    { day: "Thứ 4", staff: "Ms. Hoa", time: "09:00 - 18:00", role: "Academic" },
+                    { day: "Thứ 5", staff: "Ms. Hoa", time: "09:00 - 18:00", role: "Academic" },
+                    { day: "Thứ 6", staff: "Ms. Hoa", time: "09:00 - 18:00", role: "Academic" },
+                    { day: "Thứ 7", staff: "OFF", time: "-", role: "-" },
+                    { day: "Chủ Nhật", staff: "OFF", time: "-", role: "-" }
+                ]
+            }
+        };
+
+        const ShiftScheduler = ({ currentWeek, shiftDept, setShiftDept, setActiveWeek }) => {
+            let shifts = [];
+            if (shiftDept === 'All') {
+                Object.keys(SHIFT_DATA).forEach(dept => {
+                    if (SHIFT_DATA[dept][currentWeek]) {
+                        SHIFT_DATA[dept][currentWeek].forEach(s => {
+                            shifts.push({ ...s, department: dept });
+                        });
+                    }
+                });
+            } else {
+                shifts = (SHIFT_DATA[shiftDept] && SHIFT_DATA[shiftDept][currentWeek]) || [];
+                shifts = shifts.map(s => ({ ...s, department: shiftDept }));
+            }
+
+            const HOURS = [8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22];
+            
+            const calculatePosition = (timeStr) => {
+                 if (!timeStr || timeStr === '-') return { top: 0, height: 0 };
+                 try {
+                     const [start, end] = timeStr.split(' - ');
+                     const [sH, sM] = start.split(':').map(Number);
+                     const [eH, eM] = end.split(':').map(Number);
+                     
+                     const startTotal = sH * 60 + sM;
+                     const endTotal = eH * 60 + eM;
+                     const scaleStart = 8 * 60; 
+                     const scaleEnd = 22 * 60;   
+                     const totalRange = scaleEnd - scaleStart;
+                     
+                     const top = ((startTotal - scaleStart) / totalRange) * 100;
+                     const height = ((endTotal - startTotal) / totalRange) * 100;
+                     
+                     return { top: Math.max(0, top), height: Math.max(0, height) };
+                 } catch (e) {
+                     return { top: 0, height: 0 };
+                 }
+            };
+
+            const days = ["Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7", "Chủ Nhật"];
+
+            return (
+                <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 animate-fade-in relative overflow-hidden group">
+                    <div className="flex flex-col gap-8 mb-10 relative z-10">
+                        {/* Header with Title and Week Nav */}
+                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                            <div className="flex items-center gap-5">
+                                <div className="w-14 h-14 rounded-2xl bg-brand-50 flex items-center justify-center text-brand-600 shadow-inner group-hover:scale-110 transition-transform duration-500">
+                                    <Icon name="calendar" size={28} />
+                                </div>
+                                <div>
+                                    <h3 className="text-3xl font-black text-gray-900 tracking-tighter leading-none">Schedule</h3>
+                                    <p className="text-xs font-bold text-gray-400 uppercase tracking-[0.3em] mt-2">This week</p>
+                                </div>
+                            </div>
+
+                            <div className="flex items-center gap-4 bg-gray-50/50 p-2 rounded-2xl border border-gray-100">
+                                <button onClick={() => setActiveWeek(prev => Math.max(1, prev - 1))} className="p-2.5 hover:bg-white rounded-xl transition-all text-gray-400 hover:text-brand-600 hover:shadow-sm">
+                                    <Icon name="chevron-left" size={18} />
+                                </button>
+                                <span className="text-xs font-black text-gray-700 w-24 text-center uppercase tracking-widest">Week {currentWeek}</span>
+                                <button onClick={() => setActiveWeek(prev => prev + 1)} className="p-2.5 hover:bg-white rounded-xl transition-all text-gray-400 hover:text-brand-600 hover:shadow-sm">
+                                    <Icon name="chevron-right" size={18} />
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Dept Filter Section */}
+                        <div className="flex flex-wrap items-center gap-2">
+                            {['All', 'Operation', 'Teacher', 'Academic'].map(dept => (
+                                <button 
+                                    key={dept}
+                                    onClick={() => setShiftDept(dept)}
+                                    className={`px-6 py-2.5 rounded-xl text-[10px] font-black transition-all uppercase tracking-widest border ${shiftDept === dept ? 'bg-brand-600 border-brand-600 text-white shadow-xl shadow-brand-100' : 'bg-white border-gray-100 text-gray-400 hover:border-brand-200 hover:text-gray-600'}`}
+                                >
+                                    {dept === 'All' ? 'View All' : dept}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Time Grid View */}
+                    <div className="relative border border-gray-100 rounded-[2rem] overflow-hidden bg-gray-50/30 shadow-inner">
+                        {/* Day Headers */}
+                        <div className="flex border-b border-gray-100 bg-white/95 backdrop-blur-md sticky top-0 z-20">
+                            <div className="w-20 border-r border-gray-100 flex items-center justify-center bg-gray-50/50">
+                                <Icon name="clock" size={14} className="text-gray-400 animate-pulse" />
+                            </div>
+                            <div className="flex-1 grid grid-cols-7 divide-x divide-gray-100">
+                                {days.map((day, idx) => (
+                                    <div key={idx} className={`py-5 text-center transition-colors ${day === 'Chủ Nhật' ? 'bg-red-50/30' : ''}`}>
+                                        <p className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">{day}</p>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Calendar Body */}
+                        <div className="flex relative" style={{ height: '600px' }}>
+                            {/* Time Axis */}
+                            <div className="w-20 flex flex-col border-r border-gray-100 bg-white/50 backdrop-blur-sm">
+                                {HOURS.map(hour => (
+                                    <div key={hour} className="flex-1 relative flex items-start justify-center">
+                                        <span className="absolute -top-3 text-[10px] font-black text-gray-300 tracking-tighter">
+                                            {hour < 10 ? `0${hour}:00` : `${hour}:00`}
+                                        </span>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* Main Grid Columns */}
+                            <div className="flex-1 grid grid-cols-7 relative divide-x divide-gray-100/50">
+                                {/* Horizontal Grid Lines */}
+                                {HOURS.map((_, idx) => (
+                                    <div key={idx} className="absolute w-full border-t border-gray-100/40" style={{ top: `${(idx / (HOURS.length - 1)) * 100}%` }}></div>
+                                ))}
+
+                                {days.map((dayName, dayIdx) => {
+                                    const dayShifts = shifts.filter(s => s.day === dayName && s.staff !== 'OFF');
+                                    return (
+                                        <div key={dayIdx} className={`relative h-full transition-colors ${dayName === 'Chủ Nhật' ? 'bg-red-50/10' : ''}`}>
+                                            {dayShifts.map((s, sIdx) => {
+                                                const { top, height } = calculatePosition(s.time);
+                                                const deptStyles = {
+                                                    'Operation': 'border-l-brand-600 bg-brand-50/90 text-brand-900',
+                                                    'Teacher': 'border-l-pink-500 bg-pink-50/90 text-pink-900',
+                                                    'Academic': 'border-l-amber-500 bg-amber-50/90 text-amber-900'
+                                                };
+                                                const styleClass = deptStyles[s.department] || 'border-l-gray-600 bg-gray-50/90 text-gray-900';
+
+                                                return (
+                                                    <div 
+                                                        key={sIdx}
+                                                        className={`absolute left-1 right-1 rounded-xl border border-white/50 shadow-sm transition-all hover:shadow-xl hover:z-30 hover:-translate-y-0.5 duration-300 p-2.5 flex flex-col justify-between overflow-hidden border-l-4 group/item ${styleClass}`}
+                                                        style={{ top: `${top}%`, height: `${height}%` }}
+                                                    >
+                                                        <div className="space-y-1">
+                                                            <div className="flex flex-col">
+                                                                <h4 className="text-[11px] font-black leading-tight break-words uppercase tracking-tight">{s.staff}</h4>
+                                                                <span className="text-[7px] font-black uppercase tracking-[0.2em] opacity-60 mt-1">
+                                                                    {s.department}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex items-center gap-1.5 mt-auto">
+                                                            <div className="px-2 py-0.5 rounded bg-white/40 backdrop-blur-md text-[7px] font-black uppercase tracking-widest truncate">
+                                                                {s.role}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="mt-8 flex flex-wrap items-center justify-between gap-6 px-4">
+                        <div className="flex items-center gap-6 text-[9px] font-black uppercase tracking-[0.2em] text-gray-400">
+                             <div className="flex items-center gap-2">
+                                 <div className="w-3 h-3 rounded bg-brand-500 shadow-sm shadow-brand-200"></div>
+                                 <span>Operation</span>
+                             </div>
+                             <div className="flex items-center gap-2">
+                                 <div className="w-3 h-3 rounded bg-pink-500 shadow-sm shadow-pink-200"></div>
+                                 <span>Teacher</span>
+                             </div>
+                             <div className="flex items-center gap-2">
+                                 <div className="w-3 h-3 rounded bg-amber-500 shadow-sm shadow-amber-200"></div>
+                                 <span>Academic</span>
+                             </div>
+                        </div>
+                        <p className="text-[10px] font-bold text-gray-400 italic flex items-center gap-1.5">
+                             <Icon name="info" size={12} className="text-brand-500" /> Use the time axis for precise schedule tracking
+                        </p>
+                    </div>
+                </div>
+            );
+        };
+
         const MainApp = () => {
             const [activeTab, setActiveTab] = useState('dashboard');
             const [activeWeek, setActiveWeek] = useState(14);
+            const [shiftDept, setShiftDept] = useState('Operation');
             const [isSidebarOpen, setSidebarOpen] = useState(window.innerWidth > 1024);
             const [isMobile, setIsMobile] = useState(window.innerWidth <= 1024);
 
@@ -1154,15 +1344,15 @@
             const renderContent = () => {
                 if (activeWeek < 14) {
                     return (
-                        <div className="flex flex-col items-center justify-center p-32 text-slate-300 space-y-6 animate-fade-in soft-card rounded-[40px] border-none">
-                            <div className="w-24 h-24 bg-potato-blue/5 rounded-full flex items-center justify-center shadow-inner">
-                                <Icon name="ph-database" className="text-4xl opacity-20" />
+                        <div className="flex flex-col items-center justify-center p-32 space-y-6 animate-fade-in bg-white rounded-2xl border border-gray-100 shadow-sm">
+                            <div className="w-24 h-24 bg-brand-50 rounded-full flex items-center justify-center">
+                                <Icon name="database" className="text-brand-500 opacity-40" size={48} />
                             </div>
                             <div className="text-center">
-                                <p className="font-black text-slate-800 text-2xl tracking-tight uppercase italic tracking-tighter">Dữ liệu chưa sẵn sàng</p>
-                                <p className="font-bold text-slate-400 mt-2">Hệ thống chưa có dữ liệu báo cáo cho Tuần {activeWeek}.</p>
+                                <p className="font-extrabold text-gray-900 text-2xl tracking-tight">Dữ liệu chưa sẵn sàng</p>
+                                <p className="text-gray-500 mt-2">Hệ thống chưa có dữ liệu báo cáo cho Tuần {activeWeek}.</p>
                             </div>
-                            <button onClick={() => setActiveWeek(14)} className="px-8 py-3.5 bg-potato-blue/10 text-potato-blue rounded-2xl text-[11px] font-black uppercase tracking-widest hover:bg-potato-blue hover:text-white transition-all">Quay lại Tuần 14</button>
+                            <button onClick={() => setActiveWeek(14)} className="px-8 py-3 bg-brand-600 text-white rounded-xl font-bold hover:bg-brand-700 transition-all shadow-lg shadow-brand-100">Quay lại Tuần 14</button>
                         </div>
                     );
                 }
@@ -1173,128 +1363,149 @@
                             <div className="flex flex-col xl:flex-row gap-10 animate-fade-in relative">
                                 {/* Main Content Column */}
                                 <div className="flex-1 space-y-10 min-w-0">
-                                    {/* Top Row: Responsive modern Stat Cards */}
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
-                                        <StatCardV2 
-                                            title="Tổng Học Viên" 
-                                            value="1,245" 
-                                            change="+12.5%" 
-                                            trend="up" 
-                                            data={[30, 40, 35, 50, 49, 60, 70, 91]} 
-                                            colorClass="#00aeef" 
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                                        <StatCardV3 
+                                            value="520" 
+                                            label="Students" 
+                                            icon="users" 
+                                            iconbg="bg-potato-blue" 
                                         />
-                                        <StatCardV2 
-                                            title="Doanh Thu" 
-                                            value="$32,845" 
-                                            change="+8.2%" 
-                                            trend="up" 
-                                            data={[20, 35, 40, 30, 45, 50, 40, 65]} 
-                                            colorClass="#00aeef" 
+                                        <StatCardV3 
+                                            value="85" 
+                                            label="Class" 
+                                            icon="book-open" 
+                                            iconbg="bg-potato-yellow" 
                                         />
-                                        <StatCardV2 
-                                            title="Retention Rate" 
-                                            value="94.2%" 
-                                            change="+2.4%" 
-                                            trend="up" 
-                                            data={[80, 82, 85, 84, 88, 90, 92, 94]} 
-                                            colorClass="#FFC107" 
+                                        <StatCardV3 
+                                            value="25" 
+                                            label="Teachers" 
+                                            icon="user-check" 
+                                            iconbg="bg-potato-pink" 
                                         />
                                     </div>
 
-                                    {/* Middle Row: Large Line Chart (Visualized Placeholder) */}
-                                    <div className="soft-card rounded-[40px] p-10 bg-white group border-none">
-                                        <div className="flex justify-between items-end mb-10">
-                                            <div>
-                                                <h3 className="text-xl font-black text-soft-blue tracking-tight">Activity Summary</h3>
-                                                <p className="text-[11px] font-bold text-slate-400 mt-1 uppercase tracking-widest italic">Monthly operation flow</p>
-                                            </div>
-                                            <div className="flex items-center gap-6">
-                                                <div className="flex items-center gap-2">
-                                                    <div className="w-2.5 h-2.5 rounded-full bg-soft-blue shadow-lg shadow-soft-blue/20"></div>
-                                                    <span className="text-[10px] font-black text-slate-500 uppercase">Học viên mới</span>
-                                                </div>
-                                                <div className="flex items-center gap-2">
-                                                    <div className="w-2.5 h-2.5 rounded-full bg-soft-blue/40 shadow-lg shadow-soft-blue/10"></div>
-                                                    <span className="text-[10px] font-black text-slate-500 uppercase">Dự án học vụ</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        {/* Simplified Graphic Representation of a Chart */}
-                                        <div className="h-64 w-full relative group/chart">
-                                            <svg viewBox="0 0 1000 300" className="w-full h-full overflow-visible">
-                                                <path d="M0,250 C100,220 200,280 300,200 C400,120 500,240 600,180 C700,120 800,160 900,100 L1000,80" fill="none" stroke="#2171B5" strokeWidth="6" strokeLinecap="round" className="drop-shadow-2xl" />
-                                                <path d="M0,280 C150,260 250,220 350,250 C450,280 550,180 650,150 C750,120 850,200 1000,150" fill="none" stroke="#2171B5" strokeWidth="6" strokeLinecap="round" className="drop-shadow-2xl opacity-20" />
-                                                <circle cx="600" cy="180" r="8" fill="#2171B5" className="animate-pulse" />
-                                            </svg>
-                                            <div className="absolute bottom-0 left-0 right-0 flex justify-between px-2 pt-4">
-                                                {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'].map(m => (
-                                                    <span key={m} className="text-[10px] font-black text-slate-300 uppercase tracking-tighter">{m}</span>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    </div>
+                                    <ShiftScheduler 
+                                        currentWeek={activeWeek} 
+                                        shiftDept={shiftDept} 
+                                        setShiftDept={setShiftDept} 
+                                        setActiveWeek={setActiveWeek} 
+                                    />
 
-                                    {/* Bottom Data Row: Complex Data visualization */}
+                                    {/* Middle Row: 2 Large Chart Cards */}
                                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                                        {/* Left: Interactive Bar Chart Summary */}
-                                        <div className="soft-card rounded-[40px] p-10 space-y-10 bg-white border-none shadow-xl">
-                                            <div className="flex justify-between items-center px-2">
-                                                <h3 className="text-xl font-black text-soft-blue tracking-tighter leading-none italic uppercase">Học Viên Theo Tuần</h3>
-                                                <button className="text-[10px] font-black text-potato-blue uppercase tracking-widest border-b-2 border-potato-blue/10 pb-1 hover:border-potato-blue transition-all">View Analytics</button>
-                                            </div>
-                                            <div className="flex items-end justify-between h-56 px-4 gap-4">
-                                                {[40, 60, 45, 90, 100, 65, 50].map((v, i) => (
-                                                    <div key={i} className="flex-1 flex flex-col items-center group/vbar h-full justify-end">
-                                                        <div className="relative w-full bg-slate-50 rounded-[20px] transition-all duration-700 h-full flex items-end overflow-hidden shadow-inner cursor-pointer group-hover/vbar:bg-slate-100">
-                                                            <div 
-                                                                className={`w-full rounded-[20px] transition-all duration-1000 ${v > 80 ? 'bg-potato-pink' : 'bg-potato-blue/40'} shadow-lg group-hover/vbar:scale-x-105`} 
-                                                                style={{ height: `${v}%` }}
-                                                            />
-                                                            <div className="absolute inset-0 bg-white/10 opacity-0 group-hover/vbar:opacity-100 transition-opacity"></div>
-                                                        </div>
-                                                        <span className="mt-5 text-[10px] font-black text-slate-400 uppercase tracking-widest italic">{['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][i]}</span>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-
-                                        {/* Right: Pie/Donut Chart Summary */}
-                                        <div className="glass-card rounded-[40px] p-8 space-y-8 flex flex-col justify-between h-full">
-                                            <div className="flex justify-between items-center px-2">
-                                                <h3 className="text-lg font-black text-slate-900 tracking-tight leading-none italic uppercase">Cơ Cấu Học Viên</h3>
-                                                <button className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Refresh</button>
-                                            </div>
-                                            <div className="flex flex-col sm:flex-row items-center gap-8 lg:gap-12 px-2">
-                                                <div className="relative w-36 h-36 shrink-0">
-                                                    <svg viewBox="0 0 100 100" className="w-full h-full transform -rotate-90">
-                                                        <circle cx="50" cy="50" r="40" fill="transparent" stroke="#F1F5F9" strokeWidth="12" />
-                                                        <circle cx="50" cy="50" r="40" fill="transparent" stroke="#00aeef" strokeWidth="12" strokeDasharray="251.2" strokeDashoffset="62.8" strokeLinecap="round" className="drop-shadow-lg" />
-                                                        <circle cx="50" cy="50" r="40" fill="transparent" stroke="#00aeef" strokeWidth="12" strokeDasharray="251.2" strokeDashoffset="188.4" strokeLinecap="round" className="drop-shadow-lg" />
-                                                        <circle cx="50" cy="50" r="40" fill="transparent" stroke="#FFC107" strokeWidth="12" strokeDasharray="251.2" strokeDashoffset="240.2" strokeLinecap="round" className="drop-shadow-lg" />
-                                                    </svg>
-                                                    <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                                        <span className="text-2xl font-black text-slate-900 leading-none tracking-tight">1.2K</span>
-                                                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">Total HV</span>
-                                                    </div>
+                                        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                                            <div className="flex justify-between items-center mb-6">
+                                                <div>
+                                                    <h3 className="text-lg font-bold text-gray-800">Lưu lượng học tập</h3>
+                                                    <p className="text-xs text-gray-400 mt-0.5">Thống kê theo tháng</p>
                                                 </div>
-                                                <div className="flex-1 w-full space-y-4">
-                                                    {[
-                                                        { label: 'Kids', val: '65%', color: 'bg-potato-magenta' },
-                                                        { label: 'Junior', val: '25%', color: 'bg-potato-blue' },
-                                                        { label: 'Teen/IELTS', val: '10%', color: 'bg-potato-yellow' }
-                                                    ].map((item, i) => (
-                                                        <div key={i} className="flex justify-between items-center group w-full">
-                                                            <div className="flex items-center gap-3">
-                                                                <div className={`w-3 h-3 rounded-full ${item.color} shadow-sm group-hover:scale-125 transition-transform`} />
-                                                                <span className="text-[11px] font-black text-slate-500 uppercase tracking-wider truncate max-w-[80px]">{item.label}</span>
-                                                            </div>
-                                                            <span className="text-xs font-black text-slate-800 tracking-tight shrink-0">{item.val}</span>
-                                                        </div>
+                                                <div className="flex items-center gap-3">
+                                                    <select className="text-xs font-semibold text-gray-600 bg-gray-50 border border-gray-100 px-3 py-1.5 rounded-lg outline-none cursor-pointer">
+                                                        <option>Tháng này</option>
+                                                        <option>Tuần này</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div className="h-64 w-full relative">
+                                                <svg viewBox="0 0 1000 300" className="w-full h-full overflow-visible">
+                                                    <path d="M0,250 C100,220 200,280 300,200 C400,120 500,240 600,180 C700,120 800,160 900,100 L1000,80" fill="none" stroke="#8b5cf6" strokeWidth="4" strokeLinecap="round" className="drop-shadow-lg" />
+                                                    <path d="M0,280 C150,260 250,220 350,250 C450,280 550,180 650,150 C750,120 850,200 1000,150" fill="none" stroke="#ec4899" strokeWidth="4" strokeLinecap="round" className="drop-shadow-lg opacity-20" />
+                                                    <circle cx="600" cy="180" r="6" fill="#8b5cf6" stroke="white" strokeWidth="3" className="shadow-md" />
+                                                </svg>
+                                                <div className="flex justify-around mt-6">
+                                                    {['1d', '1w', '1m', '3m', '1y', 'all'].map(t => (
+                                                        <button key={t} className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${t === '1m' ? 'bg-brand-500 text-white shadow-md' : 'text-gray-400 hover:bg-gray-50'}`}>{t}</button>
                                                     ))}
                                                 </div>
                                             </div>
-                                            <div className="pt-4 border-t border-slate-50 mt-2">
-                                                <p className="text-[11px] font-bold text-slate-400 text-center uppercase tracking-widest">Dữ liệu cập nhật: 05/04/2026</p>
+                                        </div>
+
+                                        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                                            <div className="flex justify-between items-center mb-6">
+                                                <div>
+                                                    <h3 className="text-lg font-bold text-gray-800">Phân bổ học vụ</h3>
+                                                    <p className="text-xs text-gray-400 mt-0.5">Dữ liệu vận hành</p>
+                                                </div>
+                                                <button className="text-gray-400 hover:text-gray-600"><Icon name="more-horizontal" size={20} /></button>
+                                            </div>
+                                            <div className="flex items-end justify-between h-56 px-2 gap-4">
+                                                {[40, 60, 45, 90, 80].map((v, i) => (
+                                                    <div key={i} className="flex-1 flex flex-col items-center group h-full justify-end">
+                                                        <div className="relative w-full bg-gray-50 rounded-xl transition-all h-full flex items-end overflow-hidden">
+                                                            <div 
+                                                                className={`w-full rounded-t-xl transition-all duration-700 bg-brand-500 shadow-sm group-hover:bg-brand-600`} 
+                                                                style={{ height: `${v}%` }}
+                                                            />
+                                                        </div>
+                                                        <span className="mt-3 text-[10px] font-semibold text-gray-400 uppercase tracking-tighter">{['Tuần 1', 'Tuần 2', 'Tuần 3', 'Tuần 4', 'Tuần 5'][i]}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Bottom Row: Feeds & Alerts */}
+                                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                                        <div className="lg:col-span-7 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                                            <div className="flex justify-between items-center mb-6">
+                                                <h3 className="text-lg font-bold text-gray-800">Hoạt động mới</h3>
+                                                <div className="flex gap-2">
+                                                    <button className="px-4 py-1.5 bg-brand-50 text-brand-700 rounded-lg text-xs font-bold hover:bg-brand-100">Chi tiết</button>
+                                                </div>
+                                            </div>
+                                            <div className="overflow-x-auto no-scrollbar">
+                                                <table className="w-full text-left">
+                                                    <thead>
+                                                        <tr className="text-[10px] font-bold text-gray-400 uppercase tracking-wider border-b border-gray-50">
+                                                            <th className="pb-4">Mã tài sản</th>
+                                                            <th className="pb-4">Mô tả</th>
+                                                            <th className="pb-4 text-right">Ngày hết hạn</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody className="divide-y divide-gray-50">
+                                                        {[
+                                                            { id: 'A014', desc: 'Máy tính bảng', date: 'Không giới hạn' },
+                                                            { id: 'A055', desc: 'Ghế xoay văn phòng', date: '15/04/2026' },
+                                                            { id: 'A089', desc: 'Máy chiếu LG', date: 'Không giới hạn' },
+                                                            { id: 'A102', desc: 'Apple iMac', date: '20/05/2026' }
+                                                        ].map((item, idx) => (
+                                                            <tr key={idx} className="hover:bg-gray-50 transition-all">
+                                                                <td className="py-4 text-xs font-bold text-gray-800">{item.id}</td>
+                                                                <td className="py-4 text-xs text-gray-500">{item.desc}</td>
+                                                                <td className="py-4 text-xs font-semibold text-gray-400 text-right">{item.date}</td>
+                                                            </tr>
+                                                        ))}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+
+                                        <div className="lg:col-span-5 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                                            <div className="flex justify-between items-center mb-6">
+                                                <h3 className="text-lg font-bold text-gray-800">Lịch cảnh báo</h3>
+                                                <select className="text-xs font-bold text-gray-700 bg-gray-50 px-2 py-1 rounded-lg outline-none border border-gray-100">
+                                                    <option>Tháng 4, 2026</option>
+                                                </select>
+                                            </div>
+                                            <div className="grid grid-cols-7 gap-2 text-center">
+                                                {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map(d => (
+                                                    <div key={d} className="text-[10px] font-bold text-gray-300 mb-2">{d}</div>
+                                                ))}
+                                                {Array.from({ length: 30 }).map((_, i) => (
+                                                    <div key={i} className={`h-8 w-full flex items-center justify-center rounded-lg text-xs font-bold ${i === 14 ? 'bg-red-500 text-white shadow-md' : i === 21 ? 'bg-brand-500 text-white shadow-md' : 'text-gray-700 hover:bg-gray-50 cursor-pointer'}`}>
+                                                        {i + 1}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                            <div className="mt-6 space-y-3">
+                                                <div className="flex items-center gap-2">
+                                                    <div className="w-1.5 h-1.5 rounded-full bg-red-500"></div>
+                                                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">Bảo trì thiết bị</span>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <div className="w-1.5 h-1.5 rounded-full bg-brand-500"></div>
+                                                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">Hạn chót báo cáo</span>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -1351,25 +1562,25 @@
                         return <LeaderReportView />;
                     case 'playbook-teen':
                         return (
-                             <div className="flex flex-col items-center justify-center p-32 space-y-10 soft-card rounded-[40px] bg-white border-none">
+                             <div className="flex flex-col items-center justify-center p-32 space-y-10 bg-white rounded-2xl border border-gray-100 shadow-sm">
                                 <div className="relative">
-                                    <div className="w-32 h-32 bg-potato-blue/5 rounded-[40px] flex items-center justify-center shadow-inner group overflow-hidden">
-                                        <div className="absolute inset-0 bg-gradient-to-br from-potato-blue/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                                        <Icon name="ph-book-open-text" className="text-6xl text-potato-blue animate-pulse relative z-10" />
+                                    <div className="w-32 h-32 bg-brand-50 rounded-3xl flex items-center justify-center group overflow-hidden">
+                                        <div className="absolute inset-0 bg-gradient-to-br from-brand-100 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                        <Icon name="book-open" className="text-brand-600 animate-pulse relative z-10" size={64} />
                                     </div>
-                                    <div className="absolute -top-2 -right-2 w-10 h-10 bg-potato-red text-white rounded-full flex items-center justify-center text-xs font-black shadow-lg border-4 border-white animate-bounce">
+                                    <div className="absolute -top-2 -right-2 w-10 h-10 bg-red-500 text-white rounded-full flex items-center justify-center text-sm font-black shadow-lg border-4 border-white animate-bounce">
                                         !
                                     </div>
                                 </div>
-                                <div className="text-center space-y-4">
-                                    <h2 className="font-black text-slate-800 text-4xl tracking-tighter uppercase italic">Đang update</h2>
-                                    <p className="font-bold text-slate-400 max-w-md mx-auto leading-relaxed">
-                                        Chức năng <span className="text-potato-blue">POTATO Play book For Teen</span> đang được chúng tôi hoàn thiện. Vui lòng quay lại sau!
+                                <div className="text-center space-y-3">
+                                    <h2 className="font-extrabold text-gray-900 text-3xl tracking-tight uppercase">Đang cập nhật</h2>
+                                    <p className="text-gray-500 max-w-md mx-auto leading-relaxed">
+                                        Chức năng <span className="text-brand-600 font-bold">POTATO Play book</span> đang được chúng tôi hoàn thiện. Vui lòng quay lại sau!
                                     </p>
                                 </div>
                                 <div className="flex gap-4">
-                                    <button onClick={() => setActiveTab('dashboard')} className="px-8 py-4 bg-potato-blue/10 text-potato-blue rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] hover:bg-potato-blue hover:text-white transition-all active:scale-95">Quay lại Home</button>
-                                    <button onClick={() => setActiveTab('teacher')} className="px-8 py-4 bg-white border border-slate-100 text-slate-600 rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] shadow-sm hover:bg-slate-50 transition-all active:scale-95">Teacher Dashboard</button>
+                                    <button onClick={() => setActiveTab('dashboard')} className="px-8 py-3 bg-brand-600 text-white rounded-xl font-bold hover:bg-brand-700 transition-all shadow-lg shadow-brand-100">Quay lại Home</button>
+                                    <button onClick={() => setActiveTab('teacher')} className="px-8 py-3 bg-white border border-gray-200 text-gray-700 rounded-xl font-bold hover:bg-gray-50 transition-all shadow-sm">Teacher Dashboard</button>
                                 </div>
                             </div>
                         );
@@ -1390,7 +1601,7 @@
             };
 
             return (
-                <div className="flex h-screen overflow-hidden bg-white">
+                <div className="flex h-screen overflow-hidden bg-bgLight">
                     <Sidebar 
                         activeTab={activeTab} 
                         setActiveTab={setActiveTab} 
@@ -1399,51 +1610,37 @@
                         isMobile={isMobile}
                     />
                     <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
-                        <header className="h-[70px] lg:h-[80px] px-6 lg:px-10 flex items-center justify-between border-b border-slate-50 bg-white sticky top-0 z-40">
-                             <div className="flex items-center gap-4">
-                                {isMobile && (
-                                    <button onClick={() => setSidebarOpen(true)} className="p-2 text-slate-400 hover:text-potato-blue">
-                                        <Icon name="ph-list" className="text-2xl" />
-                                    </button>
-                                )}
-                                <div className="flex flex-col">
-                                    <p className="text-[10px] font-black text-potato-red uppercase tracking-[0.2em] mb-0.5 animate-pulse">v6.5 PREMIUM</p>
-                                    <h1 className="text-sm lg:text-2xl font-black text-soft-blue tracking-tighter leading-none italic uppercase truncate max-w-[150px] lg:max-w-none">
-                                        {activeTab === 'dashboard' ? 'Welcome Potato Dashboard' : 
-                                         activeTab === 'teacher' ? 'Teacher Dashboard' : 
-                                         activeTab === 'academic' ? 'Academic Dashboard' : 
-                                         activeTab === 'operation' ? 'Operation Dashboard' : 
-                                         'Potato Dashboard'}
-                                    </h1>
-                                </div>
-                             </div>
-                             <div className="flex items-center gap-4 lg:gap-10">
-                                <div className="hidden sm:flex items-center px-4 py-2 bg-potato-blue/5 rounded-2xl shadow-inner border-none">
-                                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest border-r border-slate-200 pr-3 mr-3">Week</span>
-                                    <div className="flex items-center gap-3">
-                                         <button onClick={() => setActiveWeek(w => Math.max(12, w-1))} className="text-slate-300 hover:text-potato-blue transition-colors"><Icon name="ph-caret-left" /></button>
-                                         <span className="text-xs font-black text-slate-900 min-w-[20px] text-center">{activeWeek}</span>
-                                         {activeWeek < 14 && <button onClick={() => setActiveWeek(w => Math.min(14, w+1))} className="text-slate-300 hover:text-potato-blue transition-colors"><Icon name="ph-caret-right" /></button>}
+                        <header className="h-24 bg-bgLight flex items-center justify-between px-10 shrink-0 sticky top-0 z-40">
+                            <div className="relative w-96 hidden lg:block">
+                                <Icon name="search" className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                                <input 
+                                    type="text" 
+                                    placeholder="Search anything here" 
+                                    className="w-full pl-10 pr-4 py-3 bg-white border border-gray-100 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-brand-100 focus:border-brand-300 transition-all shadow-sm"
+                                />
+                            </div>
+                            
+                            <div className="flex items-center gap-6">
+                                <button className="relative text-gray-500 hover:text-gray-800 transition-colors">
+                                    <Icon name="bell" size={20} />
+                                    <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full border-2 border-bgLight"></span>
+                                </button>
+                                <button className="text-gray-500 hover:text-gray-800 transition-colors hidden sm:block">
+                                    <Icon name="message-square" size={20} />
+                                </button>
+                                <div className="flex items-center gap-3 border-l border-gray-200 pl-6 cursor-pointer group">
+                                    <img src="https://i.pravatar.cc/150?img=11" alt="Profile" className="w-10 h-10 rounded-full border-2 border-white shadow-sm object-cover group-hover:scale-105 transition-transform" />
+                                    <div className="text-sm hidden sm:block">
+                                        <p className="font-bold text-gray-800">Admin Potato</p>
+                                        <p className="text-gray-500 text-xs">Center Manager</p>
                                     </div>
+                                    <Icon name="chevron-down" size={16} className="text-gray-400" />
                                 </div>
-                                <div className="flex items-center gap-3 lg:gap-6 border-l pl-4 lg:pl-10 border-slate-50">
-                                    <div className="relative p-2.5 rounded-xl bg-potato-blue/5 text-slate-400 hover:text-potato-blue transition-colors cursor-pointer group">
-                                        <Icon name="ph-bell-simple" className="text-lg lg:text-xl" />
-                                        <span className="absolute top-2.5 right-2.5 w-1.5 h-1.5 bg-potato-red rounded-full border-2 border-white" />
-                                    </div>
-                                    <div className="flex items-center gap-3">
-                                        <div className="text-right hidden lg:block">
-                                            <p className="text-[12px] font-black text-slate-900 leading-tight">Admin Potato</p>
-                                            <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-0.5 italic">Ops Lead</p>
-                                        </div>
-                                        <div className="w-9 h-9 lg:w-11 lg:h-11 rounded-xl lg:rounded-2xl bg-potato-blue text-white shadow-xl shadow-potato-blue/20 flex items-center justify-center text-[10px] lg:text-xs font-black shrink-0">AP</div>
-                                    </div>
-                                </div>
-                             </div>
+                            </div>
                         </header>
 
-                        <main className="flex-1 overflow-y-auto no-scrollbar p-6 lg:p-10 bg-white">
-                            <div className="max-w-[1600px] mx-auto space-y-8 lg:space-y-12">
+                        <main className="flex-1 overflow-y-auto no-scrollbar px-10 pb-10">
+                            <div className="max-w-[1600px] mx-auto pt-8">
                                 {renderContent()}
                             </div>
                         </main>
