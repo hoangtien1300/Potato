@@ -186,13 +186,88 @@
 
             return (
                 <aside className="hidden xl:flex flex-col w-[380px] p-8 bg-white border-none overflow-y-auto no-scrollbar animate-fade-in group/sidebar soft-panel">
-                    {/* Search Bar */}
-                    <div className="relative mb-10 group/search">
-                         <Icon name="ph-magnifying-glass" className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within/search:text-potato-blue transition-colors" />
-                         <input type="text" placeholder="Search here..." className="w-full pl-14 pr-6 py-4 bg-potato-blue/5 border-none rounded-[20px] text-xs font-bold text-slate-800 placeholder-slate-400 focus:outline-none focus:bg-white transition-all shadow-inner focus:shadow-md" />
+                    {/* Student Status Distribution */}
+                    <div className="bg-white rounded-3xl p-6 mb-10 border border-slate-50 shadow-sm transition-all hover:shadow-md group/chart">
+                        <div className="flex justify-between items-center mb-10">
+                            <div>
+                                <h3 className="text-sm font-black text-slate-900 uppercase tracking-tight">Student Status</h3>
+                                <p className="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-widest">Total: 423 Students</p>
+                            </div>
+                            <div className="w-10 h-10 rounded-2xl bg-brand-50 flex items-center justify-center">
+                                <Icon name="ph-users-three" className="text-brand-600" size={20} />
+                            </div>
+                        </div>
+
+                        {/* Stacked Vertical Column Visualization */}
+                        <div className="flex gap-10">
+                            {/* The Stacked Column */}
+                            <div className="w-6 h-64 bg-slate-50 rounded-full overflow-hidden flex flex-col shadow-inner">
+                                <div className="bg-[#ef4444]" style={{ height: '0.95%' }} title="New: 4"></div>
+                                <div className="bg-[#f59e0b]" style={{ height: '0.24%' }} title="Again: 1"></div>
+                                <div className="bg-[#3b82f6]" style={{ height: '0.47%' }} title="Waiting: 2"></div>
+                                <div className="bg-[#a855f7]" style={{ height: '42.08%' }} title="Student: 178"></div>
+                                <div className="bg-[#64748b]" style={{ height: '12.06%' }} title="Hold: 51"></div>
+                                <div className="bg-[#475569]" style={{ height: '24.59%' }} title="Leave: 104"></div>
+                                <div className="bg-[#334155]" style={{ height: '19.62%' }} title="Reject: 83"></div>
+                            </div>
+
+                            {/* Legend with Counts */}
+                            <div className="flex-1 space-y-3">
+                                {[
+                                    { label: '1. New', count: 4, color: 'bg-[#ef4444]', textColor: 'text-[#ef4444]' },
+                                    { label: '3. Again', count: 1, color: 'bg-[#f59e0b]', textColor: 'text-[#f59e0b]' },
+                                    { label: '6. Waiting', count: 2, color: 'bg-[#3b82f6]', textColor: 'text-[#3b82f6]' },
+                                    { label: '7. Student', count: 178, color: 'bg-[#a855f7]', textColor: 'text-[#a855f7]' },
+                                    { label: 'Hold', count: 51, color: 'bg-[#64748b]', textColor: 'text-slate-600' },
+                                    { label: 'Leave', count: 104, color: 'bg-[#475569]', textColor: 'text-slate-600' },
+                                    { label: 'Reject', count: 83, color: 'bg-[#334155]', textColor: 'text-slate-600' }
+                                ].map((item, idx) => (
+                                    <div key={idx} className="flex items-center justify-between group/legend">
+                                        <div className="flex items-center gap-3">
+                                            <div className={`w-2 h-2 rounded-full ${item.color} shadow-sm group-hover/legend:scale-125 transition-transform`}></div>
+                                            <span className={`text-[11px] font-black uppercase tracking-tighter ${item.textColor} opacity-90`}>{item.label}</span>
+                                        </div>
+                                        <span className="px-2 py-0.5 bg-slate-50 text-slate-500 rounded text-[10px] font-black group-hover/legend:bg-slate-100 transition-colors">{item.count}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
                     </div>
+                    {/* Class Distribution Chart */}
+                    <div className="bg-white rounded-3xl p-6 mb-10 border border-slate-50 shadow-sm transition-all hover:shadow-md">
+                        <div className="flex justify-between items-center mb-8">
+                            <h3 className="text-sm font-black text-slate-900 uppercase tracking-tight">Lớp theo Khóa học</h3>
+                            <div className="px-3 py-1 bg-brand-50 text-brand-600 rounded-lg text-[10px] font-black uppercase tracking-widest">24 Lớp</div>
+                        </div>
+                        
+                        <div className="space-y-6">
+                            {[
+                                { level: 'Kid (Fox)', count: 3, total: 24, color: 'bg-orange-400' },
+                                { level: 'Junior (FF / Mov)', count: 8, total: 24, color: 'bg-brand-500' },
+                                { level: 'Teen (SOL/KET/PET)', count: 9, total: 24, color: 'bg-indigo-500' },
+                                { level: 'IELTS (Foun / Exam)', count: 4, total: 24, color: 'bg-emerald-500' }
+                            ].map((item, idx) => (
+                                <div key={idx} className="space-y-2">
+                                    <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-slate-500">
+                                        <span>{item.level}</span>
+                                        <span className="text-slate-900">{item.count} Lớp</span>
+                                    </div>
+                                    <div className="h-2 w-full bg-slate-50 rounded-full overflow-hidden flex shadow-inner">
+                                        <div 
+                                            className={`h-full ${item.color} rounded-full transition-all duration-1000 ease-out`} 
+                                            style={{ width: `${(item.count / item.total) * 100}%` }}
+                                        ></div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
 
-
+                        <div className="mt-8 pt-6 border-t border-slate-50">
+                            <button className="w-full py-3 bg-slate-50 hover:bg-slate-100 text-slate-500 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-colors flex items-center justify-center gap-2">
+                                <Icon name="ph-file-search" size={14} /> Xem danh sách lớp
+                            </button>
+                        </div>
+                    </div>
                     {/* Quick Links Section */}
                     <div className="space-y-6 mb-12">
                         <div className="flex justify-between items-center">
@@ -596,150 +671,156 @@
         };
 
         const TeacherView = () => {
-            return (
-                <div className="space-y-8 pb-12">
-                    {/* Header / Executive Summary */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        {TEACHER_REPORT_DATA.summary.map((item, idx) => (
-                            <div key={idx} className="bg-white p-6 border border-gray-100 shadow-sm rounded-2xl group hover:shadow-md transition-all">
-                                <div className="flex justify-between items-start">
-                                    <div>
-                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">{item.label}</p>
-                                        <p className="text-2xl font-extrabold text-gray-800 leading-none tracking-tight">{item.value}</p>
-                                        <div className={`mt-3 px-2 py-1 rounded-lg text-[9px] font-bold inline-flex items-center gap-1 ${item.color === 'emerald' ? 'text-green-600 bg-green-50' : item.color === 'amber' ? 'text-amber-600 bg-amber-50' : 'text-brand-600 bg-brand-50'}`}>
-                                            {item.trend}
-                                        </div>
-                                    </div>
-                                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${item.color === 'emerald' ? 'bg-green-50 text-green-500' : item.color === 'amber' ? 'bg-amber-50 text-amber-500' : 'bg-brand-50 text-brand-500'}`}>
-                                        <Icon name={item.icon.replace('ph-', '')} size={24} />
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
+             const [viewWeek, setViewWeek] = useState(14);
+             
+             const stats = [
+                 { label: 'Full Time', count: 4, color: 'bg-brand-500' },
+                 { label: 'Part Time', count: 6, color: 'bg-pink-500' },
+                 { label: 'Head Teacher', count: 1, color: 'bg-potato-yellow' },
+                 { label: 'Senior Teacher', count: 1, color: 'bg-emerald-500' }
+             ];
 
-                    {/* Health Analysis Chart */}
-                    <div className="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm relative overflow-visible">
-                        <div className="flex justify-between items-center mb-10">
-                            <h3 className="text-lg font-bold text-gray-800 flex items-center gap-3 lowercase first-letter:uppercase">
-                                <Icon name="BarChart2" className="text-brand-500" size={20} /> Sức khỏe lớp học <span className="text-gray-300 font-medium">/ Tuần 4</span>
-                            </h3>
-                            <div className="flex items-center gap-2">
-                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Hiển thị: 100%</span>
-                            </div>
-                        </div>
-                        
-                        <div className="h-64 flex items-end justify-between gap-3 px-4 border-b border-gray-50 relative">
-                            {TEACHER_REPORT_DATA.chartData.map((bar, idx) => (
-                                <div key={idx} className="flex-1 flex flex-col items-center group relative h-full justify-end">
-                                    <div 
-                                        className="w-full rounded-t-xl transition-all duration-700 ease-out hover:brightness-110 shadow-sm relative overflow-hidden" 
-                                        style={{ height: `${bar.value}%`, background: bar.color === '#10B981' ? '#10b981' : bar.color === '#F43F5E' ? '#ef4444' : '#8b5cf6' }}
-                                    ></div>
-                                    <p className="mt-3 text-[9px] font-extrabold text-gray-400 text-center leading-tight uppercase group-hover:text-gray-800 transition-colors">
-                                        {bar.label}
-                                    </p>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
+             const teacherTasks = [
+                 { id: 1, task: 'Lên giáo án cho tuần 15', status: 'In Progress', notes: 'Gia cố phần Grammar cho khối Teen' },
+                 { id: 2, task: 'Họp chuyên môn tháng 4', status: 'Planned', notes: 'Bàn về giáo trình Stories Spark mới' },
+                 { id: 3, task: 'Review đề thi Final KET', status: 'Done', notes: 'Phần Listening đã được tinh chỉnh' },
+                 { id: 4, task: 'Check Homework khối Kids', status: 'In Progress', notes: 'Lớp Kid 2 cần lưu ý bạn Ruby' }
+             ];
 
-                    {/* Detailed Class Report - 4 Columns */}
-                    <div className="space-y-6">
-                        <div className="flex items-center gap-4">
-                            <div className="w-1.5 h-6 bg-brand-500 rounded-full"></div>
-                            <h2 className="text-xl font-extrabold text-gray-800 uppercase tracking-tight">Báo cáo chi tiết các lớp</h2>
-                        </div>
-                        
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-start">
-                            {TEACHER_REPORT_DATA.categories.map((cat, cIdx) => (
-                                <div key={cIdx} className="space-y-4">
-                                    <div className={`px-4 py-2 rounded-xl bg-${cat.color === 'emerald' ? 'green' : cat.color === 'rose' ? 'red' : 'brand'}-50 flex items-center justify-between border border-${cat.color === 'emerald' ? 'green' : cat.color === 'rose' ? 'red' : 'brand'}-100`}>
-                                        <h3 className={`font-bold text-xs text-${cat.color === 'emerald' ? 'green' : cat.color === 'rose' ? 'red' : 'brand'}-700 uppercase tracking-wider`}>{cat.name}</h3>
-                                        <span className={`text-[9px] font-bold px-2 py-0.5 bg-white rounded-lg text-${cat.color === 'emerald' ? 'green' : cat.color === 'rose' ? 'red' : 'brand'}-600 shadow-sm border border-${cat.color === 'emerald' ? 'green' : cat.color === 'rose' ? 'red' : 'brand'}-100`}>
-                                            {cat.classes.length} Lớp
-                                        </span>
-                                    </div>
-                                    
-                                    <div className="space-y-4">
-                                        {cat.classes.length > 0 ? (
-                                            cat.classes.map((cls, idx) => (
-                                                <div key={idx} className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm group hover:border-brand-200 transition-all">
-                                                    <div className="flex justify-between items-start mb-3">
-                                                        <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 bg-gray-50 text-gray-400 rounded-lg group-hover:bg-brand-50 group-hover:text-brand-600 transition-colors">
-                                                            {cls.sub}
-                                                        </span>
-                                                        <span className="font-extrabold text-brand-600 text-[10px] uppercase">{cls.name}</span>
-                                                    </div>
-                                                    <h4 className="font-bold text-gray-800 border-l-3 border-pink-500 pl-3 text-xs mb-2 leading-tight uppercase tracking-tight">{cls.status}</h4>
-                                                    <p className="text-[11px] font-medium text-gray-500 mb-4 leading-relaxed line-clamp-3">"{cls.desc}"</p>
-                                                    <div className="bg-brand-50 p-3 rounded-xl border border-brand-100">
-                                                        <p className="text-[9px] font-bold text-brand-600 uppercase mb-1 tracking-wider">Giải pháp</p>
-                                                        <p className="text-[10px] font-bold text-gray-700 leading-snug">{cls.solution}</p>
-                                                    </div>
-                                                </div>
-                                            ))
-                                        ) : (
-                                            <div className="bg-gray-50/50 p-6 rounded-2xl border border-dashed border-gray-200 flex flex-col items-center justify-center text-center opacity-60">
-                                                <Icon name="calendar-off" className="text-gray-300 mb-2" size={24} />
-                                                <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Trống</p>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
+             const teacherShifts = (SHIFT_DATA["Teacher"] && SHIFT_DATA["Teacher"][viewWeek]) || [];
 
-                    {/* Innovation Strategy */}
-                    <div className="bg-white rounded-2xl p-8 relative overflow-hidden shadow-sm border border-gray-100">
-                        <div className="absolute top-0 right-0 w-64 h-64 bg-brand-50 rounded-full -mr-32 -mt-32 blur-3xl opacity-50"></div>
-                        <h2 className="text-xl font-extrabold text-gray-800 mb-8 flex items-center gap-3 uppercase tracking-tight">
-                            <Icon name="sparkles" className="text-brand-500 animate-pulse" /> Chiến lược cải tiến chuyên môn
-                        </h2>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 relative z-10">
-                            <div className="space-y-4">
-                                {TEACHER_REPORT_DATA.strategies.map((strat, idx) => (
-                                    <div key={idx} className="flex items-start gap-4 p-5 rounded-2xl bg-gray-50/50 hover:bg-white transition-all group border border-transparent hover:border-gray-100 hover:shadow-md">
-                                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-brand-500 to-brand-600 flex items-center justify-center text-white shrink-0 shadow-md">
-                                            <Icon name={strat.icon.replace('ph-', '')} size={24} />
-                                        </div>
-                                        <div className="space-y-1">
-                                            <h4 className="font-bold text-gray-800 text-sm uppercase tracking-tight">{strat.title}</h4>
-                                            <p className="text-[11px] font-medium text-gray-500 leading-relaxed text-justify">{strat.desc}</p>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                            <div className="bg-brand-50 p-6 rounded-2xl border border-brand-100 shadow-inner">
-                                <div className="flex items-center gap-3 mb-6">
-                                    <div className="w-10 h-10 bg-brand-500 rounded-xl text-white flex items-center justify-center shadow-md">
-                                        <Icon name="users" size={20} />
-                                    </div>
-                                    <h4 className="font-bold text-[10px] uppercase tracking-wider text-brand-600">Student Care Focus</h4>
-                                </div>
-                                <div className="space-y-6">
-                                    {[
-                                        { task: "Kết nối Phụ huynh", progress: 80, color: "bg-green-500" },
-                                        { task: "Bài tập cá nhân hóa", progress: 100, color: "bg-brand-500" },
-                                        { task: "Kiểm tra từ vựng", progress: 60, color: "bg-amber-500" }
-                                    ].map((item, idx) => (
-                                        <div key={idx} className="space-y-2">
-                                            <div className="flex justify-between items-center px-1">
-                                                <span className="text-[11px] font-bold text-gray-700 uppercase tracking-tight">{item.task}</span>
-                                                <span className="text-[10px] font-extrabold text-gray-400">{item.progress}%</span>
-                                            </div>
-                                            <div className="w-full bg-white h-2 rounded-full overflow-hidden shadow-inner">
-                                                <div className={`h-full ${item.color} transition-all duration-1000`} style={{ width: `${item.progress}%` }}></div>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            );
+             return (
+                 <div className="space-y-10 pb-20 animate-fade-in">
+                     {/* 1. Header & Stats */}
+                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                         {stats.map((s, idx) => (
+                             <div key={idx} className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm group hover:shadow-md transition-all">
+                                 <div className="flex justify-between items-center">
+                                     <div>
+                                         <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{s.label}</p>
+                                         <p className="text-3xl font-black text-slate-800 mt-2 tracking-tighter">{s.count}</p>
+                                     </div>
+                                     <div className={`w-12 h-12 rounded-2xl ${s.color} bg-opacity-10 flex items-center justify-center`}>
+                                         <Icon name="ph-users" className={s.color.replace('bg-', 'text-')} size={24} />
+                                     </div>
+                                 </div>
+                             </div>
+                         ))}
+                     </div>
+
+                     {/* 2. Weekly Calendar */}
+                     <div className="bg-white p-8 rounded-[40px] border border-gray-100 shadow-sm">
+                         <div className="flex justify-between items-center mb-10">
+                             <div>
+                                 <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight">Lịch Trực Tuần {viewWeek}</h3>
+                                 <p className="text-xs font-bold text-slate-400 mt-1 uppercase tracking-widest">Teacher Department Schedule</p>
+                             </div>
+                             <div className="flex gap-2">
+                                 <button onClick={() => setViewWeek(14)} className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${viewWeek === 14 ? 'bg-brand-600 text-white shadow-lg shadow-brand-100' : 'bg-gray-50 text-gray-400 hover:bg-gray-100'}`}>W14</button>
+                                 <button onClick={() => setViewWeek(15)} className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${viewWeek === 15 ? 'bg-brand-600 text-white shadow-lg shadow-brand-100' : 'bg-gray-50 text-gray-400 hover:bg-gray-100'}`}>W15</button>
+                             </div>
+                         </div>
+                         
+                         <div className="grid grid-cols-1 md:grid-cols-7 gap-4">
+                             {teacherShifts.map((shift, idx) => (
+                                 <div key={idx} className={`p-5 rounded-3xl border ${shift.staff === 'OFF' ? 'bg-gray-50/50 border-gray-100 opacity-60' : 'bg-white border-brand-50 shadow-sm hover:border-brand-200'} transition-all text-center group`}>
+                                     <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4 group-hover:text-brand-600 transition-colors">{shift.day}</p>
+                                     <div className="w-12 h-12 rounded-2xl bg-brand-50 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                                         <Icon name="ph-user-focus" className="text-brand-600" size={20} />
+                                     </div>
+                                     <p className="text-xs font-black text-slate-800 uppercase tracking-tighter truncate">{shift.staff}</p>
+                                     <p className="text-[9px] font-black text-brand-600 mt-2 uppercase tracking-widest">{shift.time}</p>
+                                 </div>
+                             ))}
+                         </div>
+                     </div>
+
+                     {/* 3. Task List */}
+                     <div className="bg-white rounded-[40px] border border-gray-100 shadow-sm overflow-hidden">
+                         <div className="p-8 border-b border-gray-50 flex justify-between items-center">
+                             <div>
+                                 <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight">Task List - Teacher Dept</h3>
+                                 <p className="text-xs font-bold text-slate-400 mt-1 uppercase tracking-widest">Operational Workflows</p>
+                             </div>
+                             <button className="bg-brand-50 text-brand-600 px-6 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-brand-100 transition-colors">
+                                 Add Task
+                             </button>
+                         </div>
+                         <div className="overflow-x-auto">
+                             <table className="w-full text-left border-collapse">
+                                 <thead>
+                                     <tr className="bg-gray-50/50 text-gray-400 text-[10px] uppercase tracking-widest font-black">
+                                         <th className="p-8">Công việc</th>
+                                         <th className="p-8 text-center uppercase tracking-widest">Trạng thái</th>
+                                         <th className="p-8 uppercase tracking-widest">Ghi chú</th>
+                                         <th className="p-8 text-right pr-10">Thao tác</th>
+                                     </tr>
+                                 </thead>
+                                 <tbody className="divide-y divide-gray-50">
+                                     {teacherTasks.map((t) => (
+                                         <tr key={t.id} className="hover:bg-gray-50/30 transition-all group">
+                                             <td className="p-8">
+                                                 <p className="text-xs font-black text-slate-800 uppercase tracking-tight group-hover:text-brand-600 transition-colors">{t.task}</p>
+                                             </td>
+                                             <td className="p-8 text-center">
+                                                 <span className={`px-3 py-1.5 rounded-xl text-[8px] font-black uppercase tracking-widest border shadow-sm ${
+                                                     t.status === 'Done' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 
+                                                     t.status === 'In Progress' ? 'bg-brand-50 text-brand-600 border-brand-100' : 
+                                                     'bg-amber-50 text-amber-600 border-amber-100'
+                                                 }`}>
+                                                     {t.status}
+                                                 </span>
+                                             </td>
+                                             <td className="p-8">
+                                                 <p className="text-xs font-medium text-slate-400 italic">"{t.notes}"</p>
+                                             </td>
+                                             <td className="p-8 text-right pr-10">
+                                                 <button className="w-10 h-10 bg-gray-50 text-gray-400 rounded-2xl flex items-center justify-center hover:bg-brand-600 hover:text-white transition-all shadow-sm ml-auto">
+                                                     <Icon name="ph-dots-three-outline-fill" size={16} />
+                                                 </button>
+                                             </td>
+                                         </tr>
+                                     ))}
+                                 </tbody>
+                             </table>
+                         </div>
+                     </div>
+                     {/* 4. Document List (Danh sách tài liệu) */}
+                     <div className="space-y-6">
+                         <div className="flex items-center gap-4">
+                             <div className="w-1.5 h-6 bg-potato-yellow rounded-full"></div>
+                             <h2 className="text-xl font-extrabold text-gray-800 uppercase tracking-tight">Danh sách tài liệu</h2>
+                         </div>
+                         
+                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                             <a 
+                                 href="https://potato-teacher.vercel.app/" 
+                                 target="_blank" 
+                                 rel="noopener noreferrer"
+                                 className="bg-white p-8 rounded-[40px] border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all group flex flex-col justify-between h-64 relative overflow-hidden"
+                             >
+                                 <div className="absolute top-0 right-0 w-32 h-32 bg-brand-50 rounded-bl-full -mr-10 -mt-10 transition-all group-hover:scale-110"></div>
+                                 <div className="relative z-10">
+                                     <div className="w-16 h-16 rounded-2xl bg-brand-500 text-white flex items-center justify-center shadow-lg mb-6 group-hover:rotate-6 transition-transform">
+                                         <Icon name="ph-book-open" size={32} />
+                                     </div>
+                                     <h3 className="text-2xl font-black text-slate-900 leading-tight">POTATO<br/>Play book</h3>
+                                     <p className="text-xs font-bold text-slate-400 mt-4 uppercase tracking-widest italic group-hover:text-brand-600">Click to explore →</p>
+                                 </div>
+                                 <div className="text-[10px] font-bold text-gray-300 uppercase tracking-widest mt-auto">Vercel Deployment</div>
+                             </a>
+
+                             {/* Placeholder for future documents */}
+                             <div className="bg-gray-50/50 p-8 rounded-[40px] border border-dashed border-gray-200 flex flex-col items-center justify-center text-center opacity-60">
+                                 <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center text-gray-300 mb-4">
+                                     <Icon name="ph-plus" size={24} />
+                                 </div>
+                                 <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">More documents<br/>coming soon</p>
+                             </div>
+                         </div>
+                     </div>
+                 </div>
+             );
         };
 
         const LeaderReportView = () => {
@@ -909,57 +990,96 @@
             );
         };
 
-        const WeeklyFocusCard = ({ department, week, data }) => {
-            if (!data) return (
-                <div className="bg-white rounded-2xl p-8 border border-gray-100 border-dashed text-center text-gray-300 shadow-sm">
-                     <p className="font-bold uppercase tracking-widest text-[10px]">Chưa có tiêu điểm tuần {week}</p>
+        const DebtOverviewCard = () => (
+            <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm group hover:shadow-md transition-all h-full flex flex-col items-center overflow-hidden">
+                <div className="w-full flex justify-between items-center mb-10 shrink-0">
+                    <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight flex items-center gap-3">
+                        <Icon name="ph-chart-pie-slice" className="text-brand-600" size={24} /> Bảng công nợ
+                    </h3>
+                    <button className="text-[10px] font-bold text-brand-600 hover:underline px-4 py-2 bg-brand-50 rounded-xl whitespace-nowrap">Chi tiết</button>
                 </div>
-            );
-            
-            const statusConfig = {
-                "Đúng Tiến Độ": { bg: "bg-blue-50", text: "text-blue-600", border: "border-blue-100", dot: "bg-blue-400" },
-                "Rủi Ro": { bg: "bg-red-50", text: "text-red-600", border: "border-red-100", dot: "bg-red-400" },
-                "Hoàn Thành": { bg: "bg-green-50", text: "text-green-600", border: "border-green-100", dot: "bg-green-400" }
-            };
-            const style = statusConfig[data.status] || statusConfig["Đúng Tiến Độ"];
-
-            return (
-                <div className="bg-white rounded-2xl p-8 border border-gray-100 shadow-sm relative overflow-hidden group">
-                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 pb-8 border-b border-gray-50">
-                        <div className="space-y-4">
-                            <div className="flex items-center gap-3">
-                                <span className="px-3 py-1 bg-gradient-to-r from-pink-500 to-rose-500 text-white text-[9px] font-extrabold rounded-lg uppercase tracking-wider shadow-sm">Trọng tâm {department}</span>
-                                <span className="text-[10px] font-bold text-gray-400 flex items-center uppercase tracking-widest">
-                                    <Icon name="calendar" size={14} className="mr-1.5 text-brand-500" /> Tuần {week}
-                                </span>
-                            </div>
-                            <h2 className="text-2xl font-extrabold text-gray-800 flex items-center gap-3 uppercase tracking-tight">
-                                <Icon name="Target" className="text-pink-500" size={24} /> {data.theme}
-                            </h2>
-                        </div>
-                        <div className={`mt-6 md:mt-0 px-4 py-2 rounded-xl text-[10px] font-extrabold flex items-center gap-2 border ${style.bg} ${style.text} ${style.border}`}>
-                            <div className={`w-2 h-2 rounded-full ${style.dot} animate-pulse`} /> {data.status}
+                
+                <div className="flex-1 flex flex-col items-center justify-center w-full min-h-0">
+                    {/* ENLARGED Chart at Top */}
+                    <div className="relative w-48 h-48 lg:w-56 lg:h-56 flex items-center justify-center shrink-0 mb-10">
+                        <svg className="w-full h-full transform -rotate-90" viewBox="0 0 224 224">
+                            <circle cx="112" cy="112" r="100" stroke="#f8fafc" strokeWidth="20" fill="transparent" />
+                            <circle cx="112" cy="112" r="100" stroke="#7c3aed" strokeWidth="20" fill="transparent" strokeDasharray="471.2 628.3" strokeLinecap="round" />
+                            <circle cx="112" cy="112" r="100" stroke="#ec4899" strokeWidth="20" fill="transparent" strokeDasharray="157.1 628.3" strokeDashoffset="-471.2" strokeLinecap="round" />
+                        </svg>
+                        <div className="absolute flex flex-col items-center">
+                            <span className="text-3xl font-black text-slate-800 tracking-tighter leading-none">100M</span>
+                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Total</span>
                         </div>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div className="bg-gray-50/50 rounded-xl p-6 border border-transparent hover:border-gray-100 hover:bg-white transition-all group/item">
-                            <h4 className="text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-3 flex items-center gap-2">
-                                <Icon name="Sparkles" className="text-amber-500" size={14} /> Kế hoạch
-                            </h4>
-                            <p className="text-gray-700 text-[13px] leading-relaxed font-bold italic opacity-90">{data.plan}</p>
+
+                    {/* Stacked Legends at Bottom (2 Rows) */}
+                    <div className="w-full space-y-5 px-2">
+                        <div className="space-y-2">
+                            <div className="flex justify-between items-center gap-2">
+                                <span className="font-bold text-slate-500 flex items-center gap-3 uppercase tracking-tighter text-[11px]">
+                                    <div className="w-3 h-3 rounded-full bg-brand-600 shrink-0" /> Paid Amount
+                                </span>
+                                <span className="font-black text-slate-800 text-base">75%</span>
+                            </div>
+                            <div className="h-2 w-full bg-gray-50 rounded-full overflow-hidden">
+                                <div className="h-full bg-brand-600 w-3/4 rounded-full shadow-lg shadow-brand-200" />
+                            </div>
                         </div>
-                        <div className="bg-gray-50/50 rounded-xl p-6 border border-transparent hover:border-gray-100 hover:bg-white transition-all group/item">
-                            <h4 className="text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-3 flex items-center gap-2">
-                                <Icon name="BarChart2" className="text-brand-500" size={14} /> Kết quả
-                            </h4>
-                            <p className="text-gray-700 text-[13px] leading-relaxed font-bold italic opacity-90">{data.result}</p>
+                        <div className="space-y-2">
+                            <div className="flex justify-between items-center gap-2">
+                                <span className="font-bold text-slate-500 flex items-center gap-3 uppercase tracking-tighter text-[11px]">
+                                    <div className="w-3 h-3 rounded-full bg-pink-500 shrink-0" /> Pending Amount
+                                </span>
+                                <span className="font-black text-slate-800 text-base">25%</span>
+                            </div>
+                            <div className="h-2 w-full bg-gray-50 rounded-full overflow-hidden">
+                                <div className="h-full bg-pink-500 w-1/4 rounded-full shadow-lg shadow-pink-200" />
+                            </div>
                         </div>
-                        <div className="bg-pink-50/30 rounded-xl p-6 border border-transparent hover:border-pink-100 hover:bg-white transition-all group/item">
-                            <h4 className="text-[10px] font-extrabold text-pink-500 uppercase tracking-widest mb-3 flex items-center gap-2">
-                                <Icon name="Zap" size={14} /> Hành động
-                            </h4>
-                            <p className="text-pink-600 text-[13px] font-extrabold leading-relaxed uppercase tracking-tight">{data.action}</p>
-                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+
+        const TaskOverviewCard = () => {
+            const tasks = [
+                { id: 1, title: 'Hoàn thiện album "Mùa hè"', priority: 'High', status: 'In Progress', color: 'text-orange-500 bg-orange-50 border-orange-100' },
+                { id: 2, title: 'Mock Test HK2 - Ngô Quyền', priority: 'Medium', status: 'Scheduled', color: 'text-blue-500 bg-blue-50 border-blue-100' },
+                { id: 3, title: 'Review Placement Test', priority: 'Low', status: 'Done', color: 'text-green-500 bg-green-50 border-green-100' },
+                { id: 4, title: 'Cập nhật lộ trình KET/PET', priority: 'High', status: 'Pending', color: 'text-red-500 bg-red-50 border-red-100' },
+                { id: 5, title: 'Họp chuyên môn tháng 4', priority: 'Medium', status: 'Planned', color: 'text-purple-500 bg-purple-50 border-purple-100' },
+                { id: 6, title: 'Thiết kế Poster hè rực rỡ cho khối Kids', priority: 'High', status: 'In Progress', color: 'text-orange-500 bg-orange-50 border-orange-100' }
+            ];
+
+            return (
+                <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm h-full flex flex-col overflow-hidden">
+                    <div className="flex justify-between items-center mb-6 shrink-0">
+                        <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight flex items-center gap-3">
+                            <Icon name="ph-list-checks" className="text-brand-600" size={24} /> Tasks List
+                        </h3>
+                        <span className="px-3 py-1 bg-gray-50 text-gray-500 rounded-lg text-[10px] font-black uppercase tracking-widest whitespace-nowrap">{tasks.length} Active</span>
+                    </div>
+                    
+                    {/* Fixed Height for approximately 4 items */}
+                    <div className="flex-1 overflow-y-auto no-scrollbar pr-2 min-h-0 space-y-4 max-h-[350px]">
+                        {tasks.map(task => (
+                            <div key={task.id} className="p-4 bg-gray-50/30 rounded-2xl border border-transparent hover:border-gray-100 hover:bg-white transition-all group cursor-default">
+                                <div className="mb-3">
+                                    <p className="text-xs font-black text-slate-800 leading-tight group-hover:text-brand-600 transition-colors uppercase tracking-tight break-words">
+                                        {task.title}
+                                    </p>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <span className={`text-[8px] font-black uppercase px-2.5 py-1 rounded-lg ${task.priority === 'High' ? 'text-red-600 bg-red-50 border border-red-100' : task.priority === 'Medium' ? 'text-amber-600 bg-amber-50 border border-amber-100' : 'text-blue-600 bg-blue-50 border border-blue-100'}`}>
+                                        Pri: {task.priority}
+                                    </span>
+                                    <span className={`text-[8px] font-black uppercase px-2.5 py-1 rounded-lg border shadow-sm ${task.color}`}>
+                                        {task.status}
+                                    </span>
+                                </div>
+                            </div>
+                        ))}
                     </div>
                 </div>
             );
@@ -970,14 +1090,7 @@
 
             const menuItems = [
                 { id: 'dashboard', label: 'Dashboard', icon: 'layout-dashboard' },
-                { 
-                    id: 'teacher', 
-                    label: 'Teachers', 
-                    icon: 'book-open',
-                    children: [
-                        { id: 'playbook-teen', label: 'POTATO Play book', icon: 'graduation-cap', link: 'https://potato-teacher.vercel.app/' }
-                    ]
-                },
+                { id: 'teacher', label: 'Teacher', icon: 'book-open' },
                 { id: 'academic', label: 'Academic', icon: 'users' },
                 { id: 'operation', label: 'Operation', icon: 'settings' }
             ];
@@ -1193,7 +1306,14 @@
                                 </div>
                                 <div>
                                     <h3 className="text-3xl font-black text-gray-900 tracking-tighter leading-none">Schedule</h3>
-                                    <p className="text-xs font-bold text-gray-400 uppercase tracking-[0.3em] mt-2">This week</p>
+                                    <p className="text-xs font-bold text-gray-400 uppercase tracking-[0.3em] mt-2 mb-1">This week</p>
+                                    <p className="text-[10px] font-medium text-gray-400 italic">
+                                        {{
+                                            14: "April 06 - April 12",
+                                            15: "April 13 - April 19",
+                                            16: "April 20 - April 26"
+                                        }[currentWeek] || "Updating dates..."}
+                                    </p>
                                 </div>
                             </div>
 
@@ -1365,23 +1485,29 @@
                                 <div className="flex-1 space-y-10 min-w-0">
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                                         <StatCardV3 
-                                            value="520" 
+                                            value="423" 
                                             label="Students" 
                                             icon="users" 
                                             iconbg="bg-potato-blue" 
                                         />
                                         <StatCardV3 
-                                            value="85" 
+                                            value="24" 
                                             label="Class" 
                                             icon="book-open" 
                                             iconbg="bg-potato-yellow" 
                                         />
                                         <StatCardV3 
-                                            value="25" 
+                                            value="12" 
                                             label="Teachers" 
                                             icon="user-check" 
                                             iconbg="bg-potato-pink" 
                                         />
+                                    </div>
+
+                                    {/* New Middle Section: Debt and Tasks */}
+                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                        <DebtOverviewCard />
+                                        <TaskOverviewCard />
                                     </div>
 
                                     <ShiftScheduler 
@@ -1391,159 +1517,59 @@
                                         setActiveWeek={setActiveWeek} 
                                     />
 
-                                    {/* Middle Row: 2 Large Chart Cards */}
-                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                                        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                                            <div className="flex justify-between items-center mb-6">
-                                                <div>
-                                                    <h3 className="text-lg font-bold text-gray-800">Lưu lượng học tập</h3>
-                                                    <p className="text-xs text-gray-400 mt-0.5">Thống kê theo tháng</p>
-                                                </div>
-                                                <div className="flex items-center gap-3">
-                                                    <select className="text-xs font-semibold text-gray-600 bg-gray-50 border border-gray-100 px-3 py-1.5 rounded-lg outline-none cursor-pointer">
-                                                        <option>Tháng này</option>
-                                                        <option>Tuần này</option>
-                                                    </select>
-                                                </div>
-                                            </div>
-                                            <div className="h-64 w-full relative">
-                                                <svg viewBox="0 0 1000 300" className="w-full h-full overflow-visible">
-                                                    <path d="M0,250 C100,220 200,280 300,200 C400,120 500,240 600,180 C700,120 800,160 900,100 L1000,80" fill="none" stroke="#8b5cf6" strokeWidth="4" strokeLinecap="round" className="drop-shadow-lg" />
-                                                    <path d="M0,280 C150,260 250,220 350,250 C450,280 550,180 650,150 C750,120 850,200 1000,150" fill="none" stroke="#ec4899" strokeWidth="4" strokeLinecap="round" className="drop-shadow-lg opacity-20" />
-                                                    <circle cx="600" cy="180" r="6" fill="#8b5cf6" stroke="white" strokeWidth="3" className="shadow-md" />
-                                                </svg>
-                                                <div className="flex justify-around mt-6">
-                                                    {['1d', '1w', '1m', '3m', '1y', 'all'].map(t => (
-                                                        <button key={t} className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${t === '1m' ? 'bg-brand-500 text-white shadow-md' : 'text-gray-400 hover:bg-gray-50'}`}>{t}</button>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        </div>
 
-                                        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                                            <div className="flex justify-between items-center mb-6">
-                                                <div>
-                                                    <h3 className="text-lg font-bold text-gray-800">Phân bổ học vụ</h3>
-                                                    <p className="text-xs text-gray-400 mt-0.5">Dữ liệu vận hành</p>
-                                                </div>
-                                                <button className="text-gray-400 hover:text-gray-600"><Icon name="more-horizontal" size={20} /></button>
-                                            </div>
-                                            <div className="flex items-end justify-between h-56 px-2 gap-4">
-                                                {[40, 60, 45, 90, 80].map((v, i) => (
-                                                    <div key={i} className="flex-1 flex flex-col items-center group h-full justify-end">
-                                                        <div className="relative w-full bg-gray-50 rounded-xl transition-all h-full flex items-end overflow-hidden">
-                                                            <div 
-                                                                className={`w-full rounded-t-xl transition-all duration-700 bg-brand-500 shadow-sm group-hover:bg-brand-600`} 
-                                                                style={{ height: `${v}%` }}
-                                                            />
-                                                        </div>
-                                                        <span className="mt-3 text-[10px] font-semibold text-gray-400 uppercase tracking-tighter">{['Tuần 1', 'Tuần 2', 'Tuần 3', 'Tuần 4', 'Tuần 5'][i]}</span>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* Bottom Row: Feeds & Alerts */}
-                                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-                                        <div className="lg:col-span-7 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                                            <div className="flex justify-between items-center mb-6">
-                                                <h3 className="text-lg font-bold text-gray-800">Hoạt động mới</h3>
-                                                <div className="flex gap-2">
-                                                    <button className="px-4 py-1.5 bg-brand-50 text-brand-700 rounded-lg text-xs font-bold hover:bg-brand-100">Chi tiết</button>
-                                                </div>
-                                            </div>
-                                            <div className="overflow-x-auto no-scrollbar">
-                                                <table className="w-full text-left">
-                                                    <thead>
-                                                        <tr className="text-[10px] font-bold text-gray-400 uppercase tracking-wider border-b border-gray-50">
-                                                            <th className="pb-4">Mã tài sản</th>
-                                                            <th className="pb-4">Mô tả</th>
-                                                            <th className="pb-4 text-right">Ngày hết hạn</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody className="divide-y divide-gray-50">
-                                                        {[
-                                                            { id: 'A014', desc: 'Máy tính bảng', date: 'Không giới hạn' },
-                                                            { id: 'A055', desc: 'Ghế xoay văn phòng', date: '15/04/2026' },
-                                                            { id: 'A089', desc: 'Máy chiếu LG', date: 'Không giới hạn' },
-                                                            { id: 'A102', desc: 'Apple iMac', date: '20/05/2026' }
-                                                        ].map((item, idx) => (
-                                                            <tr key={idx} className="hover:bg-gray-50 transition-all">
-                                                                <td className="py-4 text-xs font-bold text-gray-800">{item.id}</td>
-                                                                <td className="py-4 text-xs text-gray-500">{item.desc}</td>
-                                                                <td className="py-4 text-xs font-semibold text-gray-400 text-right">{item.date}</td>
-                                                            </tr>
-                                                        ))}
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                        </div>
-
-                                        <div className="lg:col-span-5 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                                            <div className="flex justify-between items-center mb-6">
-                                                <h3 className="text-lg font-bold text-gray-800">Lịch cảnh báo</h3>
-                                                <select className="text-xs font-bold text-gray-700 bg-gray-50 px-2 py-1 rounded-lg outline-none border border-gray-100">
-                                                    <option>Tháng 4, 2026</option>
-                                                </select>
-                                            </div>
-                                            <div className="grid grid-cols-7 gap-2 text-center">
-                                                {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map(d => (
-                                                    <div key={d} className="text-[10px] font-bold text-gray-300 mb-2">{d}</div>
-                                                ))}
-                                                {Array.from({ length: 30 }).map((_, i) => (
-                                                    <div key={i} className={`h-8 w-full flex items-center justify-center rounded-lg text-xs font-bold ${i === 14 ? 'bg-red-500 text-white shadow-md' : i === 21 ? 'bg-brand-500 text-white shadow-md' : 'text-gray-700 hover:bg-gray-50 cursor-pointer'}`}>
-                                                        {i + 1}
-                                                    </div>
-                                                ))}
-                                            </div>
-                                            <div className="mt-6 space-y-3">
-                                                <div className="flex items-center gap-2">
-                                                    <div className="w-1.5 h-1.5 rounded-full bg-red-500"></div>
-                                                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">Bảo trì thiết bị</span>
-                                                </div>
-                                                <div className="flex items-center gap-2">
-                                                    <div className="w-1.5 h-1.5 rounded-full bg-brand-500"></div>
-                                                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">Hạn chót báo cáo</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* User Review Section */}
+                                    {/* Personal Recognition Section (Vinh danh cá nhân) */}
                                     <div className="space-y-6">
                                         <div className="flex justify-between items-end px-4">
                                             <div>
-                                                <h3 className="text-xl font-black text-soft-blue underline decoration-potato-pink decoration-4 underline-offset-8 uppercase italic">User Reviews</h3>
-                                                <p className="text-[10px] font-bold text-slate-400 mt-2 pl-1 uppercase tracking-widest italic">What parents say about Potato English</p>
+                                                <h3 className="text-xl font-black text-soft-blue underline decoration-potato-pink decoration-4 underline-offset-8 uppercase italic">Vinh danh cá nhân</h3>
+                                                <p className="text-[10px] font-bold text-slate-400 mt-2 pl-1 uppercase tracking-widest italic">Honoring excellence at Potato English</p>
                                             </div>
                                             <div className="flex gap-2">
-                                                <button className="p-2 bg-white border border-slate-100 rounded-xl shadow-sm text-slate-400 hover:text-potato-magenta transition-colors"><Icon name="ph-caret-left" className="text-lg" /></button>
-                                                <button className="p-2 bg-white border border-slate-100 rounded-xl shadow-sm text-slate-400 hover:text-potato-magenta transition-colors"><Icon name="ph-caret-right" className="text-lg" /></button>
+                                                <button className="p-2 bg-potato-blue/5 border border-slate-100 rounded-xl shadow-sm text-slate-400 hover:text-potato-magenta transition-colors"><Icon name="ph-caret-left" className="text-lg" /></button>
+                                                <button className="p-2 bg-potato-blue/5 border border-slate-100 rounded-xl shadow-sm text-slate-400 hover:text-potato-magenta transition-colors"><Icon name="ph-caret-right" className="text-lg" /></button>
                                             </div>
                                         </div>
                                         <div className="flex gap-8 overflow-x-auto no-scrollbar pb-10 px-4">
-                                            <ReviewCard 
-                                                name="Jons Sena" 
-                                                date="2 days ago" 
-                                                text="Potato English has transformed my child's confidence in speaking English. The interactive sessions are top-notch!" 
-                                                avatar="https://i.pravatar.cc/150?u=jons"
-                                                status={true}
-                                            />
-                                            <ReviewCard 
-                                                name="Kevin Hunt" 
-                                                date="4 days ago" 
-                                                text="Professional staff and a very conducive learning environment. Highly recommend the Junior roadmap." 
-                                                avatar="https://i.pravatar.cc/150?u=kevin"
-                                                status={true}
-                                            />
-                                            <ReviewCard 
-                                                name="Isabbelle" 
-                                                date="5 days ago" 
-                                                text="The monthly reports are very detailed. I can track every milestone of my daughter clearly." 
-                                                avatar="https://i.pravatar.cc/150?u=isabbelle"
-                                                status={false}
-                                            />
+                                            <div className="w-[320px] shrink-0 bg-white p-6 rounded-[32px] soft-card-premium border-none relative overflow-hidden group">
+                                                <div className="absolute top-0 right-0 w-24 h-24 bg-brand-50 rounded-bl-[100px] -mr-8 -mt-8 transition-all group-hover:scale-110"></div>
+                                                <div className="flex items-center gap-4 mb-6 relative">
+                                                    <div className="w-16 h-16 rounded-2xl overflow-hidden border-2 border-brand-100">
+                                                        <img src="https://i.pravatar.cc/150?u=teacher1" className="w-full h-full object-cover" />
+                                                    </div>
+                                                    <div>
+                                                        <h4 className="text-xs font-black text-slate-800 uppercase">Ms. Thủy Tiên</h4>
+                                                        <p className="text-[9px] font-bold text-brand-600 uppercase tracking-widest mt-0.5">Teacher of the Month</p>
+                                                    </div>
+                                                </div>
+                                                <p className="text-xs font-medium text-slate-500 leading-relaxed italic">"Dedicated to bringing joy and creative learning to the Kids blocks every single day."</p>
+                                                <div className="mt-6 flex items-center justify-between">
+                                                    <div className="flex gap-1">
+                                                        {[1,2,3,4,5].map(i => <Icon key={i} name="ph-star-fill" className="text-yellow-400 text-[10px]" />)}
+                                                    </div>
+                                                    <span className="text-[9px] font-black text-slate-300 uppercase tracking-widest">April 2026</span>
+                                                </div>
+                                            </div>
+
+                                            <div className="w-[320px] shrink-0 bg-white p-6 rounded-[32px] soft-card-premium border-none relative overflow-hidden group">
+                                                <div className="absolute top-0 right-0 w-24 h-24 bg-pink-50 rounded-bl-[100px] -mr-8 -mt-8 transition-all group-hover:scale-110"></div>
+                                                <div className="flex items-center gap-4 mb-6 relative">
+                                                    <div className="w-16 h-16 rounded-2xl overflow-hidden border-2 border-pink-100">
+                                                        <img src="https://i.pravatar.cc/150?u=student1" className="w-full h-full object-cover" />
+                                                    </div>
+                                                    <div>
+                                                        <h4 className="text-xs font-black text-slate-800 uppercase">Lê Gia Bảo</h4>
+                                                        <p className="text-[9px] font-bold text-pink-600 uppercase tracking-widest mt-0.5">Top Merit Student</p>
+                                                    </div>
+                                                </div>
+                                                <p className="text-xs font-medium text-slate-500 leading-relaxed italic">"Achieved the highest score in the recent Mock PET test with incredible focus."</p>
+                                                <div className="mt-6 flex items-center justify-between">
+                                                    <div className="flex gap-1">
+                                                        {[1,2,3,4,5].map(i => <Icon key={i} name="ph-star-fill" className="text-yellow-400 text-[10px]" />)}
+                                                    </div>
+                                                    <span className="text-[9px] font-black text-slate-300 uppercase tracking-widest">April 2026</span>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
