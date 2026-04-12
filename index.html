@@ -85,24 +85,63 @@
             stroke-linejoin: round;
         }
 
+        /* Sidebar & Logo Upgrades v6.2 */
+        .sidebar {
+            width: 260px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .sidebar.collapsed {
+            width: 80px;
+        }
+        .sidebar .logo-container {
+            width: 100%;
+            padding: 1.25rem;
+            text-align: center;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100px;
+        }
+        .sidebar img.logo {
+            max-width: 100%;
+            height: auto;
+            max-height: 80px;
+            object-fit: contain;
+            transition: all 0.3s ease;
+        }
+        .sidebar.collapsed img.logo {
+            max-height: 40px;
+            padding: 0.3125rem;
+        }
+        .sidebar.collapsed .menu-text {
+            display: none;
+        }
+        .sidebar.collapsed .menu-item {
+            justify-content: center;
+            padding-left: 0;
+            padding-right: 0;
+        }
+
+        /* Main Content Adaptive Transition */
+        .main-content {
+            transition: margin-left 0.3s ease;
+        }
+
         /* Sidebar Responsive */
         @media (max-width: 1024px) {
-            .sidebar-nav {
+            .sidebar {
                 position: fixed;
                 left: -260px;
                 z-index: 1000;
-                transition: 0.3s;
                 height: 100vh;
                 background: white;
             }
-            .sidebar-nav.active {
+            .sidebar.active {
                 left: 0;
             }
             .main-content {
                 margin-left: 0 !important;
-            }
-            .hamburger-btn {
-                display: flex !important;
             }
         }
         
@@ -1165,17 +1204,27 @@
             };
 
             const sidebarContent = (
-                <aside className={`sidebar-nav ${mobileActive ? 'active' : ''} ${isOpen ? 'translate-x-0 w-64' : '-translate-x-full lg:translate-x-0 lg:w-20'} h-screen bg-white flex flex-col transition-all duration-300 ease-in-out fixed lg:relative z-[60] overflow-hidden border-r border-gray-100 shrink-0`}>
+                <aside className={`sidebar ${mobileActive ? 'active' : ''} ${!isOpen ? 'collapsed lg:translate-x-0' : 'translate-x-0'} h-screen bg-white flex flex-col transition-all duration-300 ease-in-out fixed lg:relative z-[60] overflow-hidden border-r border-gray-100 shrink-0`}>
                     {/* Logo Section */}
-                    <div className="h-24 flex items-center px-6">
+                    <div className="logo-container relative">
                         <div className="flex items-center gap-3">
-                            <img src="logo_potato.jpg" alt="Potato Logo" className="logo h-10 w-auto object-contain rounded-lg shrink-0" />
-                            {isOpen && (
-                                <h1 className="text-xl font-extrabold text-brand-700 tracking-tight animate-fade-in">POTATO</h1>
-                            )}
+                            <img src="logo_potato.jpg" alt="Potato Logo" className="logo rounded-lg shrink-0" />
+                            <h1 className="menu-text text-xl font-extrabold text-brand-700 tracking-tight">POTATO</h1>
                         </div>
-                        {isMobile && isOpen && (
-                            <button onClick={toggleOpen} className="ml-auto lg:hidden p-2 text-gray-400">
+                        
+                        {/* Desktop Toggle Button */}
+                        {!isMobile && (
+                            <button 
+                                id="sidebar-toggle"
+                                onClick={toggleOpen}
+                                className={`absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-white border border-gray-100 rounded-full shadow-sm flex items-center justify-center text-gray-400 hover:text-brand-600 transition-all z-10 ${!isOpen ? 'rotate-180' : ''}`}
+                            >
+                                <Icon name="chevron-left" size={14} />
+                            </button>
+                        )}
+
+                        {isMobile && mobileActive && (
+                            <button onClick={() => setMobileOpen(false)} className="ml-auto lg:hidden p-2 text-gray-400">
                                 <Icon name="x" />
                             </button>
                         )}
@@ -1199,38 +1248,24 @@
                                                 if(isMobile) toggleOpen(); 
                                             }
                                         }}
-                                        className={`w-full flex items-center ${isOpen ? 'gap-3 px-4' : 'justify-center px-0'} py-3 rounded-xl transition-all duration-200 group ${
+                                        className={`w-full flex items-center menu-item gap-3 px-4 py-3 rounded-xl transition-all duration-200 group ${
                                             isActive 
                                             ? 'bg-brand-50 text-brand-700 font-semibold' 
                                             : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900 font-medium'
                                         }`}
                                     >
                                         <Icon name={item.icon} size={20} className={isActive ? "text-brand-600" : "text-gray-400 group-hover:text-gray-600"} />
-                                        {isOpen && (
-                                            <>
-                                                <span className="text-sm tracking-tight flex-1 text-left">{item.label}</span>
-                                                {hasChildren && (
-                                                    <Icon name={isExpanded ? "chevron-up" : "chevron-down"} size={16} className="text-gray-300" />
-                                                )}
-                                            </>
-                                        )}
+                                        <span className="menu-text font-bold text-sm tracking-tight">{item.label}</span>
+                                        {hasChildren && <Icon name={isExpanded ? "chevron-down" : "chevron-right"} size={14} className={`ml-auto menu-text ${isActive ? 'text-brand-500' : 'text-gray-300'}`} />}
                                     </button>
-
-                                    {/* Children Rendering */}
-                                    {isOpen && hasChildren && isExpanded && (
-                                        <div className="space-y-1 ml-4 animate-fade-in border-l border-gray-50 pl-2">
-                                            {item.children.map(child => (
+                                    
+                                    {hasChildren && isExpanded && isOpen && (
+                                        <div className="pl-12 space-y-1 animate-fade-in">
+                                            {item.children.map((child) => (
                                                 <button
                                                     key={child.id}
-                                                    onClick={() => { 
-                                                        if (child.link) {
-                                                            window.open(child.link, '_blank');
-                                                        } else {
-                                                            setActiveTab(child.id); 
-                                                            if(isMobile) toggleOpen(); 
-                                                        }
-                                                    }}
-                                                    className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all duration-200 ${
+                                                    onClick={() => { setActiveTab(child.id); if(isMobile) toggleOpen(); }}
+                                                    className={`w-full text-left py-2 px-3 rounded-lg text-xs transition-all ${
                                                         activeTab === child.id 
                                                         ? 'text-brand-600 font-semibold' 
                                                         : 'text-gray-400 hover:text-gray-700 font-medium'
@@ -1510,9 +1545,19 @@
             const [activeTab, setActiveTab] = useState('dashboard');
             const [activeWeek, setActiveWeek] = useState(14);
             const [shiftDept, setShiftDept] = useState('Operation');
-            const [isSidebarOpen, setSidebarOpen] = useState(window.innerWidth > 1024);
+            
+            // Persist Sidebar State
+            const savedState = localStorage.getItem('sidebarState');
+            const [isSidebarOpen, setSidebarOpen] = useState(savedState === 'collapsed' ? false : window.innerWidth > 1024);
+            
             const [isMobile, setIsMobile] = useState(window.innerWidth <= 1024);
             const [mobileActive, setMobileActive] = useState(false);
+
+            const toggleSidebar = () => {
+                const newState = !isSidebarOpen;
+                setSidebarOpen(newState);
+                localStorage.setItem('sidebarState', newState ? 'expanded' : 'collapsed');
+            };
 
             useEffect(() => {
                 const handleResize = () => {
@@ -1520,7 +1565,7 @@
                     setIsMobile(mobile);
                     if (mobile) {
                         setSidebarOpen(false);
-                    } else {
+                    } else if (savedState !== 'collapsed') {
                         setSidebarOpen(true);
                         setMobileActive(false);
                     }
@@ -1700,11 +1745,12 @@
                         activeTab={activeTab} 
                         setActiveTab={setActiveTab} 
                         isOpen={isSidebarOpen} 
-                        toggleOpen={() => setSidebarOpen(!isSidebarOpen)} 
+                        toggleOpen={toggleSidebar} 
                         isMobile={isMobile}
                         mobileActive={mobileActive}
+                        setMobileOpen={setMobileActive}
                     />
-                    <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative main-wrapper">
+                    <div className={`flex-1 flex flex-col min-w-0 overflow-hidden relative main-wrapper main-content ${!isSidebarOpen ? 'expanded' : ''}`}>
                         <header className="h-24 bg-bgLight flex items-center justify-between px-6 lg:px-10 shrink-0 sticky top-0 z-40">
                             <div className="flex items-center gap-4">
                                 <button 
