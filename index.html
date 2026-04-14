@@ -1689,7 +1689,7 @@
             
             // Persist Sidebar State
             const savedState = localStorage.getItem('sidebarState');
-            const [isSidebarOpen, setSidebarOpen] = useState(savedState === 'collapsed' ? false : window.innerWidth > 1024);
+            const [isSidebarOpen, setSidebarOpen] = useState(window.innerWidth > 1024); // Mặc định mở trên Desktop
             
             const [isMobile, setIsMobile] = useState(window.innerWidth <= 1024);
             const [mobileActive, setMobileActive] = useState(false);
@@ -1937,7 +1937,7 @@
                         </header>
 
                         <main className="flex-1 overflow-y-auto no-scrollbar px-[30px] pb-[30px]">
-                            <div className="max-w-[1600px] pt-6">
+                            <div className="max-w-[1700px] mx-auto pt-6">
                                 <div className="dashboard-header">
                                     <h1 className="welcome-text">Welcome POTATO Dashboard</h1>
                                 </div>
