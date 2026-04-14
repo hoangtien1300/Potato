@@ -219,52 +219,74 @@
         /* 2. Cấu trúc Sidebar & Nút Toggle */
         .sidebar {
             width: 260px;
-            position: relative;
-            transition: width 0.3s ease;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: fixed;
+            left: 0;
+            top: 0;
+            background: #fff;
+            z-index: 1000;
+            border-right: 1px solid #e0e0e0;
         }
 
-        /* Nút toggle nằm ở cạnh rìa bên phải Sidebar */
+        /* Đẩy phần footer (chứa nút) xuống đáy */
+        .sidebar-footer {
+            margin-top: auto; 
+            padding: 15px;
+            border-top: 1px solid #f0f0f0;
+        }
+
         .sidebar-toggle-btn {
-            position: absolute;
-            right: -15px; /* Nằm đè lên ranh giới */
-            top: 20px;
-            width: 30px;
-            height: 30px;
-            background: #FF9800; /* Màu cam thương hiệu */
+            width: 100%;
+            padding: 12px;
+            background: #FF9800; /* Màu cam POTATO */
             color: white;
-            border: 2px solid #fff;
-            border-radius: 50%;
+            border: none;
+            border-radius: 8px;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            z-index: 1000;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            transition: transform 0.3s ease;
+            gap: 10px;
+            transition: background 0.2s;
         }
 
-        .arrow-icon {
-            transition: transform 0.3s ease;
-            display: inline-block;
-            font-size: 12px;
+        .sidebar-toggle-btn:hover {
+            background: #e68a00;
         }
 
-        /* 3. Trạng thái khi Sidebar ĐÓNG (Collapsed) */
+        /* Khi Sidebar ĐÓNG (Collapsed) */
         .sidebar.collapsed {
-            width: 0px; /* Thu hẹp hoàn toàn */
-            overflow: visible; /* Để vẫn hiện nút bấm */
+            width: 80px; /* Thu hẹp lại thay vì biến mất hẳn để dễ bấm mở lại */
         }
 
-        /* 4. Giao diện chính mở rộng ra */
-        .main-content {
-            margin-left: 0; 
-            flex-grow: 1;
-            transition: all 0.3s ease;
+        .sidebar.collapsed .menu-text {
+            display: none; /* Ẩn chữ, chỉ để lại icon mũi tên */
         }
 
-        /* Xoay mũi tên khi đóng */
         .sidebar.collapsed .arrow-icon {
-            transform: rotate(180deg);
+            transform: rotate(180deg); /* Mũi tên xoay ngược lại để chỉ hướng mở */
+        }
+
+        .sidebar.collapsed .logo-container h1 {
+            display: none;
+        }
+
+        .sidebar.collapsed .logo-container img {
+            max-height: 40px;
+        }
+
+        /* Điều chỉnh nội dung chính khi sidebar thay đổi */
+        .main-content {
+            margin-left: 260px;
+            transition: margin-left 0.3s ease;
+        }
+
+        .sidebar.collapsed ~ .main-wrapper .main-content,
+        .sidebar.collapsed + .main-content {
+            margin-left: 80px;
         }
     </style>
 
@@ -1318,15 +1340,10 @@
             const sidebarContent = (
                 <aside className={`sidebar ${mobileActive ? 'active' : ''} ${!isOpen ? 'collapsed lg:translate-x-0' : 'translate-x-0'} h-screen bg-white flex flex-col transition-all duration-300 ease-in-out fixed lg:relative z-[60] overflow-hidden border-r border-gray-100 shrink-0`}>
                     {/* Logo Section */}
-                    <div className="logo-container relative">
-                        <div className="flex items-center gap-3 w-full justify-center">
-                            {!isMobile && (
-                                <button onClick={toggleOpen} className="text-gray-500 hover:text-brand-600 transition-colors mr-2">
-                                    <Icon name="menu" size={24} />
-                                </button>
-                            )}
-                            <img src="logo_potato.jpg" alt="Potato Logo" className="logo rounded-lg shrink-0" />
-                            {!(!isOpen && !isMobile) && <h1 className="menu-text text-xl font-extrabold text-brand-700 tracking-tight">POTATO</h1>}
+                    <div className="logo-container p-6 relative">
+                        <div className="flex items-center gap-3 w-full justify-center lg:justify-start">
+                            <img src="logo_potato.jpg" alt="Potato Logo" className="logo rounded-lg shrink-0 max-h-[50px] transition-all" />
+                            {isOpen && <h1 className="menu-text text-xl font-extrabold text-brand-700 tracking-tight whitespace-nowrap">POTATO</h1>}
                         </div>
 
                         {isMobile && mobileActive && (
@@ -1337,7 +1354,7 @@
                     </div>
 
                     {/* Navigation */}
-                    <nav className="flex-1 px-4 space-y-1 overflow-y-auto no-scrollbar pb-4">
+                    <nav className="sidebar-nav flex-1 px-4 space-y-1 overflow-y-auto no-scrollbar pb-4">
                         {menuItems.map((item) => {
                             const isExpanded = expandedMenus.includes(item.id);
                             const hasChildren = item.children && item.children.length > 0;
@@ -1351,7 +1368,7 @@
                                                 toggleExpanded(item.id);
                                             } else {
                                                 setActiveTab(item.id); 
-                                                if(isMobile) toggleOpen(); 
+                                                if(isMobile) setMobileOpen(false); 
                                             }
                                         }}
                                         className={`w-full flex items-center menu-item gap-3 px-4 py-3 rounded-xl transition-all duration-200 group ${
@@ -1361,8 +1378,8 @@
                                         }`}
                                     >
                                         <Icon name={item.icon} size={20} className={isActive ? "text-brand-600" : "text-gray-400 group-hover:text-gray-600"} />
-                                        <span className="menu-text font-bold text-sm tracking-tight">{item.label}</span>
-                                        {hasChildren && <Icon name={isExpanded ? "chevron-down" : "chevron-right"} size={14} className={`ml-auto menu-text ${isActive ? 'text-brand-500' : 'text-gray-300'}`} />}
+                                        {isOpen && <span className="menu-text font-bold text-sm tracking-tight">{item.label}</span>}
+                                        {isOpen && hasChildren && <Icon name={isExpanded ? "chevron-down" : "chevron-right"} size={14} className={`ml-auto menu-text ${isActive ? 'text-brand-500' : 'text-gray-300'}`} />}
                                     </button>
                                     
                                     {hasChildren && isExpanded && isOpen && (
@@ -1370,7 +1387,7 @@
                                             {item.children.map((child) => (
                                                 <button
                                                     key={child.id}
-                                                    onClick={() => { setActiveTab(child.id); if(isMobile) toggleOpen(); }}
+                                                    onClick={() => { setActiveTab(child.id); if(isMobile) setMobileOpen(false); }}
                                                     className={`w-full text-left py-2 px-3 rounded-lg text-xs transition-all ${
                                                         activeTab === child.id 
                                                         ? 'text-brand-600 font-semibold' 
@@ -1388,23 +1405,13 @@
                         })}
                     </nav>
 
-                    {/* Footer Info / Toggle */}
-                    <div className="p-6">
-                        <div className="p-4 rounded-2xl bg-gradient-to-br from-brand-500 to-brand-600 text-white relative overflow-hidden shadow-lg shadow-brand-100">
-                             <div className="absolute -top-4 -right-4 w-16 h-16 bg-white opacity-10 rounded-full"></div>
-                             <div className="relative z-10 flex flex-col items-center text-center">
-                                 <p className="text-[10px] font-medium opacity-90 mb-2 whitespace-nowrap">PREMIUM SYSTEM</p>
-                                 <button className="bg-white text-brand-600 w-full py-1.5 rounded-lg font-bold text-[10px] shadow-sm hover:bg-gray-50 transition-colors">
-                                     v6.9 PRO
-                                 </button>
-                             </div>
-                        </div>
+                    {/* Footer / Toggle */}
+                    <div className="sidebar-footer">
+                        <button id="sidebar-toggle" onClick={(e) => { e.preventDefault(); toggleOpen(); }} className="sidebar-toggle-btn">
+                            <span className="arrow-icon transition-transform duration-300">❮</span>
+                            <span className="menu-text font-bold text-sm">Thu gọn</span>
+                        </button>
                     </div>
-
-                    {/* NEW SIDEBAR TOGGLE BUTTON */}
-                    <button id="sidebar-toggle" onClick={toggleOpen} className="sidebar-toggle-btn">
-                        <span className="arrow-icon">❮</span> 
-                    </button>
                 </aside>
             );
 
@@ -1658,10 +1665,10 @@
                 setSidebarOpen(newState);
                 localStorage.setItem('sidebarState', newState ? 'expanded' : 'collapsed');
                 
-                // Tự động kích hoạt sự kiện resize để các biểu đồ/lịch vẽ lại cho chuẩn
+                // Kích hoạt sự kiện resize sau khi hiệu ứng hoàn tất
                 setTimeout(() => {
                     window.dispatchEvent(new Event('resize'));
-                }, 300);
+                }, 310);
             };
 
             useEffect(() => {
@@ -1670,8 +1677,6 @@
                     setIsMobile(mobile);
                     if (mobile) {
                         setSidebarOpen(false);
-                    } else if (savedState !== 'collapsed') {
-                        setSidebarOpen(true);
                         setMobileActive(false);
                     }
                 };
