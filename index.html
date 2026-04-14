@@ -301,19 +301,20 @@
 
         /* Điều chỉnh nội dung chính khi sidebar thay đổi */
         .main-wrapper {
-            margin-left: 260px; /* Tương ứng chiều rộng sidebar mở */
+            margin-left: 260px; /* Khớp chính xác với width của Sidebar */
             width: calc(100% - 260px);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             flex: 1;
             display: flex;
             flex-direction: column;
+            justify-content: flex-start; /* Đảm bảo không đẩy khối ra xa */
             min-width: 0;
         }
 
-        /* KHI ĐÓNG SIDEBAR (Collapsed): Tự động giãn rộng content */
+        /* KHI ĐÓNG SIDEBAR (Collapsed): Khớp chính xác */
         .sidebar.collapsed + .main-wrapper {
-            margin-left: 80px; /* Tương ứng chiều rộng sidebar collapsed */
-            width: calc(100% - 80px); /* Đảm bảo content chiếm đủ chiều rộng */
+            margin-left: 80px;
+            width: calc(100% - 80px);
         }
 
         /* Responsive cho Mobile */
@@ -1937,7 +1938,7 @@
                         </header>
 
                         <main className="flex-1 overflow-y-auto no-scrollbar px-[30px] pb-[30px]">
-                            <div className="max-w-[1700px] mx-auto pt-6">
+                            <div className="max-w-full pt-6">
                                 <div className="dashboard-header">
                                     <h1 className="welcome-text">Welcome POTATO Dashboard</h1>
                                 </div>
