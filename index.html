@@ -233,14 +233,15 @@
 
         /* Đẩy phần footer (chứa nút) xuống đáy */
         .sidebar-footer {
-            margin-top: auto; 
+            margin-top: auto; /* Đẩy xuống đáy */
             padding: 15px;
             border-top: 1px solid #f0f0f0;
+            transition: padding 0.3s ease;
         }
 
         .sidebar-toggle-btn {
             width: 100%;
-            padding: 12px;
+            height: 40px; /* Chiều cao cố định */
             background: #FF9800; /* Màu cam POTATO */
             color: white;
             border: none;
@@ -250,16 +251,36 @@
             align-items: center;
             justify-content: center;
             gap: 10px;
-            transition: background 0.2s;
+            z-index: 1001; /* Đảm bảo nổi lên trên */
+            transition: background 0.2s, width 0.3s ease, padding 0.3s ease;
         }
 
         .sidebar-toggle-btn:hover {
             background: #e68a00;
         }
 
+        /* Icon mũi tên */
+        .arrow-icon {
+            transition: transform 0.3s ease;
+            display: inline-block;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
         /* Khi Sidebar ĐÓNG (Collapsed) */
         .sidebar.collapsed {
             width: 80px; /* Thu hẹp lại thay vì biến mất hẳn để dễ bấm mở lại */
+        }
+
+        /* Thu nhỏ chân trang khi collapsed */
+        .sidebar.collapsed .sidebar-footer {
+            padding: 15px 5px; /* Giảm padding ngang */
+        }
+
+        /* Thu nhỏ nút toggle về hình vuông nhỏ ở footer */
+        .sidebar.collapsed .sidebar-toggle-btn {
+            width: 40px; 
+            margin: 0 auto; /* Căn giữa */
         }
 
         .sidebar.collapsed .menu-text {
