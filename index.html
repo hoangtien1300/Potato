@@ -87,11 +87,11 @@
 
         /* Sidebar & Logo Upgrades v6.2 */
         .sidebar {
-            width: 260px;
+            width: 15%;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .sidebar.collapsed {
-            width: 80px;
+            width: 5%;
         }
         .sidebar .logo-container {
             width: 100%;
@@ -178,6 +178,7 @@
         /* Main Content Adaptive Transition */
         .main-content {
             transition: margin-left 0.3s ease;
+            padding: 0;
         }
 
         /* Sidebar Responsive */
@@ -218,7 +219,7 @@
 
         /* 2. Cấu trúc Sidebar & Nút Toggle */
         .sidebar {
-            width: 260px;
+            width: 15%;
             height: 100vh;
             display: flex;
             flex-direction: column;
@@ -269,7 +270,7 @@
 
         /* Khi Sidebar ĐÓNG (Collapsed) */
         .sidebar.collapsed {
-            width: 80px; /* Thu hẹp lại thay vì biến mất hẳn để dễ bấm mở lại */
+            width: 5%; /* Thu hẹp lại */
         }
 
         /* Thu nhỏ chân trang khi collapsed */
@@ -301,20 +302,21 @@
 
         /* Điều chỉnh nội dung chính khi sidebar thay đổi */
         .main-wrapper {
-            margin-left: 260px; /* Khớp chính xác với width của Sidebar */
-            width: calc(100% - 260px);
+            margin-left: calc(15% + 20px); /* Công thức: Sidebar (15%) + 20px gap */
+            width: calc(85% - 20px);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             flex: 1;
             display: flex;
             flex-direction: column;
-            justify-content: flex-start; /* Đảm bảo không đẩy khối ra xa */
+            justify-content: flex-start;
             min-width: 0;
+            padding: 0;
         }
 
         /* KHI ĐÓNG SIDEBAR (Collapsed): Khớp chính xác */
         .sidebar.collapsed + .main-wrapper {
-            margin-left: 80px;
-            width: calc(100% - 80px);
+            margin-left: calc(5% + 20px); /* Công thức: Sidebar (5%) + 20px gap */
+            width: calc(95% - 20px);
         }
 
         /* Responsive cho Mobile */
@@ -402,13 +404,16 @@
             );
         };
 
-        const StatCardV3 = ({ title, value, label, icon, color, iconbg }) => (
-            <div className="bg-white rounded-2xl p-6 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] border border-gray-50 flex justify-between items-center group hover:shadow-md transition-all duration-300">
+        const StatCardV3 = ({ title, value, label, icon, color, iconbg, onClick, isActive }) => (
+            <div 
+                onClick={onClick}
+                className={`bg-white rounded-2xl p-6 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] border ${isActive ? 'border-brand-500 ring-2 ring-brand-100' : 'border-gray-50'} flex justify-between items-center group hover:shadow-md transition-all duration-300 cursor-pointer`}
+            >
                 <div>
                     <p className="text-gray-500 text-sm font-medium mb-1">{label}</p>
                     <h3 className="text-3xl font-extrabold text-gray-800">{value}</h3>
                 </div>
-                <div className={`w-12 h-12 rounded-xl ${iconbg.replace('bg-', 'bg-').replace('potato-', 'brand-').replace('blue', '50').replace('yellow', '50').replace('pink', '50').replace('green', '50')} flex items-center justify-center ${iconbg.replace('bg-', 'text-').replace('potato-', 'brand-').replace('blue', '500').replace('yellow', '500').replace('pink', '500').replace('green', '500')}`}>
+                <div className={`w-12 h-12 rounded-xl ${iconbg.replace('bg-', 'bg-').replace('potato-', 'brand-').replace('blue', '50').replace('yellow', '50').replace('pink', '50').replace('green', '50')} flex items-center justify-center ${isActive ? 'bg-brand-500 text-white' : iconbg.replace('bg-', 'text-').replace('potato-', 'brand-').replace('blue', '500').replace('yellow', '500').replace('pink', '500').replace('green', '500')}`}>
                     <Icon name={icon.replace('ph-', '')} size={24} />
                 </div>
             </div>
@@ -436,155 +441,7 @@
             </div>
         );
 
-        const RightSidebarV2 = () => {
-            const serverStatus = [
-                { day: 'Sun', val: [40, 60, 30], color: 'bg-potato-red/60' },
-                { day: 'Mon', val: [70, 40, 50], color: 'bg-potato-green/60' },
-                { day: 'Tue', val: [50, 80, 60], color: 'bg-potato-green/60' },
-                { day: 'Wed', val: [80, 30, 40], color: 'bg-potato-blue/60' },
-                { day: 'Thu', val: [90, 70, 50], color: 'bg-potato-blue/60' },
-                { day: 'Fri', val: [30, 40, 20], color: 'bg-potato-red/60' },
-                { day: 'Sat', val: [60, 50, 70], color: 'bg-potato-green/60' }
-            ];
 
-            return (
-                <aside className="hidden xl:flex flex-col w-[380px] p-8 bg-white border-none overflow-y-auto no-scrollbar animate-fade-in group/sidebar soft-panel">
-                    {/* Student Status Distribution */}
-                    <div className="bg-white rounded-3xl p-6 mb-10 border border-slate-50 shadow-sm transition-all hover:shadow-md group/chart">
-                        <div className="flex justify-between items-center mb-10">
-                            <div>
-                                <h3 className="text-sm font-black text-slate-900 uppercase tracking-tight">Student Status</h3>
-                                <p className="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-widest">Total: 423 Students</p>
-                            </div>
-                            <div className="w-10 h-10 rounded-2xl bg-brand-50 flex items-center justify-center">
-                                <Icon name="ph-users-three" className="text-brand-600" size={20} />
-                            </div>
-                        </div>
-
-                        {/* Stacked Vertical Column Visualization */}
-                        <div className="flex gap-10">
-                            {/* The Stacked Column */}
-                            <div className="w-6 h-64 bg-slate-50 rounded-full overflow-hidden flex flex-col shadow-inner">
-                                <div className="bg-[#ef4444]" style={{ height: '0.95%' }} title="New: 4"></div>
-                                <div className="bg-[#f59e0b]" style={{ height: '0.24%' }} title="Again: 1"></div>
-                                <div className="bg-[#3b82f6]" style={{ height: '0.47%' }} title="Waiting: 2"></div>
-                                <div className="bg-[#a855f7]" style={{ height: '42.08%' }} title="Student: 178"></div>
-                                <div className="bg-[#64748b]" style={{ height: '12.06%' }} title="Hold: 51"></div>
-                                <div className="bg-[#475569]" style={{ height: '24.59%' }} title="Leave: 104"></div>
-                                <div className="bg-[#334155]" style={{ height: '19.62%' }} title="Reject: 83"></div>
-                            </div>
-
-                            {/* Legend with Counts */}
-                            <div className="flex-1 space-y-3">
-                                {[
-                                    { label: '1. New', count: 4, color: 'bg-[#ef4444]', textColor: 'text-[#ef4444]' },
-                                    { label: '3. Again', count: 1, color: 'bg-[#f59e0b]', textColor: 'text-[#f59e0b]' },
-                                    { label: '6. Waiting', count: 2, color: 'bg-[#3b82f6]', textColor: 'text-[#3b82f6]' },
-                                    { label: '7. Student', count: 178, color: 'bg-[#a855f7]', textColor: 'text-[#a855f7]' },
-                                    { label: 'Hold', count: 51, color: 'bg-[#64748b]', textColor: 'text-slate-600' },
-                                    { label: 'Leave', count: 104, color: 'bg-[#475569]', textColor: 'text-slate-600' },
-                                    { label: 'Reject', count: 83, color: 'bg-[#334155]', textColor: 'text-slate-600' }
-                                ].map((item, idx) => (
-                                    <div key={idx} className="flex items-center justify-between group/legend">
-                                        <div className="flex items-center gap-3">
-                                            <div className={`w-2 h-2 rounded-full ${item.color} shadow-sm group-hover/legend:scale-125 transition-transform`}></div>
-                                            <span className={`text-[11px] font-black uppercase tracking-tighter ${item.textColor} opacity-90`}>{item.label}</span>
-                                        </div>
-                                        <span className="px-2 py-0.5 bg-slate-50 text-slate-500 rounded text-[10px] font-black group-hover/legend:bg-slate-100 transition-colors">{item.count}</span>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-                    {/* Class Distribution Chart */}
-                    <div className="bg-white rounded-3xl p-6 mb-10 border border-slate-50 shadow-sm transition-all hover:shadow-md">
-                        <div className="flex justify-between items-center mb-8">
-                            <h3 className="text-sm font-black text-slate-900 uppercase tracking-tight">Lớp theo Khóa học</h3>
-                            <div className="px-3 py-1 bg-brand-50 text-brand-600 rounded-lg text-[10px] font-black uppercase tracking-widest">24 Lớp</div>
-                        </div>
-                        
-                        <div className="space-y-6">
-                            {[
-                                { level: 'Kid (Fox)', count: 3, total: 24, color: 'bg-orange-400' },
-                                { level: 'Junior (FF / Mov)', count: 8, total: 24, color: 'bg-brand-500' },
-                                { level: 'Teen (SOL/KET/PET)', count: 9, total: 24, color: 'bg-indigo-500' },
-                                { level: 'IELTS (Foun / Exam)', count: 4, total: 24, color: 'bg-emerald-500' }
-                            ].map((item, idx) => (
-                                <div key={idx} className="space-y-2">
-                                    <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-slate-500">
-                                        <span>{item.level}</span>
-                                        <span className="text-slate-900">{item.count} Lớp</span>
-                                    </div>
-                                    <div className="h-2 w-full bg-slate-50 rounded-full overflow-hidden flex shadow-inner">
-                                        <div 
-                                            className={`h-full ${item.color} rounded-full transition-all duration-1000 ease-out`} 
-                                            style={{ width: `${(item.count / item.total) * 100}%` }}
-                                        ></div>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-
-                        <div className="mt-8 pt-6 border-t border-slate-50">
-                            <button className="w-full py-3 bg-slate-50 hover:bg-slate-100 text-slate-500 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-colors flex items-center justify-center gap-2">
-                                <Icon name="ph-file-search" size={14} /> Xem danh sách lớp
-                            </button>
-                        </div>
-                    </div>
-                    {/* Quick Links Section */}
-                    <div className="space-y-6 mb-12">
-                        <div className="flex justify-between items-center">
-                            <h3 className="text-lg font-black text-slate-900 tracking-tight">Quick Links</h3>
-                            <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center">
-                                <Icon name="ph-link-simple" className="text-blue-500" />
-                            </div>
-                        </div>
-                        <div className="space-y-4">
-                            {[
-                                { name: 'Facebook Fanpage', url: 'https://www.facebook.com/HocAnhVanTotBinhDuong', icon: 'ph-facebook-logo', bgColor: 'bg-potato-blue/10', color: 'text-potato-blue', sub: 'Học Anh Văn Tốt Bình Dương' },
-                                { name: 'Youtube Channel', url: '#', icon: 'ph-youtube-logo', bgColor: 'bg-potato-red/10', color: 'text-potato-red', sub: 'Potato English Official' },
-                                { name: 'Google Support', url: '#', icon: 'ph-google-logo', bgColor: 'bg-potato-yellow/10', color: 'text-potato-yellow', sub: 'Help desk & resources' }
-                            ].map((link, i) => (
-                                <a key={i} href={link.url} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-5 bg-white rounded-[24px] soft-card hover:bg-slate-50 transition-all cursor-pointer group no-underline border-none">
-                                    <div className="flex items-center gap-4">
-                                        <div className={`w-12 h-12 rounded-2xl ${link.bgColor} flex items-center justify-center text-xl icon-gradient`}>
-                                            <Icon name={link.icon} className={link.color} />
-                                        </div>
-                                        <div>
-                                            <h4 className="text-xs font-black text-slate-800 uppercase tracking-tight">{link.name}</h4>
-                                            <p className="text-[10px] font-bold text-slate-400 tracking-tighter mt-0.5">{link.sub}</p>
-                                        </div>
-                                    </div>
-                                    <Icon name="ph-arrow-up-right" className="text-slate-300 group-hover:text-potato-blue transition-colors" />
-                                </a>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* Biên bản họp Section */}
-                    <div className="space-y-6">
-                        <h3 className="text-lg font-black text-slate-900 tracking-tight flex items-center gap-2">
-                             <Icon name="ph-article-medium" className="text-potato-blue" /> Biên bản họp
-                        </h3>
-                        <div className="space-y-8 relative pl-6">
-                            <div className="absolute left-2.5 top-2 bottom-2 w-0.5 bg-slate-50 rounded-full"></div>
-                            {[
-                                { date: '05/04/2026 - 09:00 AM', title: 'Họp Vận Hành Tuần 14', text: 'Thống nhất kế hoạch dồn lực hoàn thiện album "Mùa hè rực rỡ" cho khối Kids.', hot: true },
-                                { date: '01/04/2026 - 14:30 PM', title: 'Họp Chuyên Môn Học Vụ', text: 'Review bộ đề Placement Test và cập nhật lộ trình KET/PET mới.', hot: false },
-                                { date: '28/03/2026 - 11:15 AM', title: 'Họp Chiến Lược Tuyển Sinh', text: 'Phân tích hiệu quả chiến dịch "Học thử 0 đồng" và kế hoạch tháng 4.', hot: false }
-                            ].map((act, i) => (
-                                <div key={i} className="relative group">
-                                    <div className={`absolute -left-[1.37rem] top-1.5 w-4 h-4 rounded-full bg-white border-4 ${act.hot ? 'border-potato-red animate-pulse' : 'border-potato-blue'} shadow-sm z-10 transition-transform group-hover:scale-125`}></div>
-                                    <h4 className="text-[11px] font-black text-slate-900 mb-1 leading-none">{act.date}</h4>
-                                    <p className="text-[13px] font-black text-slate-800 mt-1 uppercase tracking-tighter">{act.title}</p>
-                                    <p className="text-[12px] font-medium text-slate-400 mt-1 leading-relaxed text-left line-clamp-2 italic">{act.text}</p>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                </aside>
-            );
-        };
 
         const MasterTable = ({ data }) => {
             const statusStyle = (status) => {
@@ -1260,6 +1117,252 @@
                 </div>
             );
         };
+        const ClassView = () => {
+            const [activeFilter, setActiveFilter] = React.useState('All');
+            const [selectedClass, setSelectedClass] = React.useState(null);
+
+            const stats = [
+                { label: 'Total', count: 31, icon: 'ph-circles-four', color: 'text-blue-600', bg: 'bg-blue-50', sub: 'Tổng số lượng lớp' },
+                { label: 'Exam', count: 3, icon: 'ph-calendar-check', color: 'text-emerald-600', bg: 'bg-emerald-50', sub: 'Lớp sắp thi/tháng' },
+                { label: 'Warning', count: 5, icon: 'ph-warning-circle', color: 'text-amber-600', bg: 'bg-amber-50', sub: 'Tình trạng Warning' },
+                { label: 'Critical', count: 2, icon: 'ph-first-aid', color: 'text-red-600', bg: 'bg-red-50', sub: 'Tình trạng Critical' },
+            ];
+
+            const courseData = {
+                'Kid': ['Friendly Kid 1', 'Friendly Kid 2', 'Friendly Kid 3', 'Friendly Kid 4'],
+                'Junior': ['Happy Junior 1', 'Happy Junior 2', 'Happy Junior 3', 'Happy Junior 4', 'Starters', 'Happy Junior 5', 'Happy Junior 6', 'Movers', 'Happy Junior 7', 'Happy Junior 8', 'Flyers'],
+                'Teen': ['Leading Teen 1', 'Leading Teen 2', 'KET', 'Leading Teen 3', 'Leading Teen 4', 'PET'],
+                'IELTS': ['IV. IELTS 1 (Foundation)', 'IV. IELTS 2 (Foundation)', 'IV. IELTS 3 (Foundation)', 'IV. IELTS 4 (Exam)', 'IV. IELTS 5 (Exam)', 'IV. IELTS 6 (Exam)', 'IELTS - Teacher']
+            };
+
+            const teachers = ['Mr. Duy', 'Mr. Đạt', 'Mr. Khôi', 'Ms. Đoan', 'Ms. Khanh', 'Ms. Duyên'];
+            const rooms = ['Lemon', 'Pear', 'Cucumber', 'Pumpkin'];
+
+            const rawClasses = React.useMemo(() => Array.from({ length: 31 }, (_, i) => {
+                const categories = ['Kid', 'Junior', 'Teen', 'IELTS'];
+                const category = categories[i % 4];
+                const categoryCourses = courseData[category];
+                const course = categoryCourses[Math.floor(Math.random() * categoryCourses.length)];
+                const status = Math.random() > 0.3 ? 'Teaching' : 'Completed';
+                const branch = Math.random() > 0.5 ? 'Ngô Quyền' : 'Hưng Định';
+                const branchCode = branch === 'Ngô Quyền' ? 'NQ' : 'HĐ';
+                const teacher = teachers[Math.floor(Math.random() * teachers.length)];
+                const room = rooms[Math.floor(Math.random() * rooms.length)];
+
+                return {
+                    id: `C${(i + 1).toString().padStart(3, '0')}`,
+                    course,
+                    category,
+                    status,
+                    branch,
+                    branchCode,
+                    teacher,
+                    room,
+                    fullName: `${branchCode} | ${course} | ${room} + ${teacher}`
+                };
+            }), []);
+
+            const filteredClasses = activeFilter === 'All' 
+                ? rawClasses 
+                : rawClasses.filter(c => c.category === activeFilter);
+
+            return (
+                <div className="space-y-[30px] animate-fade-in relative">
+                    {/* Section Tổng quan */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-[20px]">
+                        {stats.map((s, idx) => (
+                            <div key={idx} className="bg-white p-6 rounded-[24px] border border-gray-100 shadow-sm hover:shadow-md transition-all group flex items-center gap-6">
+                                <div className={`w-16 h-16 rounded-2xl ${s.bg} flex items-center justify-center transition-transform group-hover:scale-110 shrink-0`}>
+                                    <Icon name={s.icon} className={s.color} size={32} />
+                                </div>
+                                <div className="min-w-0">
+                                    <h4 className="text-[11px] font-black text-gray-400 uppercase tracking-widest mb-0.5">{s.label}</h4>
+                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tight italic mb-1 line-clamp-1">{s.sub}</p>
+                                    <p className="text-2xl font-black text-slate-800 tracking-tighter leading-none">{s.count} <span className="text-xs font-bold text-slate-400 ml-1 italic">lớp</span></p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Filter Bar */}
+                    <div className="flex flex-col md:flex-row justify-between items-center bg-white p-4 rounded-3xl border border-gray-100 shadow-sm gap-4">
+                        <div className="flex bg-gray-50 p-1.5 rounded-full gap-1">
+                            {['All', 'Kid', 'Junior', 'Teen', 'IELTS'].map((tab) => (
+                                <button 
+                                    key={tab} 
+                                    onClick={() => setActiveFilter(tab)}
+                                    className={`px-6 py-2 rounded-full text-[11px] font-black uppercase tracking-widest transition-all ${activeFilter === tab ? 'bg-white text-brand-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
+                                >
+                                    {tab}
+                                </button>
+                            ))}
+                        </div>
+                        <div className="relative w-full md:w-80">
+                            <Icon name="ph-magnifying-glass" className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                            <input 
+                                type="text" 
+                                placeholder="Search classes by name or ID..." 
+                                className="w-full pl-12 pr-4 py-2.5 bg-gray-50 border-none rounded-full text-xs font-bold focus:ring-2 focus:ring-brand-100 transition-all"
+                            />
+                        </div>
+                    </div>
+
+                    {/* Grid List - 5 Columns */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-[20px]">
+                        {filteredClasses.map((cls) => (
+                            <div 
+                                key={cls.id} 
+                                onClick={() => setSelectedClass(cls)}
+                                className="bg-white rounded-[24px] border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all group overflow-hidden flex flex-col cursor-pointer"
+                            >
+                                <div className="h-[120px] bg-[#dfe3e6] relative flex items-center justify-center overflow-hidden">
+                                    <Icon name="ph-image" className="text-white/40" size={48} />
+                                    <div className="absolute top-3 left-3">
+                                        <span className="bg-white/90 text-slate-900 px-2 py-1 rounded-md text-[8px] font-black uppercase tracking-widest shadow-sm border border-white/50">
+                                            {cls.category}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div className="p-4 flex-1 flex flex-col">
+                                    <h3 className="text-[12px] font-black text-slate-800 uppercase tracking-tighter mb-4 line-clamp-2 h-8 leading-tight">{cls.course}</h3>
+                                    <div className="space-y-2.5">
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <Icon name="ph-activity" size={12} className="text-slate-400" />
+                                                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tight">Status</span>
+                                            </div>
+                                            <span className={`text-[9px] font-black px-2 py-0.5 rounded-full ${cls.status === 'Teaching' ? 'text-amber-600 bg-amber-50' : 'text-emerald-600 bg-emerald-50'}`}>
+                                                {cls.status}
+                                            </span>
+                                        </div>
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <Icon name="ph-map-pin" size={12} className="text-slate-400" />
+                                                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tight">Branch</span>
+                                            </div>
+                                            <span className="text-[10px] font-black text-slate-800">{cls.branch}</span>
+                                        </div>
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <Icon name="ph-user-focus" size={12} className="text-slate-400" />
+                                                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tight">PIC</span>
+                                            </div>
+                                            <span className="text-[10px] font-black text-slate-800">{cls.teacher}</span>
+                                        </div>
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <Icon name="ph-hash" size={12} className="text-slate-400" />
+                                                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tight">Class ID</span>
+                                            </div>
+                                            <span className="text-[10px] font-black text-slate-800">{cls.id}</span>
+                                        </div>
+                                    </div>
+                                    <div className="mt-4 pt-4 border-t border-gray-50 flex justify-end shrink-0">
+                                        <button className="text-[9px] font-black text-[#1976d2] uppercase tracking-widest hover:underline">Details</button>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Class Detail Modal */}
+                    {selectedClass && (
+                        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                            <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setSelectedClass(null)}></div>
+                            <div className="bg-white rounded-[32px] w-full max-w-4xl max-h-[90vh] overflow-hidden shadow-2xl relative animate-in fade-in zoom-in duration-200 flex flex-col">
+                                {/* Modal Header */}
+                                <div className="p-8 border-b border-gray-100 flex justify-between items-start shrink-0 bg-gray-50/50">
+                                    <div>
+                                        <div className="flex items-center gap-3 mb-2">
+                                            <span className="bg-brand-600 text-white px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest">{selectedClass.category}</span>
+                                            <span className={`text-[10px] font-black px-3 py-1 rounded-lg ${selectedClass.status === 'Teaching' ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'}`}>{selectedClass.status}</span>
+                                        </div>
+                                        <h2 className="text-2xl font-black text-slate-800 tracking-tight uppercase">{selectedClass.fullName}</h2>
+                                        <p className="text-xs font-bold text-gray-400 mt-1 uppercase tracking-widest">Class Management Dashboard • ID: {selectedClass.id}</p>
+                                    </div>
+                                    <button onClick={() => setSelectedClass(null)} className="w-10 h-10 rounded-full bg-white border border-gray-200 flex items-center justify-center text-gray-400 hover:text-red-500 transition-colors shadow-sm">
+                                        <Icon name="ph-x" size={20} />
+                                    </button>
+                                </div>
+
+                                {/* Modal Body */}
+                                <div className="p-8 overflow-y-auto no-scrollbar">
+                                    <h3 className="text-sm font-black text-slate-800 uppercase tracking-widest mb-6 flex items-center gap-3">
+                                        <Icon name="ph-table" className="text-brand-600" size={18} /> Department Information Matrix
+                                    </h3>
+                                    
+                                    <div className="overflow-hidden rounded-2xl border border-gray-100 shadow-sm">
+                                        <table className="w-full text-left border-collapse">
+                                            <thead>
+                                                <tr className="bg-gray-50 border-b border-gray-100">
+                                                    <th className="p-5 text-[10px] font-black text-gray-400 uppercase tracking-widest w-1/4">Metric / Dept</th>
+                                                    <th className="p-5 text-[10px] font-black text-blue-600 uppercase tracking-widest">Operation</th>
+                                                    <th className="p-5 text-[10px] font-black text-purple-600 uppercase tracking-widest">Academic</th>
+                                                    <th className="p-5 text-[10px] font-black text-indigo-600 uppercase tracking-widest">Teacher</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-gray-50">
+                                                {[
+                                                    { label: 'Win', icon: 'ph-trophy', color: 'text-emerald-500' },
+                                                    { label: 'Pending', icon: 'ph-clock', color: 'text-amber-500' },
+                                                    { label: 'Action', icon: 'ph-lightning', color: 'text-blue-500' }
+                                                ].map((row) => (
+                                                    <tr key={row.label} className="hover:bg-gray-50/50 transition-colors">
+                                                        <td className="p-5 flex items-center gap-3">
+                                                            <div className={`w-8 h-8 rounded-lg ${row.color.replace('text', 'bg')}/10 flex items-center justify-center`}>
+                                                                <Icon name={row.icon} className={row.color} size={16} />
+                                                            </div>
+                                                            <span className="text-xs font-black text-slate-700 uppercase tracking-tight">{row.label}</span>
+                                                        </td>
+                                                        <td className="p-5">
+                                                            <div className="flex items-center gap-2">
+                                                                <div className="w-2.5 h-2.5 rounded-full bg-emerald-500"></div>
+                                                                <span className="text-[11px] font-bold text-slate-600">Qualified</span>
+                                                            </div>
+                                                        </td>
+                                                        <td className="p-5">
+                                                            <div className="flex items-center gap-2">
+                                                                <div className="w-2.5 h-2.5 rounded-full bg-amber-400"></div>
+                                                                <span className="text-[11px] font-bold text-slate-600">Reviewing</span>
+                                                            </div>
+                                                        </td>
+                                                        <td className="p-5">
+                                                            <div className="flex items-center gap-2">
+                                                                <div className="w-2.5 h-2.5 rounded-full bg-blue-500"></div>
+                                                                <span className="text-[11px] font-bold text-slate-600">Scheduled</span>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    <div className="mt-10 grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div className="bg-brand-50/50 p-6 rounded-2xl border border-brand-100">
+                                            <h4 className="text-[10px] font-black text-brand-700 uppercase tracking-widest mb-3">Recent Class Update</h4>
+                                            <p className="text-sm font-bold text-brand-900 leading-relaxed">Optimization for {selectedClass.course} has been completed for Week 15. All materials are synchronized with the {selectedClass.branch} branch local server.</p>
+                                        </div>
+                                        <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100">
+                                            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Teacher Notes</h4>
+                                            <p className="text-sm font-bold text-slate-700 leading-relaxed">{selectedClass.teacher} mentions that student engagement was high in the {selectedClass.room} room sessions.</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Modal Footer */}
+                                <div className="p-8 border-t border-gray-100 bg-gray-50/30 flex justify-end gap-3 shrink-0">
+                                    <button onClick={() => setSelectedClass(null)} className="px-8 py-3 rounded-xl bg-white border border-gray-200 text-xs font-black text-slate-500 uppercase tracking-widest hover:bg-gray-100 transition-all">Close</button>
+                                    <button className="px-8 py-3 rounded-xl bg-brand-600 text-white text-xs font-black uppercase tracking-widest shadow-lg shadow-brand-100 hover:bg-brand-700 transition-all">Export Report</button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+
 
         const DebtOverviewCard = () => (
             <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm group hover:shadow-md transition-all h-full flex flex-col items-center overflow-hidden">
@@ -1361,6 +1464,7 @@
 
             const menuItems = [
                 { id: 'dashboard', label: 'Dashboard', icon: 'layout-dashboard' },
+                { id: 'class', label: 'Class', icon: 'ph-circles-four' },
                 { id: 'teacher', label: 'Teacher', icon: 'book-open' },
                 { id: 'academic', label: 'Academic', icon: 'users' },
                 { id: 'operation', label: 'Operation', icon: 'settings' }
@@ -1429,8 +1533,7 @@
                                                         : 'text-gray-400 hover:text-gray-700 font-medium'
                                                     }`}
                                                 >
-                                                    <Icon name={child.icon} size={18} />
-                                                    <span className="text-xs tracking-tight">{child.label}</span>
+                                                    {child.label}
                                                 </button>
                                             ))}
                                         </div>
@@ -1444,7 +1547,7 @@
                     <div className="sidebar-footer">
                         <button id="sidebar-toggle" onClick={(e) => { e.preventDefault(); toggleOpen(); }} className="sidebar-toggle-btn">
                             <span className="arrow-icon transition-transform duration-300">❮</span>
-                            <span className="menu-text font-bold text-sm">Thu gọn</span>
+                             {isOpen && <span className="menu-text font-bold text-sm">Thu gọn</span>}
                         </button>
                     </div>
                 </aside>
@@ -1463,21 +1566,36 @@
         const SHIFT_DATA = {
             "Operation": {
                 14: [
-                    { day: "Thứ 2", staff: "Ms. Ngân", time: "08:00 - 17:00", role: "Manager" },
-                    { day: "Thứ 3", staff: "Ms. Trân", time: "08:00 - 17:00", role: "Staff" },
-                    { day: "Thứ 4", staff: "Ms. Ngân", time: "08:00 - 17:00", role: "Manager" },
-                    { day: "Thứ 5", staff: "Ms. Trân", time: "08:00 - 17:00", role: "Staff" },
-                    { day: "Thứ 6", staff: "Ms. Ngân", time: "08:00 - 17:00", role: "Manager" },
-                    { day: "Thứ 7", staff: "Ms. Trân", time: "08:00 - 12:00", role: "Staff" },
+                    { day: "Thứ 2", staff: "NQ | Mr. Trí", time: "18:00 - 20:00", role: "Operation" },
+                    { day: "Thứ 2", staff: "NQ | Ms. Khanh", time: "18:00 - 20:00", role: "Operation" },
+                    { day: "Thứ 2", staff: "NQ | Ms. Ngân", time: "16:00 - 21:00", role: "Manager" },
+                    { day: "Thứ 3", staff: "HĐ | Ms. Trân", time: "16:00 - 20:00", role: "Staff" },
+                    { day: "Thứ 4", staff: "NQ | Ms. Ngân", time: "16:00 - 21:00", role: "Manager" },
+                    { day: "Thứ 5", staff: "HĐ | Ms. Trân", time: "16:00 - 20:00", role: "Staff" },
+                    { day: "Thứ 6", staff: "NQ | Ms. Ngân", time: "16:00 - 21:00", role: "Manager" },
+                    { day: "Thứ 7", staff: "HĐ | Ms. Trân", time: "16:00 - 20:00", role: "Staff" },
                     { day: "Chủ Nhật", staff: "OFF", time: "-", role: "-" }
                 ],
                 15: [
-                    { day: "Thứ 2", staff: "Ms. Trân", time: "08:00 - 17:00", role: "Staff" },
-                    { day: "Thứ 3", staff: "Ms. Ngân", time: "08:00 - 17:00", role: "Manager" },
-                    { day: "Thứ 4", staff: "Ms. Trân", time: "08:00 - 17:00", role: "Staff" },
-                    { day: "Thứ 5", staff: "Ms. Ngân", time: "08:00 - 17:00", role: "Manager" },
-                    { day: "Thứ 6", staff: "Ms. Trân", time: "08:00 - 17:00", role: "Staff" },
-                    { day: "Thứ 7", staff: "Ms. Ngân", time: "08:00 - 12:00", role: "Manager" },
+                    { day: "Thứ 2", staff: "WFH | Mr. Steven", time: "19:25 - 21:25", role: "Operation" },
+                    { day: "Thứ 3", staff: "WFH | Mr. Steven", time: "18:45 - 20:45", role: "Operation" },
+                    { day: "Thứ 4", staff: "HĐ | Mr. Đạt", time: "16:00 - 20:00", role: "Operation" },
+                    { day: "Thứ 5", staff: "NQ | Mr. Đạt", time: "17:00 - 21:00", role: "Operation" },
+                    { day: "Thứ 6", staff: "WFH | Mr. Steven", time: "19:00 - 21:00", role: "Operation" },
+                    { day: "Thứ 6", staff: "HĐ | Ms. Duyên", time: "16:00 - 20:00", role: "Operation" },
+                    { day: "Thứ 7", staff: "NQ | Mr. Đạt", time: "09:30 - 11:30", role: "Operation" },
+                    { day: "Chủ Nhật", staff: "HĐ | Ms. Duyên", time: "07:30 - 09:30", role: "Operation" },
+                    { day: "Chủ Nhật", staff: "HĐ | Ms. Đoan", time: "09:30 - 11:30", role: "Operation" }
+                ],
+                16: [
+                    { day: "Thứ 2", staff: "NQ | Mr. Trí", time: "18:00 - 20:00", role: "Operation" },
+                    { day: "Thứ 2", staff: "NQ | Ms. Khanh", time: "18:00 - 20:00", role: "Operation" },
+                    { day: "Thứ 2", staff: "NQ | Ms. Ngân", time: "16:00 - 21:00", role: "Manager" },
+                    { day: "Thứ 3", staff: "HĐ | Ms. Trân", time: "16:00 - 20:00", role: "Staff" },
+                    { day: "Thứ 4", staff: "NQ | Ms. Ngân", time: "16:00 - 21:00", role: "Manager" },
+                    { day: "Thứ 5", staff: "HĐ | Ms. Trân", time: "16:00 - 20:00", role: "Staff" },
+                    { day: "Thứ 6", staff: "NQ | Ms. Ngân", time: "16:00 - 21:00", role: "Manager" },
+                    { day: "Thứ 7", staff: "HĐ | Ms. Trân", time: "16:00 - 20:00", role: "Staff" },
                     { day: "Chủ Nhật", staff: "OFF", time: "-", role: "-" }
                 ]
             },
@@ -1490,10 +1608,18 @@
                     { day: "Thứ 6", staff: "Mr. Khôi", time: "17:30 - 21:00", role: "Senior" },
                     { day: "Thứ 7", staff: "Ms. Sue", time: "08:00 - 20:00", role: "Teacher" },
                     { day: "Chủ Nhật", staff: "Ms. Lib", time: "08:00 - 12:00", role: "Teacher" }
+                ],
+                15: [
+                    { day: "Thứ 3", staff: "HĐ | Ms. Trân", time: "16:00 - 20:00", role: "Teacher" },
+                    { day: "Thứ 4", staff: "NQ | Ms. Anh", time: "16:00 - 21:00", role: "Teacher" },
+                    { day: "Thứ 5", staff: "HĐ | Ms. Trân", time: "16:00 - 20:00", role: "Teacher" },
+                    { day: "Thứ 7", staff: "HĐ | Ms. Anh", time: "07:30 - 11:30", role: "Teacher" },
+                    { day: "Thứ 7", staff: "HĐ | Ms. Anh", time: "14:30 - 19:30", role: "Teacher" },
+                    { day: "Chủ Nhật", staff: "HĐ | Ms. Trân", time: "14:30 - 19:30", role: "Teacher" }
                 ]
             },
             "Academic": {
-               14: [
+                14: [
                     { day: "Thứ 2", staff: "Ms. Hoa", time: "09:00 - 18:00", role: "Academic" },
                     { day: "Thứ 3", staff: "Ms. Hoa", time: "09:00 - 18:00", role: "Academic" },
                     { day: "Thứ 4", staff: "Ms. Hoa", time: "09:00 - 18:00", role: "Academic" },
@@ -1501,6 +1627,14 @@
                     { day: "Thứ 6", staff: "Ms. Hoa", time: "09:00 - 18:00", role: "Academic" },
                     { day: "Thứ 7", staff: "OFF", time: "-", role: "-" },
                     { day: "Chủ Nhật", staff: "OFF", time: "-", role: "-" }
+                ],
+                15: [
+                    { day: "Thứ 3", staff: "NQ | Ms. Ngân", time: "16:00 - 18:30", role: "Academic" },
+                    { day: "Thứ 6", staff: "NQ | Ms. Đào", time: "16:00 - 21:00", role: "Academic" },
+                    { day: "Thứ 7", staff: "NQ | Ms. Ngân", time: "07:30 - 09:30", role: "Academic" },
+                    { day: "Thứ 7", staff: "NQ | Ms. Ngân", time: "15:30 - 20:00", role: "Academic" },
+                    { day: "Chủ Nhật", staff: "NQ | Ms. Ngân", time: "07:30 - 11:30", role: "Academic" },
+                    { day: "Chủ Nhật", staff: "NQ | Ms. Ngân", time: "15:30 - 20:00", role: "Academic" }
                 ]
             }
         };
@@ -1520,7 +1654,7 @@
                 shifts = shifts.map(s => ({ ...s, department: shiftDept }));
             }
 
-            const HOURS = [7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21];
+            const HOURS = Array.from({ length: 25 }, (_, i) => i);
             
             const calculatePosition = (timeStr) => {
                  if (!timeStr || timeStr === '-') return { top: 0, height: 0 };
@@ -1531,8 +1665,8 @@
                      
                      const startTotal = sH * 60 + sM;
                      const endTotal = eH * 60 + eM;
-                     const scaleStart = 7 * 60; 
-                     const scaleEnd = 21 * 60;   
+                     const scaleStart = 0; 
+                     const scaleEnd = 24 * 60;   
                      const totalRange = scaleEnd - scaleStart;
                      
                      const top = ((startTotal - scaleStart) / totalRange) * 100;
@@ -1593,70 +1727,72 @@
                         </div>
                     </div>
 
-                    {/* Time Grid View */}
-                    <div className="calendar-grid shadow-inner">
-                        {/* Day Headers */}
-                        <div className="col-span-2 flex border-b border-gray-100 bg-white/95 sticky top-0 z-20">
+                    {/* Time Grid View with Scroll */}
+                    <div className="calendar-grid shadow-inner flex flex-col max-h-[600px] overflow-y-auto no-scrollbar border border-gray-100 rounded-2xl bg-gray-50/10">
+                        {/* Day Headers - Sticky */}
+                        <div className="flex border-b border-gray-100 bg-white sticky top-0 z-30 shrink-0">
                             <div className="w-[80px] border-r border-gray-100 flex items-center justify-center bg-gray-50/50 shrink-0">
-                                <Icon name="clock" size={14} className="text-gray-400 animate-pulse" />
+                                <Icon name="clock" size={14} className="text-gray-400" />
                             </div>
                             <div className="flex-1 grid grid-cols-7 divide-x divide-gray-100">
                                 {days.map((day, idx) => (
-                                    <div key={idx} className={`py-5 text-center transition-colors ${day === 'Chủ Nhật' ? 'bg-red-50/30' : ''}`}>
+                                    <div key={idx} className={`py-4 text-center ${day === 'Chủ Nhật' ? 'bg-red-50/30' : ''}`}>
                                         <p className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">{day}</p>
                                     </div>
                                 ))}
                             </div>
                         </div>
 
-                        {/* Calendar Body */}
-                        <div className="time-column relative" style={{ height: '700px' }}>
-                            {HOURS.map(hour => (
-                                <div key={hour} className="flex-1 relative flex items-start justify-center border-b border-transparent">
-                                    <span className="absolute -top-3 text-[10px] font-black text-gray-300 tracking-tighter">
-                                        {hour < 10 ? `0${hour}:00` : `${hour}:00`}
-                                    </span>
-                                </div>
-                            ))}
-                        </div>
-
-                        <div className="day-columns divide-x divide-gray-100/50" style={{ height: '700px' }}>
-                            {/* Horizontal Grid Lines */}
-                            <div className="absolute inset-0 pointer-events-none flex flex-col">
-                                {HOURS.map((_, idx) => (
-                                    <div key={idx} className="flex-1 border-t border-gray-100/40"></div>
+                        {/* Calendar Body Container */}
+                        <div className="flex flex-1 relative min-h-[1200px]"> 
+                            {/* Time axis markers */}
+                            <div className="w-[80px] bg-gray-50/20 border-r border-gray-100 relative shrink-0">
+                                {HOURS.map(hour => (
+                                    <div key={hour} className="absolute w-full flex items-start justify-center" style={{ top: `${(hour / 24) * 100}%` }}>
+                                        <span className={`text-[9px] font-black tracking-tighter ${hour % 2 === 0 ? 'text-gray-400' : 'text-gray-300'}`}>
+                                            {hour < 10 ? `0${hour}:00` : `${hour}:00`}
+                                        </span>
+                                    </div>
                                 ))}
                             </div>
 
-                            {days.map((dayName, dayIdx) => {
-                                const dayShifts = shifts.filter(s => s.day === dayName && s.staff !== 'OFF');
-                                return (
-                                    <div key={dayIdx} className={`relative h-full transition-colors ${dayName === 'Chủ Nhật' ? 'bg-red-50/10' : ''}`}>
-                                        {dayShifts.map((s, sIdx) => {
-                                            const { top, height } = calculatePosition(s.time);
-                                            const deptClass = s.department === 'Operation' ? 'operation' : s.department === 'Teacher' ? 'teacher' : 'academic';
+                            {/* Columns for Shifts */}
+                            <div className="flex-1 grid grid-cols-7 divide-x divide-gray-100 relative">
+                                {/* Horizontal Grid Lines for Hours */}
+                                {HOURS.map((hour) => (
+                                    <div key={hour} className="absolute w-full border-t border-gray-100/40 pointer-events-none" style={{ top: `${(hour / 24) * 100}%` }}></div>
+                                ))}
 
-                                            return (
-                                                <div 
-                                                    key={sIdx}
-                                                    className={`event-card ${deptClass} flex flex-col justify-between group/item`}
-                                                    style={{ top: `${top}%`, height: `${height}%` }}
-                                                >
-                                                    <div className="space-y-0.5">
-                                                        <h4 className="font-bold leading-tight uppercase tracking-tight">{s.staff}</h4>
-                                                        <p className="text-[9px] font-semibold opacity-90">{s.time}</p>
+                                {days.map((dayName, dayIdx) => {
+                                    const dayShifts = shifts.filter(s => s.day === dayName && s.staff !== 'OFF');
+                                    return (
+                                        <div key={dayIdx} className={`relative h-full transition-colors ${dayName === 'Chủ Nhật' ? 'bg-red-50/5' : ''}`}>
+                                            {dayShifts.map((s, sIdx) => {
+                                                const { top, height } = calculatePosition(s.time);
+                                                const deptClass = s.department === 'Operation' ? 'operation' : s.department === 'Teacher' ? 'teacher' : 'academic';
+                                                
+                                                return (
+                                                    <div 
+                                                        key={sIdx}
+                                                        className={`event-card ${deptClass} flex flex-col justify-between group/item`}
+                                                        style={{ top: `${top}%`, height: `${height}%` }}
+                                                    >
+                                                        <div className="space-y-0.5">
+                                                            <h4 className="font-bold leading-tight uppercase tracking-tight text-[10px]">{s.staff}</h4>
+                                                            <p className="text-[8px] font-semibold opacity-90">{s.time}</p>
+                                                        </div>
+                                                        <div className="mt-auto">
+                                                            <span className="px-1.5 py-0.5 rounded bg-white/30 text-[7px] font-bold uppercase tracking-widest">
+                                                                {s.role || s.department}
+                                                            </span>
+                                                        </div>
                                                     </div>
-                                                    <div className="mt-auto">
-                                                        <span className="px-1.5 py-0.5 rounded bg-white/30 text-[8px] font-bold uppercase tracking-widest">
-                                                            {s.department}
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                );
-                            })}
+                                                );
+                                            })}
+                                        </div>
+                                    );
+                                })}
+                            </div>
                         </div>
                     </div>
 
@@ -1676,7 +1812,7 @@
                              </div>
                         </div>
                         <p className="text-[10px] font-bold text-gray-400 italic flex items-center gap-1.5">
-                             <Icon name="info" size={12} className="text-brand-500" /> Use the time axis for precise schedule tracking
+                             <Icon name="info" size={12} className="text-brand-500" /> Use the scrollbar to view full 24h schedule
                         </p>
                     </div>
                 </div>
@@ -1685,12 +1821,13 @@
 
         const MainApp = () => {
             const [activeTab, setActiveTab] = useState('dashboard');
-            const [activeWeek, setActiveWeek] = useState(14);
+            const [activeWeek, setActiveWeek] = useState(15);
             const [shiftDept, setShiftDept] = useState('Operation');
             
             // Persist Sidebar State
             const savedState = localStorage.getItem('sidebarState');
-            const [isSidebarOpen, setSidebarOpen] = useState(window.innerWidth > 1024); // Mặc định mở trên Desktop
+            const [isSidebarOpen, setSidebarOpen] = useState(true); // Mặc định luôn mở
+            const [activeOverview, setActiveOverview] = useState(null); // 'students', 'class', 'employee'
             
             const [isMobile, setIsMobile] = useState(window.innerWidth <= 1024);
             const [mobileActive, setMobileActive] = useState(false);
@@ -1739,108 +1876,212 @@
                     case 'dashboard':
                         return (
                             <div className="space-y-[30px] animate-fade-in relative">
-                                {/* Top Full-Width Stats Row */}
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-[30px]">
-                                    <StatCardV3 
-                                        value="423" 
-                                        label="Students" 
-                                        icon="users" 
-                                        iconbg="bg-potato-blue" 
-                                    />
-                                    <StatCardV3 
-                                        value="24" 
-                                        label="Class" 
-                                        icon="book-open" 
-                                        iconbg="bg-potato-yellow" 
-                                    />
-                                    <StatCardV3 
-                                        value="12" 
-                                        label="Teachers" 
-                                        icon="user-check" 
-                                        iconbg="bg-potato-pink" 
-                                    />
-                                </div>
-
-                                {/* Main Two-Column Layout */}
-                                <div className="flex flex-col xl:flex-row gap-[30px] items-start">
-                                     {/* Left Column: Main Widgets */}
-                                    <div className="flex-1 space-y-[30px] min-w-0">
-                                        {/* New Middle Section: Debt and Tasks */}
-                                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-[30px]">
-                                            <DebtOverviewCard />
-                                            <TaskOverviewCard />
-                                        </div>
-
-                                        <ShiftScheduler 
-                                            currentWeek={activeWeek} 
-                                            shiftDept={shiftDept} 
-                                            setShiftDept={setShiftDept} 
-                                            setActiveWeek={setActiveWeek} 
+                                {/* Section Tổng quan */}
+                                <div className="space-y-6">
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-1.5 h-6 bg-brand-600 rounded-full"></div>
+                                        <h2 className="text-xl font-extrabold text-gray-800 uppercase tracking-tight">Tổng quan</h2>
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-[30px]">
+                                        <StatCardV3 
+                                            value="423" 
+                                            label="Students" 
+                                            icon="users" 
+                                            iconbg="bg-potato-blue" 
+                                            isActive={activeOverview === 'students'}
+                                            onClick={() => setActiveOverview(activeOverview === 'students' ? null : 'students')}
                                         />
+                                        <StatCardV3 
+                                            value="24" 
+                                            label="Class" 
+                                            icon="book-open" 
+                                            iconbg="bg-potato-yellow" 
+                                            isActive={activeOverview === 'class'}
+                                            onClick={() => setActiveOverview(activeOverview === 'class' ? null : 'class')}
+                                        />
+                                        <StatCardV3 
+                                            value="21" 
+                                            label="Employee" 
+                                            icon="user-check" 
+                                            iconbg="bg-potato-pink" 
+                                            isActive={activeOverview === 'employee'}
+                                            onClick={() => setActiveOverview(activeOverview === 'employee' ? null : 'employee')}
+                                        />
+                                    </div>
 
-                                        {/* Personal Recognition Section (Vinh danh cá nhân) */}
-                                        <div className="space-y-[30px]">
-                                            <div className="flex justify-between items-end px-4">
-                                                <div>
-                                                    <h3 className="text-xl font-black text-soft-blue underline decoration-potato-pink decoration-4 underline-offset-8 uppercase italic">Vinh danh cá nhân</h3>
-                                                    <p className="text-[10px] font-bold text-slate-400 mt-2 pl-1 uppercase tracking-widest italic">Honoring excellence at Potato English</p>
+                                    {/* Sub-Views for Overview */}
+                                    {activeOverview === 'students' && (
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-[30px] animate-fade-in">
+                                            {[
+                                                { branch: 'Ngô Quyền', total: 215, statuses: [
+                                                    { label: 'New', count: 2, color: 'bg-red-500' },
+                                                    { label: 'Student', count: 90, color: 'bg-brand-500' },
+                                                    { label: 'Hold', count: 25, color: 'bg-slate-500' },
+                                                    { label: 'Leave', count: 50, color: 'bg-slate-400' },
+                                                    { label: 'Reject', count: 48, color: 'bg-slate-300' }
+                                                ]},
+                                                { branch: 'Hưng Định', total: 208, statuses: [
+                                                    { label: 'New', count: 2, color: 'bg-red-500' },
+                                                    { label: 'Student', count: 88, color: 'bg-brand-500' },
+                                                    { label: 'Hold', count: 26, color: 'bg-slate-500' },
+                                                    { label: 'Leave', count: 54, color: 'bg-slate-400' },
+                                                    { label: 'Reject', count: 38, color: 'bg-slate-300' }
+                                                ]}
+                                            ].map((info, idx) => (
+                                                <div key={idx} className="bg-white p-8 rounded-[32px] border border-gray-100 shadow-sm">
+                                                    <h4 className="text-sm font-black text-gray-800 uppercase tracking-tight mb-6 flex justify-between items-center">
+                                                        <span>Chi nhánh {info.branch}</span>
+                                                        <span className="text-[10px] bg-brand-50 text-brand-600 px-3 py-1 rounded-full">{info.total} HV</span>
+                                                    </h4>
+                                                    <div className="space-y-4">
+                                                        {info.statuses.map((s, i) => (
+                                                            <div key={i} className="flex items-center justify-between group">
+                                                                <div className="flex items-center gap-3">
+                                                                    <div className={`w-2 h-2 rounded-full ${s.color}`}></div>
+                                                                    <span className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">{s.label}</span>
+                                                                </div>
+                                                                <span className="text-[11px] font-black text-slate-800">{s.count}</span>
+                                                            </div>
+                                                        ))}
+                                                    </div>
                                                 </div>
-                                                <div className="flex gap-2">
-                                                    <button className="p-2 bg-potato-blue/5 border border-slate-100 rounded-xl shadow-sm text-slate-400 hover:text-potato-magenta transition-colors"><Icon name="ph-caret-left" className="text-lg" /></button>
-                                                    <button className="p-2 bg-potato-blue/5 border border-slate-100 rounded-xl shadow-sm text-slate-400 hover:text-potato-magenta transition-colors"><Icon name="ph-caret-right" className="text-lg" /></button>
+                                            ))}
+                                        </div>
+                                    )}
+
+                                    {activeOverview === 'class' && (
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-[30px] animate-fade-in">
+                                            {[
+                                                { branch: 'Ngô Quyền', total: 13, courses: [
+                                                    { label: 'Kid (Fox)', count: 2, color: 'bg-orange-400' },
+                                                    { label: 'Junior (FF/Mov)', count: 4, color: 'bg-brand-500' },
+                                                    { label: 'Teen (SOL/KET)', count: 5, color: 'bg-indigo-500' },
+                                                    { label: 'IELTS (Exam)', count: 2, color: 'bg-emerald-500' }
+                                                ]},
+                                                { branch: 'Hưng Định', total: 11, courses: [
+                                                    { label: 'Kid (Fox)', count: 1, color: 'bg-orange-400' },
+                                                    { label: 'Junior (FF/Mov)', count: 4, color: 'bg-brand-500' },
+                                                    { label: 'Teen (SOL/KET)', count: 4, color: 'bg-indigo-500' },
+                                                    { label: 'IELTS (Exam)', count: 2, color: 'bg-emerald-500' }
+                                                ]}
+                                            ].map((info, idx) => (
+                                                <div key={idx} className="bg-white p-8 rounded-[32px] border border-gray-100 shadow-sm">
+                                                    <h4 className="text-sm font-black text-gray-800 uppercase tracking-tight mb-8 flex justify-between items-center">
+                                                        <span>Chi nhánh {info.branch}</span>
+                                                        <span className="text-[10px] bg-yellow-50 text-yellow-600 px-3 py-1 rounded-full">{info.total} Lớp</span>
+                                                    </h4>
+                                                    <div className="space-y-6">
+                                                        {info.courses.map((c, i) => (
+                                                            <div key={i} className="space-y-2">
+                                                                <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-slate-500">
+                                                                    <span>{c.label}</span>
+                                                                    <span className="text-slate-900">{c.count} Lớp</span>
+                                                                </div>
+                                                                <div className="h-1.5 w-full bg-slate-50 rounded-full overflow-hidden">
+                                                                    <div className={`h-full ${c.color} rounded-full`} style={{ width: `${(c.count / info.total) * 100}%` }}></div>
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+
+                                    {activeOverview === 'employee' && (
+                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-[30px] animate-fade-in">
+                                            {[
+                                                { dept: 'Operation', count: 5, icon: 'ph-gear', color: 'bg-blue-50 text-blue-600' },
+                                                { dept: 'Academic', count: 4, icon: 'ph-book-open', color: 'bg-green-50 text-green-600' },
+                                                { dept: 'Teacher', count: 12, icon: 'ph-student', color: 'bg-pink-50 text-pink-600' }
+                                            ].map((d, idx) => (
+                                                <div key={idx} className="bg-white p-8 rounded-[32px] border border-gray-100 shadow-sm flex flex-col items-center text-center group hover:border-brand-100 transition-all">
+                                                    <div className={`w-16 h-16 rounded-2xl ${d.color} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}>
+                                                        <Icon name={d.icon} size={32} />
+                                                    </div>
+                                                    <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-2">{d.dept}</h4>
+                                                    <p className="text-4xl font-black text-slate-800 tracking-tighter">{d.count}</p>
+                                                    <p className="text-[10px] font-bold text-gray-400 mt-2 uppercase tracking-tight">Thành viên</p>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Main Sequential Layout (1 Column Full Width) */}
+                                <div className="space-y-[30px] min-w-0">
+                                    <ShiftScheduler 
+                                        currentWeek={activeWeek} 
+                                        shiftDept={shiftDept} 
+                                        setShiftDept={setShiftDept} 
+                                        setActiveWeek={setActiveWeek} 
+                                    />
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-[30px]">
+                                        <DebtOverviewCard />
+                                        <TaskOverviewCard />
+                                    </div>
+
+                                    {/* Personal Recognition Section (Vinh danh cá nhân) */}
+                                    <div className="space-y-[30px]">
+                                        <div className="flex justify-between items-end px-4">
+                                            <div>
+                                                <h3 className="text-xl font-black text-soft-blue underline decoration-potato-pink decoration-4 underline-offset-8 uppercase italic">Vinh danh cá nhân</h3>
+                                                <p className="text-[10px] font-bold text-slate-400 mt-2 pl-1 uppercase tracking-widest italic">Honoring excellence at Potato English</p>
+                                            </div>
+                                            <div className="flex gap-2">
+                                                <button className="p-2 bg-potato-blue/5 border border-slate-100 rounded-xl shadow-sm text-slate-400 hover:text-potato-magenta transition-colors"><Icon name="ph-caret-left" className="text-lg" /></button>
+                                                <button className="p-2 bg-potato-blue/5 border border-slate-100 rounded-xl shadow-sm text-slate-400 hover:text-potato-magenta transition-colors"><Icon name="ph-caret-right" className="text-lg" /></button>
+                                            </div>
+                                        </div>
+                                        <div className="flex gap-[30px] overflow-x-auto no-scrollbar pb-8 px-4">
+                                            <div className="w-[320px] shrink-0 bg-white p-6 rounded-[32px] soft-card-premium border-none relative overflow-hidden group">
+                                                <div className="absolute top-0 right-0 w-24 h-24 bg-brand-50 rounded-bl-[100px] -mr-8 -mt-8 transition-all group-hover:scale-110"></div>
+                                                <div className="flex items-center gap-4 mb-6 relative">
+                                                    <div className="w-16 h-16 rounded-2xl overflow-hidden border-2 border-brand-100">
+                                                        <img src="https://i.pravatar.cc/150?u=teacher1" className="w-full h-full object-cover" />
+                                                    </div>
+                                                    <div>
+                                                        <h4 className="text-xs font-black text-slate-800 uppercase">Ms. Thủy Tiên</h4>
+                                                        <p className="text-[9px] font-bold text-brand-600 uppercase tracking-widest mt-0.5">Teacher of the Month</p>
+                                                    </div>
+                                                </div>
+                                                <p className="text-xs font-medium text-slate-500 leading-relaxed italic">"Dedicated to bringing joy and creative learning to the Kids blocks every single day."</p>
+                                                <div className="mt-6 flex items-center justify-between">
+                                                    <div className="flex gap-1">
+                                                        {[1,2,3,4,5].map(i => <Icon key={i} name="ph-star-fill" className="text-yellow-400 text-[10px]" />)}
+                                                    </div>
+                                                    <span className="text-[9px] font-black text-slate-300 uppercase tracking-widest">April 2026</span>
                                                 </div>
                                             </div>
-                                            <div className="flex gap-[30px] overflow-x-auto no-scrollbar pb-8 px-4">
-                                                <div className="w-[320px] shrink-0 bg-white p-6 rounded-[32px] soft-card-premium border-none relative overflow-hidden group">
-                                                    <div className="absolute top-0 right-0 w-24 h-24 bg-brand-50 rounded-bl-[100px] -mr-8 -mt-8 transition-all group-hover:scale-110"></div>
-                                                    <div className="flex items-center gap-4 mb-6 relative">
-                                                        <div className="w-16 h-16 rounded-2xl overflow-hidden border-2 border-brand-100">
-                                                            <img src="https://i.pravatar.cc/150?u=teacher1" className="w-full h-full object-cover" />
-                                                        </div>
-                                                        <div>
-                                                            <h4 className="text-xs font-black text-slate-800 uppercase">Ms. Thủy Tiên</h4>
-                                                            <p className="text-[9px] font-bold text-brand-600 uppercase tracking-widest mt-0.5">Teacher of the Month</p>
-                                                        </div>
+
+                                            <div className="w-[320px] shrink-0 bg-white p-6 rounded-[32px] soft-card-premium border-none relative overflow-hidden group">
+                                                <div className="absolute top-0 right-0 w-24 h-24 bg-pink-50 rounded-bl-[100px] -mr-8 -mt-8 transition-all group-hover:scale-110"></div>
+                                                <div className="flex items-center gap-4 mb-6 relative">
+                                                    <div className="w-16 h-16 rounded-2xl overflow-hidden border-2 border-pink-100">
+                                                        <img src="https://i.pravatar.cc/150?u=student1" className="w-full h-full object-cover" />
                                                     </div>
-                                                    <p className="text-xs font-medium text-slate-500 leading-relaxed italic">"Dedicated to bringing joy and creative learning to the Kids blocks every single day."</p>
-                                                    <div className="mt-6 flex items-center justify-between">
-                                                        <div className="flex gap-1">
-                                                            {[1,2,3,4,5].map(i => <Icon key={i} name="ph-star-fill" className="text-yellow-400 text-[10px]" />)}
-                                                        </div>
-                                                        <span className="text-[9px] font-black text-slate-300 uppercase tracking-widest">April 2026</span>
+                                                    <div>
+                                                        <h4 className="text-xs font-black text-slate-800 uppercase">Lê Gia Bảo</h4>
+                                                        <p className="text-[9px] font-bold text-pink-600 uppercase tracking-widest mt-0.5">Top Merit Student</p>
                                                     </div>
                                                 </div>
-
-                                                <div className="w-[320px] shrink-0 bg-white p-6 rounded-[32px] soft-card-premium border-none relative overflow-hidden group">
-                                                    <div className="absolute top-0 right-0 w-24 h-24 bg-pink-50 rounded-bl-[100px] -mr-8 -mt-8 transition-all group-hover:scale-110"></div>
-                                                    <div className="flex items-center gap-4 mb-6 relative">
-                                                        <div className="w-16 h-16 rounded-2xl overflow-hidden border-2 border-pink-100">
-                                                            <img src="https://i.pravatar.cc/150?u=student1" className="w-full h-full object-cover" />
-                                                        </div>
-                                                        <div>
-                                                            <h4 className="text-xs font-black text-slate-800 uppercase">Lê Gia Bảo</h4>
-                                                            <p className="text-[9px] font-bold text-pink-600 uppercase tracking-widest mt-0.5">Top Merit Student</p>
-                                                        </div>
+                                                <p className="text-xs font-medium text-slate-500 leading-relaxed italic">"Achieved the highest score in the recent Mock PET test with incredible focus."</p>
+                                                <div className="mt-6 flex items-center justify-between">
+                                                    <div className="flex gap-1">
+                                                        {[1,2,3,4,5].map(i => <Icon key={i} name="ph-star-fill" className="text-yellow-400 text-[10px]" />)}
                                                     </div>
-                                                    <p className="text-xs font-medium text-slate-500 leading-relaxed italic">"Achieved the highest score in the recent Mock PET test with incredible focus."</p>
-                                                    <div className="mt-6 flex items-center justify-between">
-                                                        <div className="flex gap-1">
-                                                            {[1,2,3,4,5].map(i => <Icon key={i} name="ph-star-fill" className="text-yellow-400 text-[10px]" />)}
-                                                        </div>
-                                                        <span className="text-[9px] font-black text-slate-300 uppercase tracking-widest">April 2026</span>
-                                                    </div>
+                                                    <span className="text-[9px] font-black text-slate-300 uppercase tracking-widest">April 2026</span>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
 
-                                    {/* Right Column: Sidebar (Adaptive placement) */}
-                                    <div className="w-full xl:w-[30%] shrink-0">
-                                        <RightSidebarV2 />
                                     </div>
                                 </div>
-                            </div>
-                        );
+                            );
+                    case 'class':
+                        return <ClassView />;
                     case 'teacher':
                         return <TeacherView />;
                     case 'academic':
@@ -1899,7 +2140,7 @@
                         setMobileOpen={setMobileActive}
                     />
                     <div className={`flex-1 flex flex-col min-w-0 overflow-hidden relative main-wrapper ${!isSidebarOpen ? 'expanded' : ''}`}>
-                        <header className="h-24 bg-bgLight flex items-center justify-between px-[30px] shrink-0 sticky top-0 z-40">
+                        <header className="h-24 bg-bgLight flex items-center justify-between pl-0 pr-[30px] shrink-0 sticky top-0 z-40">
                             <div className="flex items-center gap-4">
                                 <button 
                                     id="menu-btn"
@@ -1937,10 +2178,12 @@
                             </div>
                         </header>
 
-                        <main className="flex-1 overflow-y-auto no-scrollbar px-[30px] pb-[30px]">
+                        <main className="flex-1 overflow-y-auto no-scrollbar pl-0 pr-[30px] pb-[30px]">
                             <div className="max-w-full pt-6">
-                                <div className="dashboard-header">
-                                    <h1 className="welcome-text">Welcome POTATO Dashboard</h1>
+                                <div className="dashboard-header text-left">
+                                    <h1 className="welcome-text">
+                                        {activeTab === 'class' ? 'Welcome POTATO Class' : 'Welcome POTATO Dashboard'}
+                                    </h1>
                                 </div>
                                 {renderContent()}
                             </div>
