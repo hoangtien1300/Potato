@@ -373,7 +373,7 @@
             spreadsheetId: '1dTcxPgSS2olUtgjjk2ZUvUo8e53Vi6J5Kk4bynKL0OE',
             gids: {
                 'Danh_Sach_Lop': '1019913137',
-                'Hoc_Vien': '1019913137',
+                'Hoc_Vien': '1989626144',
                 'Lich_Truc': '0',
                 'Cong_No': '1019913137'
             },
@@ -466,40 +466,39 @@
             },
             mapStudents(rows) {
                 if (!rows || !Array.isArray(rows)) return null;
+                
+                const categories = [
+                    { label: 'New', pattern: '1. new', color: 'bg-red-500' },
+                    { label: 'Trial', pattern: '5. trial', color: 'bg-potato-blue' },
+                    { label: 'Waiting', pattern: '6. waiting', color: 'bg-orange-500' },
+                    { label: 'Student', pattern: '7. student', color: 'bg-brand-500' },
+                    { label: 'Again', pattern: '3. again', color: 'bg-purple-500' }
+                ];
+
                 const branches = {
-                    "NQ": { branch: 'Ngô Quyền (NQ)', total: 0, statuses: [
-                        { label: 'Teaching', count: 0, color: 'bg-brand-500' },
-                        { label: 'Completed', count: 0, color: 'bg-green-500' }
-                    ]},
-                    "HĐ": { branch: 'Hưng Định (HĐ)', total: 0, statuses: [
-                        { label: 'Teaching', count: 0, color: 'bg-brand-500' },
-                        { label: 'Completed', count: 0, color: 'bg-green-500' }
-                    ]}
+                    "NQ": { branch: 'Ngô Quyền (NQ)', total: 0, statuses: categories.map(c => ({ ...c, count: 0 })) },
+                    "HĐ": { branch: 'Hưng Định (HĐ)', total: 0, statuses: categories.map(c => ({ ...c, count: 0 })) }
                 };
 
                 rows.forEach(r => {
-                    const rawStatus = (r.Status || r.status || r["Trạng thái"] || "").toLowerCase();
+                    const rawStatus = (r.Status || r.status || "").toLowerCase();
                     
                     // Exclusion Filter: Skip Hold, Leave, Reject
-                    if (rawStatus.includes("bảo") || rawStatus.includes("hold") || 
-                        rawStatus.includes("nghỉ") || rawStatus.includes("leave") || 
-                        rawStatus.includes("loại") || rawStatus.includes("reject")) {
+                    if (rawStatus.includes("hold") || rawStatus.includes("leave") || rawStatus.includes("reject")) {
                         return;
                     }
 
-                    const branchStr = (r.Branch || r.branch || r["Chi nhánh"] || "").toLowerCase();
+                    const branchStr = (r.Branch || r.branch || "").toLowerCase();
                     const group = branchStr.includes("ngô") ? branches.NQ : branches.HĐ;
                     
-                    // In GS mode, "Student No." column contains class size
-                    const classSize = parseInt(r["Student No."] || r["Student_No."] || r["Số lượng"] || "0");
-                    group.total += classSize;
+                    // In Master List mode, each row is 1 student
+                    group.total++;
                     
-                    let statusIdx = 0; // Default to Teaching
-                    if (rawStatus.includes("teaching")) statusIdx = 0;
-                    else if (rawStatus.includes("complete") || rawStatus.includes("hoàn")) statusIdx = 1;
-                    
-                    if (group.statuses[statusIdx]) {
-                        group.statuses[statusIdx].count += classSize;
+                    const catIdx = categories.findIndex(c => rawStatus.includes(c.pattern));
+                    if (catIdx !== -1) {
+                        group.statuses[catIdx].count++;
+                    } else if (rawStatus.includes("7.")) { // Fallback for various "7. Student" formats
+                        group.statuses[3].count++;
                     }
                 });
                 return Object.values(branches);
