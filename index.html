@@ -438,13 +438,14 @@
                 const list = rows.map(r => {
                     const branchStr = (r.Branch || r.branch || "").toLowerCase();
                     const isNQ = branchStr.includes("ngô");
+                    const status = r.Status || r.status || "N/A";
                     return {
-                        id: r["ID Class"] || r.id,
-                        status: r.Status || r.status || "N/A",
+                        id: r["ID Class"] || r.id || "N/A",
+                        status: status,
                         branch: isNQ ? "Ngô Quyền (NQ)" : "Hưng Định (HĐ)",
                         course: r.Course || r.course || "N/A",
                         room: r.Room || r.room || "N/A",
-                        fullName: `${isNQ ? "NQ" : "HĐ"} | ${r.Course || r["Tên lớp"] || ""} | ${r.Room || ""} + ${r.Teacher || ""}`
+                        fullName: `${isNQ ? "NQ" : "HD"} | ${r.Course || r["Tên lớp"] || "Class"} | ${r.Room || ""} + ${r.Teacher || ""}`
                     };
                 });
 
@@ -452,14 +453,14 @@
                     total: list.length,
                     branches: {
                         "NQ": { label: 'Ngô Quyền (NQ)', count: 0, courses: {} },
-                        "HĐ": { label: 'Hưng Định (HĐ)', count: 0, courses: {} }
+                        "HD": { label: 'Hưng Định (HĐ)', count: 0, courses: {} }
                     }
                 };
 
                 rows.forEach(r => {
                     const branchStr = (r.Branch || r.branch || "").toLowerCase();
                     const isNQ = branchStr.includes("ngô");
-                    const branchKey = isNQ ? "NQ" : "HĐ";
+                    const branchKey = isNQ ? "NQ" : "HD";
                     const courseName = r.Course || r.course || "Other";
 
                     metrics.branches[branchKey].count++;
@@ -472,10 +473,11 @@
                 Object.values(metrics.branches).forEach(b => {
                     b.courseList = Object.entries(b.courses).map(([label, count]) => {
                         let color = 'bg-slate-400';
-                        if (label.toLowerCase().includes('ielts')) color = 'bg-indigo-500';
-                        else if (label.toLowerCase().includes('junior')) color = 'bg-brand-500';
-                        else if (label.toLowerCase().includes('kid')) color = 'bg-orange-400';
-                        else if (label.toLowerCase().includes('starter')) color = 'bg-yellow-400';
+                        const lowLabel = label.toLowerCase();
+                        if (lowLabel.includes('ielts')) color = 'bg-indigo-500';
+                        else if (lowLabel.includes('junior')) color = 'bg-brand-500';
+                        else if (lowLabel.includes('kid')) color = 'bg-orange-400';
+                        else if (lowLabel.includes('starter')) color = 'bg-yellow-400';
                         
                         return { label, count, color };
                     }).sort((a,b) => b.count - a.count);
@@ -508,10 +510,11 @@
 
                 const branches = {
                     "NQ": { branch: 'Ngô Quyền (NQ)', total: 0, statuses: categories.map(c => ({ ...c, count: 0 })) },
-                    "HĐ": { branch: 'Hưng Định (HĐ)', total: 0, statuses: categories.map(c => ({ ...c, count: 0 })) }
+                    "HD": { branch: 'Hưng Định (HĐ)', total: 0, statuses: categories.map(c => ({ ...c, count: 0 })) }
                 };
 
                 rows.forEach(r => {
+                    if (!r) return;
                     const rawStatus = (r.Status || r.status || "").toLowerCase();
                     
                     // Exclusion Filter: Skip Hold, Leave, Reject
@@ -520,7 +523,7 @@
                     }
 
                     const branchStr = (r.Branch || r.branch || "").toLowerCase();
-                    const group = branchStr.includes("ngô") ? branches.NQ : branches.HĐ;
+                    const group = branchStr.includes("ngô") ? branches.NQ : branches.HD;
                     
                     // In Master List mode, each row is 1 student
                     group.total++;
@@ -2295,7 +2298,7 @@
                                 </div>
                             );
                     case 'class':
-                        return <ClassView initialData={classes} />;
+                        return <ClassView initialData={classes?.list} />;
                     case 'teacher':
                         return <TeacherView />;
                     case 'academic':
