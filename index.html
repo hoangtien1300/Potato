@@ -10,6 +10,7 @@
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <!-- Phosphor Icons -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     
@@ -364,8 +365,146 @@
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useEffect } = React;
+        const { useState, useEffect, useMemo } = React;
         
+        // --- APPSHEET SERVICE & MAPPING ---
+        
+        const AppSheetService = {
+            spreadsheetId: '1dTcxPgSS2olUtgjjk2ZUvUo8e53Vi6J5Kk4bynKL0OE',
+            gids: {
+                'Danh_Sach_Lop': '1019913137',
+                'Hoc_Vien': '1019913137',
+                'Lich_Truc': '0',
+                'Cong_No': '1019913137'
+            },
+
+            async fetchData(tableName) {
+                const gid = this.gids[tableName];
+                if (!gid) return null;
+
+                const url = `https://docs.google.com/spreadsheets/d/${this.spreadsheetId}/export?format=csv&gid=${gid}`;
+                try {
+                    const response = await fetch(url);
+                    const csvText = await response.text();
+                    
+                    const cleanCsv = csvText.split('\n').slice(1).join('\n');
+                    
+                    return new Promise((resolve) => {
+                        Papa.parse(cleanCsv, {
+                            header: true,
+                            skipEmptyLines: true,
+                            complete: (results) => resolve(results.data)
+                        });
+                    });
+                } catch (error) {
+                    console.error(`Error fetching ${tableName}:`, error);
+                    return null;
+                }
+            },
+
+            async fetchAll() {
+                const results = {};
+                for (const table of Object.keys(this.gids)) {
+                    results[table] = await this.fetchData(table);
+                }
+                return results;
+            }
+        };
+
+        const DataMapper = {
+            mapShifts(rows) {
+                if (!rows || !Array.isArray(rows)) return null;
+                return rows.map(r => {
+                    let time = r.Time || r.time || r["Giờ"] || r["Thời gian"] || "-";
+                    // Handle split columns if they exist
+                    if (r["Giờ bắt đầu"] || r["Giờ_Bắt_Đầu"]) {
+                        const start = r["Giờ bắt đầu"] || r["Giờ_Bắt_Đầu"];
+                        const end = r["Giờ kết thúc"] || r["Giờ_Kết_Thúc"] || "";
+                        time = end ? `${start} - ${end}` : start;
+                    }
+
+                    return {
+                        day: r.Day || r.day || r["Thứ"] || "",
+                        staff: r.Staff || r.staff || r["Nhân viên"] || r["Tài khoản"] || "N/A",
+                        time: time,
+                        role: r.Role || r.role || r["Vai trò"] || r["Chức vụ"] || "",
+                        department: r.Department || r.dept || r["Bộ phận"] || r["Phòng ban"] || "Operation"
+                    };
+                });
+            },
+            mapClasses(rows) {
+                if (!rows || !Array.isArray(rows)) return null;
+                return rows.map((r, i) => {
+                    const branch = r.Branch || r.branch || r["Chi nhánh"] || "N/A";
+                    const isNQ = branch.toLowerCase().includes("ngô");
+                    const status = (r.Status || r.status || r["Trạng thái"] || "Teaching").toLowerCase();
+                    
+                    return {
+                        id: r.ID || r.id || r["Mã lớp"] || `C${(i + 1).toString().padStart(3, '0')}`,
+                        course: r.Course || r.course || r["Khóa học"] || r["Tên lớp"] || "Unknown Course",
+                        category: r.Category || r.category || r["Phân loại"] || r["Khối"] || "Other",
+                        status: status.includes("hoàn") || status.includes("finish") ? "Completed" : "Teaching",
+                        branch: branch,
+                        branchCode: isNQ ? "NQ" : "HĐ",
+                        teacher: r.Teacher || r.teacher || r["Giáo viên"] || "TBA",
+                        room: r.Room || r.room || r["Phòng"] || "N/A",
+                        fullName: `${isNQ ? "NQ" : "HĐ"} | ${r.Course || r["Tên lớp"] || ""} | ${r.Room || ""} + ${r.Teacher || ""}`
+                    };
+                });
+            },
+            mapDebt(rows) {
+                if (!rows || !Array.isArray(rows)) return null;
+                const total = rows.reduce((sum, r) => {
+                    const val = parseFloat((r.Amount || r.amount || r["Số tiền"] || r["Tổng cộng"] || "0").toString().replace(/[^0-9.-]+/g,""));
+                    return sum + val;
+                }, 0);
+                const paid = rows.reduce((sum, r) => {
+                    const val = parseFloat((r.Paid || r.paid || r["Đã đóng"] || r["Thực thu"] || "0").toString().replace(/[^0-9.-]+/g,""));
+                    return sum + val;
+                }, 0);
+                return { total, paid, pending: total - paid };
+            },
+            mapStudents(rows) {
+                if (!rows || !Array.isArray(rows)) return null;
+                const branches = {
+                    "NQ": { branch: 'Ngô Quyền (NQ)', total: 0, statuses: [
+                        { label: 'Teaching', count: 0, color: 'bg-brand-500' },
+                        { label: 'Completed', count: 0, color: 'bg-green-500' },
+                        { label: 'Hold', count: 0, color: 'bg-slate-500' },
+                        { label: 'Leave', count: 0, color: 'bg-slate-400' },
+                        { label: 'Reject', count: 0, color: 'bg-slate-300' }
+                    ]},
+                    "HĐ": { branch: 'Hưng Định (HĐ)', total: 0, statuses: [
+                        { label: 'Teaching', count: 0, color: 'bg-brand-500' },
+                        { label: 'Completed', count: 0, color: 'bg-green-500' },
+                        { label: 'Hold', count: 0, color: 'bg-slate-500' },
+                        { label: 'Leave', count: 0, color: 'bg-slate-400' },
+                        { label: 'Reject', count: 0, color: 'bg-slate-300' }
+                    ]}
+                };
+
+                rows.forEach(r => {
+                    const branchStr = (r.Branch || r.branch || r["Chi nhánh"] || "").toLowerCase();
+                    const group = branchStr.includes("ngô") ? branches.NQ : branches.HĐ;
+                    
+                    // In GS mode, "Student No." column contains class size
+                    const classSize = parseInt(r["Student No."] || r["Student_No."] || r["Số lượng"] || "0");
+                    group.total += classSize;
+                    
+                    const rawStatus = (r.Status || r.status || r["Trạng thái"] || "").toLowerCase();
+                    let statusIdx = 0; // Default to Teaching
+                    if (rawStatus.includes("teaching")) statusIdx = 0;
+                    else if (rawStatus.includes("complete") || rawStatus.includes("hoàn")) statusIdx = 1;
+                    else if (rawStatus.includes("bảo") || rawStatus.includes("hold")) statusIdx = 2;
+                    else if (rawStatus.includes("nghỉ") || rawStatus.includes("leave")) statusIdx = 3;
+                    else if (rawStatus.includes("loại") || rawStatus.includes("reject")) statusIdx = 4;
+                    
+                    group.statuses[statusIdx].count += classSize;
+                });
+                return Object.values(branches);
+            }
+        };
+
         // --- REDESIGNED COMPONENTS (Geex Style) ---
 
         const LucideIcon = ({ name, className = "", size = 20 }) => {
@@ -1117,16 +1256,16 @@
                 </div>
             );
         };
-        const ClassView = () => {
+        const ClassView = ({ initialData }) => {
             const [activeFilter, setActiveFilter] = React.useState('All');
             const [selectedClass, setSelectedClass] = React.useState(null);
 
-            const stats = [
-                { label: 'Total', count: 31, icon: 'ph-circles-four', color: 'text-blue-600', bg: 'bg-blue-50', sub: 'Tổng số lượng lớp' },
+            const stats = useMemo(() => [
+                { label: 'Total', count: initialData ? initialData.length : 31, icon: 'ph-circles-four', color: 'text-blue-600', bg: 'bg-blue-50', sub: 'Tổng số lượng lớp' },
                 { label: 'Exam', count: 3, icon: 'ph-calendar-check', color: 'text-emerald-600', bg: 'bg-emerald-50', sub: 'Lớp sắp thi/tháng' },
                 { label: 'Warning', count: 5, icon: 'ph-warning-circle', color: 'text-amber-600', bg: 'bg-amber-50', sub: 'Tình trạng Warning' },
                 { label: 'Critical', count: 2, icon: 'ph-first-aid', color: 'text-red-600', bg: 'bg-red-50', sub: 'Tình trạng Critical' },
-            ];
+            ], [initialData]);
 
             const courseData = {
                 'Kid': ['Friendly Kid 1', 'Friendly Kid 2', 'Friendly Kid 3', 'Friendly Kid 4'],
@@ -1138,29 +1277,33 @@
             const teachers = ['Mr. Duy', 'Mr. Đạt', 'Mr. Khôi', 'Ms. Đoan', 'Ms. Khanh', 'Ms. Duyên'];
             const rooms = ['Lemon', 'Pear', 'Cucumber', 'Pumpkin'];
 
-            const rawClasses = React.useMemo(() => Array.from({ length: 31 }, (_, i) => {
-                const categories = ['Kid', 'Junior', 'Teen', 'IELTS'];
-                const category = categories[i % 4];
-                const categoryCourses = courseData[category];
-                const course = categoryCourses[Math.floor(Math.random() * categoryCourses.length)];
-                const status = Math.random() > 0.3 ? 'Teaching' : 'Completed';
-                const branch = Math.random() > 0.5 ? 'Ngô Quyền' : 'Hưng Định';
-                const branchCode = branch === 'Ngô Quyền' ? 'NQ' : 'HĐ';
-                const teacher = teachers[Math.floor(Math.random() * teachers.length)];
-                const room = rooms[Math.floor(Math.random() * rooms.length)];
+            const rawClasses = React.useMemo(() => {
+                if (initialData && initialData.length > 0) return initialData;
+                
+                return Array.from({ length: 31 }, (_, i) => {
+                    const categories = ['Kid', 'Junior', 'Teen', 'IELTS'];
+                    const category = categories[i % 4];
+                    const categoryCourses = courseData[category];
+                    const course = categoryCourses[Math.floor(Math.random() * categoryCourses.length)];
+                    const status = Math.random() > 0.3 ? 'Teaching' : 'Completed';
+                    const branch = Math.random() > 0.5 ? 'Ngô Quyền' : 'Hưng Định';
+                    const branchCode = branch === 'Ngô Quyền' ? 'NQ' : 'HĐ';
+                    const teacher = teachers[Math.floor(Math.random() * teachers.length)];
+                    const room = rooms[Math.floor(Math.random() * rooms.length)];
 
-                return {
-                    id: `C${(i + 1).toString().padStart(3, '0')}`,
-                    course,
-                    category,
-                    status,
-                    branch,
-                    branchCode,
-                    teacher,
-                    room,
-                    fullName: `${branchCode} | ${course} | ${room} + ${teacher}`
-                };
-            }), []);
+                    return {
+                        id: `C${(i + 1).toString().padStart(3, '0')}`,
+                        course,
+                        category,
+                        status,
+                        branch,
+                        branchCode,
+                        teacher,
+                        room,
+                        fullName: `${branchCode} | ${course} | ${room} + ${teacher}`
+                    };
+                });
+            }, [initialData]);
 
             const filteredClasses = activeFilter === 'All' 
                 ? rawClasses 
@@ -1364,57 +1507,68 @@
 
 
 
-        const DebtOverviewCard = () => (
-            <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm group hover:shadow-md transition-all h-full flex flex-col items-center overflow-hidden">
-                <div className="w-full flex justify-between items-center mb-10 shrink-0">
-                    <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight flex items-center gap-3">
-                        <Icon name="ph-chart-pie-slice" className="text-brand-600" size={24} /> Bảng công nợ
-                    </h3>
-                    <button className="text-[10px] font-bold text-brand-600 hover:underline px-4 py-2 bg-brand-50 rounded-xl whitespace-nowrap">Chi tiết</button>
-                </div>
-                
-                <div className="flex-1 flex flex-col items-center justify-center w-full min-h-0">
-                    {/* ENLARGED Chart at Top */}
-                    <div className="relative w-48 h-48 lg:w-56 lg:h-56 flex items-center justify-center shrink-0 mb-10">
-                        <svg className="w-full h-full transform -rotate-90" viewBox="0 0 224 224">
-                            <circle cx="112" cy="112" r="100" stroke="#f8fafc" strokeWidth="20" fill="transparent" />
-                            <circle cx="112" cy="112" r="100" stroke="#7c3aed" strokeWidth="20" fill="transparent" strokeDasharray="471.2 628.3" strokeLinecap="round" />
-                            <circle cx="112" cy="112" r="100" stroke="#ec4899" strokeWidth="20" fill="transparent" strokeDasharray="157.1 628.3" strokeDashoffset="-471.2" strokeLinecap="round" />
-                        </svg>
-                        <div className="absolute flex flex-col items-center">
-                            <span className="text-3xl font-black text-slate-800 tracking-tighter leading-none">100M</span>
-                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Total</span>
-                        </div>
-                    </div>
+        const DebtOverviewCard = ({ data }) => {
+            const total = data?.total || 100000000;
+            const paid = data?.paid || 75000000;
+            const pending = data?.pending || 25000000;
+            const paidPct = Math.round((paid / total) * 100) || 0;
+            const pendingPct = 100 - paidPct;
 
-                    {/* Stacked Legends at Bottom (2 Rows) */}
-                    <div className="w-full space-y-5 px-2">
-                        <div className="space-y-2">
-                            <div className="flex justify-between items-center gap-2">
-                                <span className="font-bold text-slate-500 flex items-center gap-3 uppercase tracking-tighter text-[11px]">
-                                    <div className="w-3 h-3 rounded-full bg-brand-600 shrink-0" /> Paid Amount
-                                </span>
-                                <span className="font-black text-slate-800 text-base">75%</span>
-                            </div>
-                            <div className="h-2 w-full bg-gray-50 rounded-full overflow-hidden">
-                                <div className="h-full bg-brand-600 w-3/4 rounded-full shadow-lg shadow-brand-200" />
+            const formatMoney = (val) => {
+                if (val >= 1000000) return (val / 1000000).toFixed(1) + 'M';
+                return val.toLocaleString();
+            };
+
+            return (
+                <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm group hover:shadow-md transition-all h-full flex flex-col items-center overflow-hidden">
+                    <div className="w-full flex justify-between items-center mb-10 shrink-0">
+                        <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight flex items-center gap-3">
+                            <Icon name="ph-chart-pie-slice" className="text-brand-600" size={24} /> Bảng công nợ
+                        </h3>
+                        <button className="text-[10px] font-bold text-brand-600 hover:underline px-4 py-2 bg-brand-50 rounded-xl whitespace-nowrap">Chi tiết</button>
+                    </div>
+                    
+                    <div className="flex-1 flex flex-col items-center justify-center w-full min-h-0">
+                        <div className="relative w-48 h-48 lg:w-56 lg:h-56 flex items-center justify-center shrink-0 mb-10">
+                            <svg className="w-full h-full transform -rotate-90" viewBox="0 0 224 224">
+                                <circle cx="112" cy="112" r="100" stroke="#f8fafc" strokeWidth="20" fill="transparent" />
+                                <circle cx="112" cy="112" r="100" stroke="#7c3aed" strokeWidth="20" fill="transparent" strokeDasharray={`${(paidPct * 628.3) / 100} 628.3`} strokeLinecap="round" />
+                                <circle cx="112" cy="112" r="100" stroke="#ec4899" strokeWidth="20" fill="transparent" strokeDasharray={`${(pendingPct * 628.3) / 100} 628.3`} strokeDashoffset={`${-(paidPct * 628.3) / 100}`} strokeLinecap="round" />
+                            </svg>
+                            <div className="absolute flex flex-col items-center">
+                                <span className="text-3xl font-black text-slate-800 tracking-tighter leading-none">{formatMoney(total)}</span>
+                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Total</span>
                             </div>
                         </div>
-                        <div className="space-y-2">
-                            <div className="flex justify-between items-center gap-2">
-                                <span className="font-bold text-slate-500 flex items-center gap-3 uppercase tracking-tighter text-[11px]">
-                                    <div className="w-3 h-3 rounded-full bg-pink-500 shrink-0" /> Pending Amount
-                                </span>
-                                <span className="font-black text-slate-800 text-base">25%</span>
+
+                        <div className="w-full space-y-5 px-2">
+                            <div className="space-y-2">
+                                <div className="flex justify-between items-center gap-2">
+                                    <span className="font-bold text-slate-500 flex items-center gap-3 uppercase tracking-tighter text-[11px]">
+                                        <div className="w-3 h-3 rounded-full bg-brand-600 shrink-0" /> Paid Amount
+                                    </span>
+                                    <span className="font-black text-slate-800 text-base">{paidPct}%</span>
+                                </div>
+                                <div className="h-2 w-full bg-gray-50 rounded-full overflow-hidden">
+                                    <div className="h-full bg-brand-600 rounded-full shadow-lg shadow-brand-200 transition-all duration-1000" style={{ width: `${paidPct}%` }} />
+                                </div>
                             </div>
-                            <div className="h-2 w-full bg-gray-50 rounded-full overflow-hidden">
-                                <div className="h-full bg-pink-500 w-1/4 rounded-full shadow-lg shadow-pink-200" />
+                            <div className="space-y-2">
+                                <div className="flex justify-between items-center gap-2">
+                                    <span className="font-bold text-slate-500 flex items-center gap-3 uppercase tracking-tighter text-[11px]">
+                                        <div className="w-3 h-3 rounded-full bg-pink-500 shrink-0" /> Pending Amount
+                                    </span>
+                                    <span className="font-black text-slate-800 text-base">{pendingPct}%</span>
+                                </div>
+                                <div className="h-2 w-full bg-gray-50 rounded-full overflow-hidden">
+                                    <div className="h-full bg-pink-500 rounded-full shadow-lg shadow-pink-200 transition-all duration-1000" style={{ width: `${pendingPct}%` }} />
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        );
+            );
+        };
 
         const TaskOverviewCard = () => {
             const tasks = [
@@ -1639,18 +1793,20 @@
             }
         };
 
-        const ShiftScheduler = ({ currentWeek, shiftDept, setShiftDept, setActiveWeek }) => {
+        const ShiftScheduler = ({ currentWeek, shiftDept, setShiftDept, setActiveWeek, allShifts }) => {
             let shifts = [];
+            const dataToUse = allShifts || SHIFT_DATA;
             if (shiftDept === 'All') {
-                Object.keys(SHIFT_DATA).forEach(dept => {
-                    if (SHIFT_DATA[dept][currentWeek]) {
-                        SHIFT_DATA[dept][currentWeek].forEach(s => {
+                Object.keys(dataToUse).forEach(dept => {
+                    const weekData = dataToUse[dept][currentWeek];
+                    if (weekData) {
+                        weekData.forEach(s => {
                             shifts.push({ ...s, department: dept });
                         });
                     }
                 });
             } else {
-                shifts = (SHIFT_DATA[shiftDept] && SHIFT_DATA[shiftDept][currentWeek]) || [];
+                shifts = (dataToUse[shiftDept] && dataToUse[shiftDept][currentWeek]) || [];
                 shifts = shifts.map(s => ({ ...s, department: shiftDept }));
             }
 
@@ -1824,6 +1980,60 @@
             const [activeWeek, setActiveWeek] = useState(15);
             const [shiftDept, setShiftDept] = useState('Operation');
             
+            // --- APPSHEET DATA STATE ---
+            const [appData, setAppData] = useState({});
+            const [isLoading, setIsLoading] = useState(true);
+
+            useEffect(() => {
+                const loadAppData = async () => {
+                    setIsLoading(true);
+                    try {
+                        const data = await AppSheetService.fetchAll();
+                        setAppData(data);
+                    } catch (err) {
+                        console.error("Failed to load AppSheet data", err);
+                    } finally {
+                        setIsLoading(false);
+                    }
+                };
+                loadAppData();
+            }, []);
+
+            // Dynamic Data Mappings
+            const classes = useMemo(() => {
+                const rows = appData['Danh_Sach_Lop'];
+                return Array.isArray(rows) && rows.length > 0 ? DataMapper.mapClasses(rows) : null;
+            }, [appData]);
+
+            const shiftsByWeek = useMemo(() => {
+                const rows = appData['Lich_Truc'];
+                if (!Array.isArray(rows) || rows.length === 0) return SHIFT_DATA;
+                
+                const mapped = DataMapper.mapShifts(rows);
+                if (!Array.isArray(mapped)) return SHIFT_DATA;
+
+                return {
+                    "Operation": { [activeWeek]: mapped.filter(s => s.department?.toLowerCase().includes('oper')) },
+                    "Teacher": { [activeWeek]: mapped.filter(s => s.department?.toLowerCase().includes('teach')) },
+                    "Academic": { [activeWeek]: mapped.filter(s => s.department?.toLowerCase().includes('acad')) }
+                };
+            }, [appData, activeWeek]);
+
+            const debtData = useMemo(() => {
+                const rows = appData['Cong_No'];
+                return Array.isArray(rows) ? DataMapper.mapDebt(rows) : null;
+            }, [appData]);
+
+            const studentData = useMemo(() => {
+                const rows = appData['Hoc_Vien'];
+                return Array.isArray(rows) ? DataMapper.mapStudents(rows) : null;
+            }, [appData]);
+
+            const totalStudents = useMemo(() => {
+                if (!studentData) return 0;
+                return studentData.reduce((sum, b) => sum + b.total, 0);
+            }, [studentData]);
+
             // Persist Sidebar State
             const savedState = localStorage.getItem('sidebarState');
             const [isSidebarOpen, setSidebarOpen] = useState(true); // Mặc định luôn mở
@@ -1880,11 +2090,11 @@
                                 <div className="space-y-6">
                                     <div className="flex items-center gap-4">
                                         <div className="w-1.5 h-6 bg-brand-600 rounded-full"></div>
-                                        <h2 className="text-xl font-extrabold text-gray-800 uppercase tracking-tight">Tổng quan</h2>
+                                        <h2 className="text-xl font-extrabold text-gray-800 uppercase tracking-tight">Overview</h2>
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-[30px]">
                                         <StatCardV3 
-                                            value="423" 
+                                            value={totalStudents || "0"} 
                                             label="Students" 
                                             icon="users" 
                                             iconbg="bg-potato-blue" 
@@ -1892,7 +2102,7 @@
                                             onClick={() => setActiveOverview(activeOverview === 'students' ? null : 'students')}
                                         />
                                         <StatCardV3 
-                                            value="24" 
+                                            value={Array.isArray(appData['Danh_Sach_Lop']) ? appData['Danh_Sach_Lop'].length : "24"} 
                                             label="Class" 
                                             icon="book-open" 
                                             iconbg="bg-potato-yellow" 
@@ -1900,7 +2110,7 @@
                                             onClick={() => setActiveOverview(activeOverview === 'class' ? null : 'class')}
                                         />
                                         <StatCardV3 
-                                            value="21" 
+                                            value={Array.isArray(appData['Lich_Truc']) ? [...new Set(appData['Lich_Truc'].map(r => r.Staff || r["Nhân viên"]))].length : "21"} 
                                             label="Employee" 
                                             icon="user-check" 
                                             iconbg="bg-potato-pink" 
@@ -1912,30 +2122,15 @@
                                     {/* Sub-Views for Overview */}
                                     {activeOverview === 'students' && (
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-[30px] animate-fade-in">
-                                            {[
-                                                { branch: 'Ngô Quyền', total: 215, statuses: [
-                                                    { label: 'New', count: 2, color: 'bg-red-500' },
-                                                    { label: 'Student', count: 90, color: 'bg-brand-500' },
-                                                    { label: 'Hold', count: 25, color: 'bg-slate-500' },
-                                                    { label: 'Leave', count: 50, color: 'bg-slate-400' },
-                                                    { label: 'Reject', count: 48, color: 'bg-slate-300' }
-                                                ]},
-                                                { branch: 'Hưng Định', total: 208, statuses: [
-                                                    { label: 'New', count: 2, color: 'bg-red-500' },
-                                                    { label: 'Student', count: 88, color: 'bg-brand-500' },
-                                                    { label: 'Hold', count: 26, color: 'bg-slate-500' },
-                                                    { label: 'Leave', count: 54, color: 'bg-slate-400' },
-                                                    { label: 'Reject', count: 38, color: 'bg-slate-300' }
-                                                ]}
-                                            ].map((info, idx) => (
+                                            {studentData.map((info, idx) => (
                                                 <div key={idx} className="bg-white p-8 rounded-[32px] border border-gray-100 shadow-sm">
-                                                    <h4 className="text-sm font-black text-gray-800 uppercase tracking-tight mb-6 flex justify-between items-center">
-                                                        <span>Chi nhánh {info.branch}</span>
+                                                    <h4 className="text-sm font-black text-gray-800 uppercase tracking-tight mb-8 flex justify-between items-center">
+                                                        <span>{info.branch}</span>
                                                         <span className="text-[10px] bg-brand-50 text-brand-600 px-3 py-1 rounded-full">{info.total} HV</span>
                                                     </h4>
                                                     <div className="space-y-4">
                                                         {info.statuses.map((s, i) => (
-                                                            <div key={i} className="flex items-center justify-between group">
+                                                            <div key={i} className="flex items-center justify-between group border-b border-slate-50 last:border-0 pb-3">
                                                                 <div className="flex items-center gap-3">
                                                                     <div className={`w-2 h-2 rounded-full ${s.color}`}></div>
                                                                     <span className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">{s.label}</span>
@@ -2015,10 +2210,11 @@
                                         shiftDept={shiftDept} 
                                         setShiftDept={setShiftDept} 
                                         setActiveWeek={setActiveWeek} 
+                                        allShifts={shiftsByWeek}
                                     />
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-[30px]">
-                                        <DebtOverviewCard />
+                                        <DebtOverviewCard data={debtData} />
                                         <TaskOverviewCard />
                                     </div>
 
@@ -2081,7 +2277,7 @@
                                 </div>
                             );
                     case 'class':
-                        return <ClassView />;
+                        return <ClassView initialData={classes} />;
                     case 'teacher':
                         return <TeacherView />;
                     case 'academic':
@@ -2130,6 +2326,12 @@
 
             return (
                 <div className="flex h-screen overflow-hidden bg-bgLight">
+                    {isLoading && (
+                        <div className="fixed inset-0 z-[200] bg-white/80 backdrop-blur-md flex flex-col items-center justify-center space-y-4">
+                            <div className="w-16 h-16 border-4 border-brand-100 border-t-brand-600 rounded-full animate-spin"></div>
+                            <p className="text-sm font-black text-brand-700 uppercase tracking-widest animate-pulse">Aggregating AppSheet Data...</p>
+                        </div>
+                    )}
                     <Sidebar 
                         activeTab={activeTab} 
                         setActiveTab={setActiveTab} 
