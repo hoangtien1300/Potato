@@ -415,6 +415,7 @@
             mapShifts(rows) {
                 if (!rows || !Array.isArray(rows)) return null;
                 return rows.map(r => {
+                    if (!r) return null;
                     let time = r.Time || r.time || r["Giờ"] || r["Thời gian"] || "-";
                     // Handle split columns if they exist
                     if (r["Giờ bắt đầu"] || r["Giờ_Bắt_Đầu"]) {
@@ -430,12 +431,13 @@
                         role: r.Role || r.role || r["Vai trò"] || r["Chức vụ"] || "",
                         department: r.Department || r.dept || r["Bộ phận"] || r["Phòng ban"] || "Operation"
                     };
-                });
+                }).filter(Boolean);
             },
             mapClasses(rows) {
                 if (!rows || !Array.isArray(rows)) return null;
 
                 const list = rows.map(r => {
+                    if (!r) return null;
                     const branchStr = (r.Branch || r.branch || "").toLowerCase();
                     const isNQ = branchStr.includes("ngô");
                     const status = r.Status || r.status || "N/A";
@@ -447,7 +449,7 @@
                         room: r.Room || r.room || "N/A",
                         fullName: `${isNQ ? "NQ" : "HD"} | ${r.Course || r["Tên lớp"] || "Class"} | ${r.Room || ""} + ${r.Teacher || ""}`
                     };
-                });
+                }).filter(Boolean);
 
                 const metrics = {
                     total: list.length,
@@ -488,12 +490,14 @@
             mapDebt(rows) {
                 if (!rows || !Array.isArray(rows)) return null;
                 const total = rows.reduce((sum, r) => {
+                    if (!r) return sum;
                     const val = parseFloat((r.Amount || r.amount || r["Số tiền"] || r["Tổng cộng"] || "0").toString().replace(/[^0-9.-]+/g,""));
-                    return sum + val;
+                    return sum + (isNaN(val) ? 0 : val);
                 }, 0);
                 const paid = rows.reduce((sum, r) => {
+                    if (!r) return sum;
                     const val = parseFloat((r.Paid || r.paid || r["Đã đóng"] || r["Thực thu"] || "0").toString().replace(/[^0-9.-]+/g,""));
-                    return sum + val;
+                    return sum + (isNaN(val) ? 0 : val);
                 }, 0);
                 return { total, paid, pending: total - paid };
             },
@@ -2408,7 +2412,18 @@
                                         {activeTab === 'class' ? 'Welcome POTATO Class' : 'Welcome POTATO Dashboard'}
                                     </h1>
                                 </div>
-                                {renderContent()}
+                                {(() => {
+                                    try {
+                                        return renderContent();
+                                    } catch (e) {
+                                        console.error("Render error:", e);
+                                        return (
+                                            <div className="p-10 bg-red-50 text-red-600 rounded-2xl border border-red-100 font-bold text-center">
+                                                Hệ thống đang gặp sự cố khi hiển thị mục này. Vui lòng thử lại sau.
+                                            </div>
+                                        );
+                                    }
+                                })()}
                             </div>
                         </main>
                     </div>
