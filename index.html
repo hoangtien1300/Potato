@@ -475,7 +475,7 @@
                     const branchStr = (r.Branch || r.branch || "").toLowerCase();
                     const isNQ = branchStr.includes("ngô");
                     const branchKey = isNQ ? "NQ" : "HD";
-                    const courseName = r.Course || r.course || "Other";
+                    const courseName = (r.Course || r.course || "Other").trim();
 
                     metrics.branches[branchKey].count++;
                     if (!metrics.branches[branchKey].courses[courseName]) {
@@ -487,24 +487,29 @@
                 Object.values(metrics.branches).forEach(b => {
                     // Start with requested curriculum order
                     b.courseList = CURRICULUM_ORDER.map(label => {
-                        const count = b.courses[label] || 0;
+                        const targetLabel = label.trim();
+                        // Find match case-insensitively and trimmed
+                        const actualLabel = Object.keys(b.courses).find(k => k.trim().toLowerCase() === targetLabel.toLowerCase());
+                        const count = actualLabel ? b.courses[actualLabel] : 0;
+                        
                         if (count === 0) return null;
 
                         let color = 'bg-slate-400';
-                        const lowLabel = label.toLowerCase();
+                        const lowLabel = targetLabel.toLowerCase();
                         if (lowLabel.includes('ielts')) color = 'bg-indigo-500';
                         else if (lowLabel.includes('junior')) color = 'bg-brand-500';
                         else if (lowLabel.includes('kid')) color = 'bg-orange-400';
                         else if (lowLabel.includes('starter') || lowLabel.includes('mover') || lowLabel.includes('flyer')) color = 'bg-yellow-400';
                         else if (lowLabel.includes('teen') || lowLabel.includes('ket') || lowLabel.includes('pet')) color = 'bg-emerald-500';
                         
-                        return { label, count, color };
+                        return { label: targetLabel, count, color };
                     }).filter(Boolean);
 
                     // Add any courses that were NOT in the curriculum list but are in the data
                     Object.entries(b.courses).forEach(([label, count]) => {
-                        if (!CURRICULUM_ORDER.includes(label)) {
-                            b.courseList.push({ label, count, color: 'bg-slate-400' });
+                        const trimmedLabel = label.trim();
+                        if (!CURRICULUM_ORDER.find(cur => cur.trim().toLowerCase() === trimmedLabel.toLowerCase())) {
+                            b.courseList.push({ label: trimmedLabel, count, color: 'bg-slate-400' });
                         }
                     });
                 });
