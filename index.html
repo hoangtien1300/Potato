@@ -372,7 +372,7 @@
         const AppSheetService = {
             spreadsheetId: '1dTcxPgSS2olUtgjjk2ZUvUo8e53Vi6J5Kk4bynKL0OE',
             gids: {
-                'Danh_Sach_Lop': '1019913137',
+                'Danh_Sach_Lop': '2009932031',
                 'Hoc_Vien': '1989626144',
                 'Lich_Truc': '0',
                 'Cong_No': '1019913137'
@@ -438,19 +438,54 @@
                     const branch = r.Branch || r.branch || r["Chi nhánh"] || "N/A";
                     const isNQ = branch.toLowerCase().includes("ngô");
                     const status = (r.Status || r.status || r["Trạng thái"] || "Teaching").toLowerCase();
-                    
+
+                const list = rows.map(r => {
+                    const branchStr = (r.Branch || r.branch || "").toLowerCase();
+                    const isNQ = branchStr.includes("ngô");
                     return {
-                        id: r.ID || r.id || r["Mã lớp"] || `C${(i + 1).toString().padStart(3, '0')}`,
-                        course: r.Course || r.course || r["Khóa học"] || r["Tên lớp"] || "Unknown Course",
-                        category: r.Category || r.category || r["Phân loại"] || r["Khối"] || "Other",
-                        status: status.includes("hoàn") || status.includes("finish") ? "Completed" : "Teaching",
-                        branch: branch,
-                        branchCode: isNQ ? "NQ" : "HĐ",
-                        teacher: r.Teacher || r.teacher || r["Giáo viên"] || "TBA",
-                        room: r.Room || r.room || r["Phòng"] || "N/A",
+                        id: r["ID Class"] || r.id,
+                        status: r.Status || r.status || "N/A",
+                        branch: isNQ ? "Ngô Quyền (NQ)" : "Hưng Định (HĐ)",
+                        course: r.Course || r.course || "N/A",
+                        room: r.Room || r.room || "N/A",
                         fullName: `${isNQ ? "NQ" : "HĐ"} | ${r.Course || r["Tên lớp"] || ""} | ${r.Room || ""} + ${r.Teacher || ""}`
                     };
                 });
+
+                const metrics = {
+                    total: list.length,
+                    branches: {
+                        "NQ": { label: 'Ngô Quyền (NQ)', count: 0, courses: {} },
+                        "HĐ": { label: 'Hưng Định (HĐ)', count: 0, courses: {} }
+                    }
+                };
+
+                rows.forEach(r => {
+                    const branchStr = (r.Branch || r.branch || "").toLowerCase();
+                    const isNQ = branchStr.includes("ngô");
+                    const branchKey = isNQ ? "NQ" : "HĐ";
+                    const courseName = r.Course || r.course || "Other";
+
+                    metrics.branches[branchKey].count++;
+                    if (!metrics.branches[branchKey].courses[courseName]) {
+                        metrics.branches[branchKey].courses[courseName] = 0;
+                    }
+                    metrics.branches[branchKey].courses[courseName]++;
+                });
+
+                Object.values(metrics.branches).forEach(b => {
+                    b.courseList = Object.entries(b.courses).map(([label, count]) => {
+                        let color = 'bg-slate-400';
+                        if (label.toLowerCase().includes('ielts')) color = 'bg-indigo-500';
+                        else if (label.toLowerCase().includes('junior')) color = 'bg-brand-500';
+                        else if (label.toLowerCase().includes('kid')) color = 'bg-orange-400';
+                        else if (label.toLowerCase().includes('starter')) color = 'bg-yellow-400';
+                        
+                        return { label, count, color };
+                    }).sort((a,b) => b.count - a.count);
+                });
+
+                return { list, metrics };
             },
             mapDebt(rows) {
                 if (!rows || !Array.isArray(rows)) return null;
@@ -2102,7 +2137,7 @@
                                             onClick={() => setActiveOverview(activeOverview === 'students' ? null : 'students')}
                                         />
                                         <StatCardV3 
-                                            value={Array.isArray(appData['Danh_Sach_Lop']) ? appData['Danh_Sach_Lop'].length : "24"} 
+                                            value={classes?.metrics?.total || "0"} 
                                             label="Class" 
                                             icon="book-open" 
                                             iconbg="bg-potato-yellow" 
@@ -2144,36 +2179,23 @@
                                         </div>
                                     )}
 
-                                    {activeOverview === 'class' && (
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-[30px] animate-fade-in">
-                                            {[
-                                                { branch: 'Ngô Quyền', total: 13, courses: [
-                                                    { label: 'Kid (Fox)', count: 2, color: 'bg-orange-400' },
-                                                    { label: 'Junior (FF/Mov)', count: 4, color: 'bg-brand-500' },
-                                                    { label: 'Teen (SOL/KET)', count: 5, color: 'bg-indigo-500' },
-                                                    { label: 'IELTS (Exam)', count: 2, color: 'bg-emerald-500' }
-                                                ]},
-                                                { branch: 'Hưng Định', total: 11, courses: [
-                                                    { label: 'Kid (Fox)', count: 1, color: 'bg-orange-400' },
-                                                    { label: 'Junior (FF/Mov)', count: 4, color: 'bg-brand-500' },
-                                                    { label: 'Teen (SOL/KET)', count: 4, color: 'bg-indigo-500' },
-                                                    { label: 'IELTS (Exam)', count: 2, color: 'bg-emerald-500' }
-                                                ]}
-                                            ].map((info, idx) => (
+                                    {activeOverview === 'class' && classes?.metrics && (
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-[30px] animate-fade-in text-left">
+                                            {Object.values(classes.metrics.branches).map((info, idx) => (
                                                 <div key={idx} className="bg-white p-8 rounded-[32px] border border-gray-100 shadow-sm">
                                                     <h4 className="text-sm font-black text-gray-800 uppercase tracking-tight mb-8 flex justify-between items-center">
-                                                        <span>Chi nhánh {info.branch}</span>
-                                                        <span className="text-[10px] bg-yellow-50 text-yellow-600 px-3 py-1 rounded-full">{info.total} Lớp</span>
+                                                        <span>{info.label}</span>
+                                                        <span className="text-[10px] bg-yellow-50 text-yellow-600 px-3 py-1 rounded-full">{info.count} Lớp</span>
                                                     </h4>
                                                     <div className="space-y-6">
-                                                        {info.courses.map((c, i) => (
+                                                        {info.courseList.map((c, i) => (
                                                             <div key={i} className="space-y-2">
                                                                 <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-slate-500">
                                                                     <span>{c.label}</span>
                                                                     <span className="text-slate-900">{c.count} Lớp</span>
                                                                 </div>
                                                                 <div className="h-1.5 w-full bg-slate-50 rounded-full overflow-hidden">
-                                                                    <div className={`h-full ${c.color} rounded-full`} style={{ width: `${(c.count / info.total) * 100}%` }}></div>
+                                                                    <div className={`h-full ${c.color} rounded-full`} style={{ width: `${(c.count / info.count) * 100}%` }}></div>
                                                                 </div>
                                                             </div>
                                                         ))}
