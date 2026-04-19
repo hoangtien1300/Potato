@@ -387,12 +387,25 @@
                     const response = await fetch(url);
                     const csvText = await response.text();
                     
-                    const cleanCsv = csvText.split('\n').slice(1).join('\n');
+                    // Identify the actual header row dynamically
+                    // Some AppSheet exports have category headers on the first row
+                    // We look for a known column like "ID Dashboard" or "Class Name"
+                    const headerPattern = /ID Dashboard|Class Name|ID Class/;
+                    const match = csvText.match(headerPattern);
+                    
+                    let csvToParse = csvText;
+                    if (match) {
+                        // Find the start of the line containing the match
+                        const lastNewline = csvText.lastIndexOf('\n', match.index);
+                        const startPos = lastNewline === -1 ? 0 : lastNewline + 1;
+                        csvToParse = csvText.substring(startPos);
+                    }
                     
                     return new Promise((resolve) => {
-                        Papa.parse(cleanCsv, {
+                        Papa.parse(csvToParse, {
                             header: true,
                             skipEmptyLines: true,
+                            dynamicTyping: false,
                             complete: (results) => resolve(results.data)
                         });
                     });
@@ -524,10 +537,12 @@
                     
                     const parseVal = (v) => parseFloat((v || "0").toString().replace(/[^0-9.-]+/g,"")) || 0;
                     
-                    // Parse Lesson string (e.g., "34 / 52 / 64")
-                    const lessonParts = (r["Lesson"] || "").split('/').map(p => parseInt(p.trim()) || 0);
+                    // Parse Lesson string (e.g., "34 / 52 / 64" or "11 / 11 /")
+                    const lessonStr = (r["Lesson"] || "").toString();
+                    const lessonParts = lessonStr.split('/').map(p => parseInt(p.trim())).filter(p => !isNaN(p));
                     const lessonsDone = lessonParts[0] || 0;
                     const lessonsTotal = lessonParts[2] || lessonParts[1] || 0;
+                    const lessonDisplay = lessonParts.length > 0 ? lessonParts.join(' / ') : "0 / 0 / 0";
 
                     return {
                         stt: idx + 1,
@@ -538,7 +553,7 @@
                         
                         // 1. CLASS INFORMATION
                         studentNo: r["Student No."] || "0",
-                        lesson: r["Lesson"] || "0 / 0 / 0",
+                        lesson: lessonDisplay,
                         lessonsDone,
                         lessonsTotal,
                         
@@ -559,7 +574,7 @@
                             teacherAction: r["Teacher Action"] || "N/A",
                         },
                         
-                        // 3. ACADEMIC (Detailed)
+                        // 3. ACADEMIC (Detailed) - Note: GS cell has double space in "Academic  Action"
                         academic: {
                             learningProgress: r["Learning Progress"] || "N/A",
                             material: r["Material"] || "N/A",
@@ -569,7 +584,7 @@
                             examDate: r["Exam Date"] || "N/A",
                             academicWin: r["Academic Win"] || "N/A",
                             academicPending: r["Academic Pending"] || "N/A",
-                            academicAction: r["Academic Action"] || "N/A",
+                            academicAction: r["Academic  Action"] || r["Academic Action"] || "N/A",
                         },
                         
                         // 4. OPERATION (Detailed)
