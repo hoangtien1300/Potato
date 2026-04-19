@@ -1540,13 +1540,13 @@
 
                         <div className="flex flex-wrap items-center gap-4">
                             <div className="flex bg-slate-50 p-1.5 rounded-2xl border border-slate-100">
-                                {['All', 'NQ', 'HĐ'].map((b) => (
+                                {['All', 'NQ', 'HD'].map((b) => (
                                     <button 
                                         key={b}
                                         onClick={() => setFilterBranch(b)}
                                         className={`px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${filterBranch === b ? 'bg-white text-brand-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
                                     >
-                                        {b === 'All' ? 'Tất cả' : b}
+                                        {b === 'All' ? 'Tất cả' : b === 'HD' ? 'Hưng Định' : b}
                                     </button>
                                 ))}
                             </div>
@@ -1565,35 +1565,35 @@
 
                     {/* Standard Table View Layout */}
                     <div className="bg-white rounded-[32px] border border-gray-100 shadow-sm overflow-hidden flex flex-col">
-                        <div className="overflow-x-auto no-scrollbar">
+                        <div className="overflow-x-auto no-scrollbar shadow-inner">
                             <table className="w-full border-collapse text-left min-w-[1500px]">
-                                <thead className="bg-[#f8f9fa] border-b border-slate-100 sticky top-0 z-20">
-                                    <tr className="text-slate-400 text-[10px] font-black uppercase tracking-widest border-b border-slate-100">
-                                        <th rowSpan="2" className="p-4 border-r border-slate-100 whitespace-nowrap">STT</th>
-                                        <th colSpan="3" className="p-4 text-center border-r border-slate-100 bg-brand-100/30 text-brand-600">CLASS INFORMATION</th>
-                                        <th colSpan="3" className="p-4 text-center border-r border-slate-100 bg-orange-100/30 text-orange-600">TEACHER</th>
-                                        <th colSpan="3" className="p-4 text-center border-r border-slate-100 bg-emerald-100/30 text-emerald-600">ACADEMIC</th>
-                                        <th colSpan="4" className="p-4 text-center border-r border-slate-100 bg-blue-100/30 text-blue-600">OPERATION</th>
-                                        <th rowSpan="2" className="p-4 text-right">Action</th>
+                                <thead className="bg-[#f8f9fa] border-b border-slate-100 sticky top-0 z-30">
+                                    <tr className="text-slate-400 text-[10px] font-black uppercase tracking-widest border-b border-slate-100 sticky top-0 z-30 bg-[#f8f9fa]">
+                                        <th rowSpan="2" className="p-4 border-r border-slate-100 whitespace-nowrap sticky top-0 bg-[#f8f9fa] z-30">STT</th>
+                                        <th colSpan="3" className="p-4 text-center border-r border-slate-100 bg-brand-100/30 text-brand-600 sticky top-0 z-30">CLASS INFORMATION</th>
+                                        <th colSpan="3" className="p-4 text-center border-r border-slate-100 bg-orange-100/30 text-orange-600 sticky top-0 z-30">TEACHER</th>
+                                        <th colSpan="3" className="p-4 text-center border-r border-slate-100 bg-emerald-100/30 text-emerald-600 sticky top-0 z-30">ACADEMIC</th>
+                                        <th colSpan="4" className="p-4 text-center border-r border-slate-100 bg-blue-100/30 text-blue-600 sticky top-0 z-30">OPERATION</th>
+                                        <th rowSpan="2" className="p-4 text-right sticky top-0 bg-[#f8f9fa] z-30">Action</th>
                                     </tr>
-                                    <tr className="text-slate-900 text-[10px] font-black uppercase tracking-widest bg-white">
+                                    <tr className="text-slate-900 text-[10px] font-black uppercase tracking-widest bg-white sticky top-[52px] z-30">
                                         {/* CLASS INFO */}
-                                        <th className="p-4 border-r border-slate-50 bg-brand-50/40 whitespace-nowrap">Class Name</th>
-                                        <th className="p-4 border-r border-slate-50 bg-brand-50/40 whitespace-nowrap">Student No.</th>
-                                        <th className="p-4 border-r border-slate-100 bg-brand-50/40 whitespace-nowrap">Lesson</th>
+                                        <th className="p-4 border-r border-slate-50 bg-brand-50/40 whitespace-nowrap sticky top-[52px] z-30">Class Name</th>
+                                        <th className="p-4 border-r border-slate-50 bg-brand-50/40 whitespace-nowrap sticky top-[52px] z-30">Student No.</th>
+                                        <th className="p-4 border-r border-slate-100 bg-brand-50/40 whitespace-nowrap sticky top-[52px] z-30">Lesson</th>
                                         {/* TEACHER */}
-                                        <th className="p-4 border-r border-slate-50 bg-orange-50/40 whitespace-nowrap">Teaching</th>
-                                        <th className="p-4 border-r border-slate-50 bg-orange-50/40 whitespace-nowrap">Student</th>
-                                        <th className="p-4 border-r border-slate-100 bg-orange-50/40 whitespace-nowrap">Objective</th>
+                                        <th className="p-4 border-r border-slate-50 bg-orange-50/40 whitespace-nowrap sticky top-[52px] z-30">Teaching</th>
+                                        <th className="p-4 border-r border-slate-50 bg-orange-50/40 whitespace-nowrap sticky top-[52px] z-30">Student</th>
+                                        <th className="p-4 border-r border-slate-100 bg-orange-50/40 whitespace-nowrap sticky top-[52px] z-30">Objective</th>
                                         {/* ACADEMIC */}
-                                        <th className="p-4 border-r border-slate-50 bg-emerald-50/40 whitespace-nowrap">Learning Progress</th>
-                                        <th className="p-4 border-r border-slate-50 bg-emerald-50/40 whitespace-nowrap">Exam</th>
-                                        <th className="p-4 border-r border-slate-100 bg-emerald-50/40 whitespace-nowrap">Exam Date</th>
+                                        <th className="p-4 border-r border-slate-50 bg-emerald-50/40 whitespace-nowrap sticky top-[52px] z-30">Learning Progress</th>
+                                        <th className="p-4 border-r border-slate-50 bg-emerald-50/40 whitespace-nowrap sticky top-[52px] z-30">Exam</th>
+                                        <th className="p-4 border-r border-slate-100 bg-emerald-50/40 whitespace-nowrap sticky top-[52px] z-30">Exam Date</th>
                                         {/* OPERATION */}
-                                        <th className="p-4 border-r border-slate-50 bg-blue-50/40 whitespace-nowrap">Fees</th>
-                                        <th className="p-4 border-r border-slate-50 bg-blue-50/40 whitespace-nowrap">Total</th>
-                                        <th className="p-4 border-r border-slate-50 bg-blue-50/40 whitespace-nowrap">Pending</th>
-                                        <th className="p-4 border-r border-slate-100 bg-blue-50/40 whitespace-nowrap">Test</th>
+                                        <th className="p-4 border-r border-slate-50 bg-blue-50/40 whitespace-nowrap sticky top-[52px] z-30">Fees</th>
+                                        <th className="p-4 border-r border-slate-50 bg-blue-50/40 whitespace-nowrap sticky top-[52px] z-30">Total</th>
+                                        <th className="p-4 border-r border-slate-50 bg-blue-50/40 whitespace-nowrap sticky top-[52px] z-30">Pending</th>
+                                        <th className="p-4 border-r border-slate-100 bg-blue-50/40 whitespace-nowrap sticky top-[52px] z-30">Test</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-50">
