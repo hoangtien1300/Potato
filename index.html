@@ -1442,22 +1442,22 @@
                                     </tr>
                                     <tr className="text-slate-900 text-[10px] font-black uppercase tracking-widest bg-white">
                                         {/* CLASS INFO */}
-                                        <th className="p-4 border-r border-slate-50">Class Name</th>
-                                        <th className="p-4 border-r border-slate-50">Student No.</th>
-                                        <th className="p-4 border-r border-slate-100">Lesson</th>
+                                        <th className="p-4 border-r border-slate-50 bg-brand-50/10 whitespace-nowrap">Class Name</th>
+                                        <th className="p-4 border-r border-slate-50 bg-brand-50/10 whitespace-nowrap">Student No.</th>
+                                        <th className="p-4 border-r border-slate-100 bg-brand-50/10 whitespace-nowrap">Lesson</th>
                                         {/* TEACHER */}
-                                        <th className="p-4 border-r border-slate-50">Teaching</th>
-                                        <th className="p-4 border-r border-slate-50">Student</th>
-                                        <th className="p-4 border-r border-slate-100">Objective</th>
+                                        <th className="p-4 border-r border-slate-50 bg-orange-50/10 whitespace-nowrap">Teaching</th>
+                                        <th className="p-4 border-r border-slate-50 bg-orange-50/10 whitespace-nowrap">Student</th>
+                                        <th className="p-4 border-r border-slate-100 bg-orange-50/10 whitespace-nowrap">Objective</th>
                                         {/* ACADEMIC */}
-                                        <th className="p-4 border-r border-slate-50">Learning Progress</th>
-                                        <th className="p-4 border-r border-slate-50">Exam</th>
-                                        <th className="p-4 border-r border-slate-100">Exam Date</th>
+                                        <th className="p-4 border-r border-slate-50 bg-emerald-50/10 whitespace-nowrap">Learning Progress</th>
+                                        <th className="p-4 border-r border-slate-50 bg-emerald-50/10 whitespace-nowrap">Exam</th>
+                                        <th className="p-4 border-r border-slate-100 bg-emerald-50/10 whitespace-nowrap">Exam Date</th>
                                         {/* OPERATION */}
-                                        <th className="p-4 border-r border-slate-50">Fees</th>
-                                        <th className="p-4 border-r border-slate-50">Total</th>
-                                        <th className="p-4 border-r border-slate-50">Pending</th>
-                                        <th className="p-4 border-r border-slate-100">Test</th>
+                                        <th className="p-4 border-r border-slate-50 bg-blue-50/10 whitespace-nowrap">Fees</th>
+                                        <th className="p-4 border-r border-slate-50 bg-blue-50/10 whitespace-nowrap">Total</th>
+                                        <th className="p-4 border-r border-slate-50 bg-blue-50/10 whitespace-nowrap">Pending</th>
+                                        <th className="p-4 border-r border-slate-100 bg-blue-50/10 whitespace-nowrap">Test</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-50">
@@ -1468,16 +1468,16 @@
                                                     <span className="text-[11px] font-bold text-slate-400">#{idx + 1}</span>
                                                 </td>
                                                 {/* CLASS INFO */}
-                                                <td className="p-4 border-r border-gray-50">
+                                                <td className="p-4 border-r border-gray-50 bg-brand-50/5">
                                                     <div className="flex flex-col">
                                                         <span className="text-[11px] font-black text-slate-800 uppercase tracking-tight leading-tight">{item.className}</span>
                                                         <span className="text-[9px] font-bold text-slate-400 uppercase mt-0.5">{item.idClass}</span>
                                                     </div>
                                                 </td>
-                                                <td className="p-4 border-r border-gray-50">
+                                                <td className="p-4 border-r border-gray-50 bg-brand-50/5">
                                                     <span className="text-[10px] font-black text-slate-600">{item.studentNo} HV</span>
                                                 </td>
-                                                <td className="p-4 border-r border-gray-100">
+                                                <td className="p-4 border-r border-gray-100 bg-brand-50/5">
                                                     <div className="flex flex-col gap-1">
                                                         <span className="text-[10px] font-black text-slate-600">{item.lesson}</span>
                                                         <div className="w-16 h-1 bg-slate-100 rounded-full overflow-hidden">
@@ -1489,47 +1489,47 @@
                                                     </div>
                                                 </td>
                                                 {/* TEACHER */}
-                                                <td className="p-4 border-r border-gray-50">
+                                                <td className="p-4 border-r border-gray-50 bg-orange-50/5">
                                                     <span className={`px-2 py-1 rounded-lg text-[9px] font-black uppercase whitespace-nowrap ${item.teachingStatus === 'Excellent' ? 'bg-emerald-50 text-emerald-600' : item.teachingStatus === 'Good' ? 'bg-blue-50 text-blue-600' : 'bg-amber-50 text-amber-600'}`}>
                                                         {item.teachingStatus}
                                                     </span>
                                                 </td>
-                                                <td className="p-4 border-r border-gray-50">
+                                                <td className="p-4 border-r border-gray-50 bg-orange-50/5">
                                                     <span className={`px-2 py-1 rounded-lg text-[9px] font-black uppercase whitespace-nowrap ${item.studentStatus === 'Excellent' ? 'bg-emerald-50 text-emerald-600' : item.studentStatus === 'Good' ? 'bg-blue-50 text-blue-600' : 'bg-amber-50 text-amber-600'}`}>
                                                         {item.studentStatus}
                                                     </span>
                                                 </td>
-                                                <td className="p-4 border-r border-gray-100">
+                                                <td className="p-4 border-r border-gray-100 bg-orange-50/5">
                                                     <span className="text-[10px] font-bold text-slate-500 leading-tight block max-w-[120px] truncate" title={item.learningObjective}>
                                                         {item.learningObjective}
                                                     </span>
                                                 </td>
                                                 {/* ACADEMIC */}
-                                                <td className="p-4 border-r border-gray-50">
+                                                <td className="p-4 border-r border-gray-50 bg-emerald-50/5">
                                                     <div className="flex items-center gap-1.5">
                                                         <div className={`w-1.5 h-1.5 rounded-full ${item.learningProgress.toLowerCase().includes('late') ? 'bg-red-500 animate-pulse' : 'bg-emerald-500'}`}></div>
                                                         <span className="text-[10px] font-black text-slate-800 uppercase tracking-tight">{item.learningProgress}</span>
                                                     </div>
                                                 </td>
-                                                <td className="p-4 border-r border-gray-50">
+                                                <td className="p-4 border-r border-gray-50 bg-emerald-50/5">
                                                     <span className="text-[10px] font-bold text-slate-600">{item.exam}</span>
                                                 </td>
-                                                <td className="p-4 border-r border-gray-100">
+                                                <td className="p-4 border-r border-gray-100 bg-emerald-50/5">
                                                     <span className="text-[10px] font-bold text-slate-400">{item.examDate}</span>
                                                 </td>
                                                 {/* OPERATION */}
-                                                <td className="p-4 border-r border-gray-50">
+                                                <td className="p-4 border-r border-gray-50 bg-blue-50/5">
                                                     <span className={`px-2 py-1 rounded-lg text-[9px] font-black uppercase ${item.fees === 'Paid' ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'}`}>
                                                         {item.fees}
                                                     </span>
                                                 </td>
-                                                <td className="p-4 border-r border-gray-50">
+                                                <td className="p-4 border-r border-gray-50 bg-blue-50/5">
                                                     <span className="text-[11px] font-black text-slate-800">{item.totalAmount}</span>
                                                 </td>
-                                                <td className="p-4 border-r border-gray-50">
+                                                <td className="p-4 border-r border-gray-50 bg-blue-50/5">
                                                     <span className={`text-[11px] font-black ${item.pendingAmount !== '0' ? 'text-red-500' : 'text-slate-400'}`}>{item.pendingAmount}</span>
                                                 </td>
-                                                <td className="p-4 border-r border-gray-100">
+                                                <td className="p-4 border-r border-gray-100 bg-blue-50/5">
                                                     <span className="text-[10px] font-bold text-slate-500">{item.test}</span>
                                                 </td>
                                                 <td className="p-4 text-right">
