@@ -303,8 +303,8 @@
 
         /* Điều chỉnh nội dung chính khi sidebar thay đổi */
         .main-wrapper {
-            margin-left: calc(15% + 20px); /* Công thức: Sidebar (15%) + 20px gap */
-            width: calc(85% - 20px);
+            margin-left: calc(15% + 8px); /* Công thức: Sidebar (15%) + 8px gap */
+            width: calc(85% - 8px);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             flex: 1;
             display: flex;
@@ -316,8 +316,8 @@
 
         /* KHI ĐÓNG SIDEBAR (Collapsed): Khớp chính xác */
         .sidebar.collapsed + .main-wrapper {
-            margin-left: calc(5% + 20px); /* Công thức: Sidebar (5%) + 20px gap */
-            width: calc(95% - 20px);
+            margin-left: calc(5% + 8px); /* Công thức: Sidebar (5%) + 8px gap */
+            width: calc(95% - 8px);
         }
 
         /* Responsive cho Mobile */
@@ -1546,7 +1546,7 @@
                                         onClick={() => setFilterBranch(b)}
                                         className={`px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${filterBranch === b ? 'bg-white text-brand-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
                                     >
-                                        {b === 'All' ? 'Tất cả' : b === 'HD' ? 'Hưng Định' : b}
+                                        {b === 'All' ? 'Tất cả' : b === 'NQ' ? 'Ngô Quyền' : b === 'HD' ? 'Hưng Định' : b}
                                     </button>
                                 ))}
                             </div>
@@ -1565,7 +1565,7 @@
 
                     {/* Standard Table View Layout */}
                     <div className="bg-white rounded-[32px] border border-gray-100 shadow-sm overflow-hidden flex flex-col">
-                        <div className="overflow-x-auto no-scrollbar shadow-inner">
+                        <div className="overflow-x-auto overflow-y-auto max-h-[calc(100vh-280px)] no-scrollbar shadow-inner relative">
                             <table className="w-full border-collapse text-left min-w-[1500px]">
                                 <thead className="bg-[#f8f9fa] border-b border-slate-100 sticky top-0 z-30">
                                     <tr className="text-slate-400 text-[10px] font-black uppercase tracking-widest border-b border-slate-100 sticky top-0 z-30 bg-[#f8f9fa]">
