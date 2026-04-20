@@ -611,6 +611,7 @@
                         totalAmount: r["Total"] || "0",
                         pendingAmount: r["Pending"] || "0",
                         test: r["Test"] || "N/A",
+                        schedule: r["Schedule"] || "N/A",
                         
                         // Metadata
                         status: r["Status"] || "2. Teaching"
@@ -1402,100 +1403,69 @@
                         </div>
                         <h3 className="text-xl font-extrabold mb-8 flex items-center gap-3 relative z-10 tracking-tight">
                             <div className="p-2 bg-white/20 rounded-xl">
-                                <Icon name="Zap" size={20} />
-                            </div>
-                            CÔNG VIỆC SẮP TỚI
-                        </h3>
-                        <div className="space-y-3 relative z-10">
-                            {[
-                                { text: "Hoàn thiện album \"Mùa hè rực rỡ\" cho khối Kids (Target: 05/04)." },
-                                { text: "Tổ chức Mock Test cho học sinh đăng ký thi HK2 vào tối Thứ 7." },
-                                { text: "Hoàn thiện báo cáo chiến dịch \"Học thử 0 đồng\"." }
-                            ].map((action, i) => (
-                                <div key={i} className="flex items-center gap-4 p-4 bg-white/10 rounded-xl border border-white/10 hover:bg-white/20 transition-all cursor-default">
-                                    <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center shrink-0">
-                                        <Icon name="CheckCircle" size={16} />
-                                    </div>
-                                    <p className="text-sm font-bold leading-relaxed">{action.text}</p>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                </div>
-            );
-        };
-        const ClassView = ({ initialData }) => {
-            const [searchTerm, setSearchTerm] = useState('');
+                         const ClassView = ({ initialData }) => {
             const [filterBranch, setFilterBranch] = useState('All');
+            const [searchTerm, setSearchTerm] = useState('');
             const [expandedRow, setExpandedRow] = useState(null);
 
             const filteredData = useMemo(() => {
                 if (!initialData) return [];
                 return initialData.filter(item => {
-                    const matchesSearch = item.className.toLowerCase().includes(searchTerm.toLowerCase());
-                    const matchesBranch = filterBranch === 'All' || item.branch === filterBranch || (item.branch && item.branch.includes(filterBranch));
-                    return matchesSearch && matchesBranch;
+                    const matchBranch = filterBranch === 'All' || item.branch.includes(filterBranch);
+                    const matchSearch = item.className.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                                      item.idClass.toLowerCase().includes(searchTerm.toLowerCase());
+                    return matchBranch && matchSearch;
                 });
-            }, [initialData, searchTerm, filterBranch]);
+            }, [initialData, filterBranch, searchTerm]);
 
             const DetailView = ({ item }) => {
-                const Attribute = ({ label, value, color }) => (
-                    <div className="flex justify-between items-start gap-4 py-1.5 border-b border-gray-100 last:border-0">
-                        <span className={`text-[9px] font-black uppercase tracking-wider ${color}`}>{label}:</span>
-                        <span className="text-[11px] font-bold text-slate-700 text-right leading-relaxed flex-1 ml-4">{value || 'N/A'}</span>
+                const Attribute = ({ label, value, color = "text-slate-500" }) => (
+                    <div className="flex justify-between items-center py-2 border-b border-gray-50 last:border-0">
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{label}</span>
+                        <span className={`text-[11px] font-bold ${color}`}>{value || 'N/A'}</span>
                     </div>
                 );
 
                 return (
-                    <div className="p-10 bg-slate-50/50 grid grid-cols-1 md:grid-cols-3 gap-12 animate-fade-in border-y border-slate-100 shadow-inner">
-                        {/* TEACHER Section */}
-                        <div className="space-y-6">
+                    <div className="p-8 bg-slate-50 flex flex-wrap gap-8 animate-fade-in border-b border-gray-100 shadow-inner">
+                        <div className="flex-1 min-w-[280px] bg-white p-6 rounded-2xl shadow-sm border-t-4 border-orange-400">
                             <div className="flex items-center gap-3 pb-3 border-b-2 border-orange-200">
                                 <div className="p-2 bg-orange-100 rounded-lg text-orange-600">
-                                    <Icon name="ph-chalkboard-teacher" size={20} />
+                                    <Icon name="ph-graduation-cap" size={20} />
                                 </div>
                                 <h4 className="text-[13px] font-black text-orange-600 uppercase tracking-widest">Teacher Detail</h4>
                             </div>
                             <div className="space-y-0.5">
-                                <Attribute label="Teaching" value={item.teacher.teaching} color="text-orange-400" />
-                                <Attribute label="Student" value={item.teacher.student} color="text-orange-400" />
-                                <Attribute label="Obs. Date" value={item.teacher.observationDate} color="text-orange-400" />
-                                <Attribute label="Quality" value={item.teacher.teachingQuality} color="text-orange-400" />
-                                <Attribute label="Playbook" value={item.teacher.playbookAdherence} color="text-orange-400" />
-                                <Attribute label="Student Eval" value={item.teacher.studentEvaluation} color="text-orange-400" />
-                                <Attribute label="Head Comment" value={item.teacher.headComment} color="text-orange-400" />
-                                <Attribute label="Objective" value={item.teacher.learningObjective} color="text-orange-400" />
-                                <Attribute label="Link" value={item.teacher.objectiveLink} color="text-orange-400" />
-                                <Attribute label="Student Issue" value={item.teacher.studentIssue} color="text-orange-400" />
-                                <Attribute label="Win" value={item.teacher.teacherWin} color="text-orange-400" />
-                                <Attribute label="Pending" value={item.teacher.teacherPending} color="text-orange-400" />
-                                <Attribute label="Action" value={item.teacher.teacherAction} color="text-orange-400" />
+                                <Attribute label="Teaching" value={item.teacher.teaching} color="text-orange-500" />
+                                <Attribute label="Student" value={item.teacher.student} color="text-orange-500" />
+                                <Attribute label="Obs. Date" value={item.teacher.observationDate} color="text-orange-500" />
+                                <Attribute label="Quality" value={item.teacher.teachingQuality} color="text-orange-500" />
+                                <Attribute label="Playbook" value={item.teacher.playbookAdherence} color="text-orange-500" />
+                                <Attribute label="Win" value={item.teacher.teacherWin} color="text-orange-500" />
+                                <Attribute label="Pending" value={item.teacher.teacherPending} color="text-orange-500" />
+                                <Attribute label="Action" value={item.teacher.teacherAction} color="text-orange-500" />
                             </div>
                         </div>
 
-                        {/* ACADEMIC Section */}
-                        <div className="space-y-6">
+                        <div className="flex-1 min-w-[280px] bg-white p-6 rounded-2xl shadow-sm border-t-4 border-emerald-400">
                             <div className="flex items-center gap-3 pb-3 border-b-2 border-emerald-200">
                                 <div className="p-2 bg-emerald-100 rounded-lg text-emerald-600">
-                                    <Icon name="ph-books" size={20} />
+                                    <Icon name="ph-notebook" size={20} />
                                 </div>
                                 <h4 className="text-[13px] font-black text-emerald-600 uppercase tracking-widest">Academic Detail</h4>
                             </div>
                             <div className="space-y-0.5">
-                                <Attribute label="Progress" value={item.academic.learningProgress} color="text-emerald-400" />
-                                <Attribute label="Material" value={item.academic.material} color="text-emerald-400" />
-                                <Attribute label="Aid" value={item.academic.aid} color="text-emerald-400" />
-                                <Attribute label="Roadmap" value={item.academic.roadmap} color="text-emerald-400" />
-                                <Attribute label="Exam" value={item.academic.exam} color="text-emerald-400" />
-                                <Attribute label="Exam Date" value={item.academic.examDate} color="text-emerald-400" />
-                                <Attribute label="Win" value={item.academic.academicWin} color="text-emerald-400" />
-                                <Attribute label="Pending" value={item.academic.academicPending} color="text-emerald-400" />
-                                <Attribute label="Action" value={item.academic.academicAction} color="text-emerald-400" />
+                                <Attribute label="Progress" value={item.academic.learningProgress} color="text-emerald-500" />
+                                <Attribute label="Exam" value={item.academic.exam} color="text-emerald-500" />
+                                <Attribute label="Exam Date" value={item.academic.examDate} color="text-emerald-500" />
+                                <Attribute label="Material" value={item.academic.material} color="text-emerald-500" />
+                                <Attribute label="Win" value={item.academic.academicWin} color="text-emerald-500" />
+                                <Attribute label="Pending" value={item.academic.academicPending} color="text-emerald-500" />
+                                <Attribute label="Action" value={item.academic.academicAction} color="text-emerald-500" />
                             </div>
                         </div>
 
-                        {/* OPERATION Section */}
-                        <div className="space-y-6">
+                        <div className="flex-1 min-w-[280px] bg-white p-6 rounded-2xl shadow-sm border-t-4 border-blue-400">
                             <div className="flex items-center gap-3 pb-3 border-b-2 border-blue-200">
                                 <div className="p-2 bg-blue-100 rounded-lg text-blue-600">
                                     <Icon name="ph-briefcase" size={20} />
@@ -1518,22 +1488,15 @@
                 );
             };
 
-            const formatMoney = (val) => {
-                if (typeof val !== 'number') return val;
-                if (val >= 1000000) return (val / 1000000).toFixed(1) + 'M';
-                return val.toLocaleString();
-            };
-
             return (
                 <div className="space-y-6 animate-fade-in">
-                    {/* Header Table Stats */}
                     <div className="flex flex-col md:flex-row justify-between items-center bg-white p-6 rounded-[32px] border border-gray-100 shadow-sm gap-6">
                         <div className="flex items-center gap-6">
                             <div className="w-14 h-14 bg-brand-50 rounded-2xl flex items-center justify-center text-brand-600">
                                 <Icon name="ph-presentation-chart" size={28} />
                             </div>
                             <div>
-                                <h2 className="text-xl font-black text-slate-800 uppercase tracking-tight">Class Dashboard</h2>
+                                <h2 className="text-xl font-black text-slate-800 uppercase tracking-tight">POTATO Class</h2>
                                 <p className="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-widest">High-density operational matrix</p>
                             </div>
                         </div>
@@ -1563,37 +1526,28 @@
                         </div>
                     </div>
 
-                    {/* Standard Table View Layout */}
                     <div className="bg-white rounded-[32px] border border-gray-100 shadow-sm overflow-hidden flex flex-col">
                         <div className="overflow-x-auto overflow-y-auto max-h-[calc(100vh-280px)] no-scrollbar shadow-inner relative">
                             <table className="w-full border-collapse text-left min-w-[1500px]">
                                 <thead className="bg-[#f8f9fa] border-b border-slate-100 sticky top-0 z-30">
                                     <tr className="text-slate-400 text-[10px] font-black uppercase tracking-widest border-b border-slate-100 sticky top-0 z-30 bg-[#f8f9fa]">
-                                        <th rowSpan="2" className="p-4 border-r border-slate-100 whitespace-nowrap sticky top-0 bg-[#f8f9fa] z-30">STT</th>
+                                        <th rowSpan="2" className="p-4 border-r border-slate-100 whitespace-nowrap sticky top-0 bg-[#f8f9fa] z-30 text-center">STT</th>
                                         <th colSpan="3" className="p-4 text-center border-r border-slate-100 bg-brand-100/30 text-brand-600 sticky top-0 z-30">CLASS INFORMATION</th>
-                                        <th colSpan="3" className="p-4 text-center border-r border-slate-100 bg-orange-100/30 text-orange-600 sticky top-0 z-30">TEACHER</th>
-                                        <th colSpan="3" className="p-4 text-center border-r border-slate-100 bg-emerald-100/30 text-emerald-600 sticky top-0 z-30">ACADEMIC</th>
-                                        <th colSpan="4" className="p-4 text-center border-r border-slate-100 bg-blue-100/30 text-blue-600 sticky top-0 z-30">OPERATION</th>
-                                        <th rowSpan="2" className="p-4 text-right sticky top-0 bg-[#f8f9fa] z-30">Action</th>
+                                        <th colSpan="2" className="p-4 text-center border-r border-slate-100 bg-orange-100/30 text-orange-600 sticky top-0 z-30">TEACHER</th>
+                                        <th colSpan="2" className="p-4 text-center border-r border-slate-100 bg-emerald-100/30 text-emerald-600 sticky top-0 z-30">ACADEMIC</th>
+                                        <th colSpan="3" className="p-4 text-center border-r border-slate-100 bg-blue-100/30 text-blue-600 sticky top-0 z-30">OPERATION</th>
                                     </tr>
                                     <tr className="text-slate-900 text-[10px] font-black uppercase tracking-widest bg-white sticky top-[52px] z-30">
-                                        {/* CLASS INFO */}
                                         <th className="p-4 border-r border-slate-50 bg-brand-50/40 whitespace-nowrap sticky top-[52px] z-30">Class Name</th>
-                                        <th className="p-4 border-r border-slate-50 bg-brand-50/40 whitespace-nowrap sticky top-[52px] z-30">Student No.</th>
+                                        <th className="p-4 border-r border-slate-50 bg-brand-50/40 whitespace-nowrap sticky top-[52px] z-30">Student</th>
                                         <th className="p-4 border-r border-slate-100 bg-brand-50/40 whitespace-nowrap sticky top-[52px] z-30">Lesson</th>
-                                        {/* TEACHER */}
                                         <th className="p-4 border-r border-slate-50 bg-orange-50/40 whitespace-nowrap sticky top-[52px] z-30">Teaching</th>
-                                        <th className="p-4 border-r border-slate-50 bg-orange-50/40 whitespace-nowrap sticky top-[52px] z-30">Student</th>
-                                        <th className="p-4 border-r border-slate-100 bg-orange-50/40 whitespace-nowrap sticky top-[52px] z-30">Objective</th>
-                                        {/* ACADEMIC */}
-                                        <th className="p-4 border-r border-slate-50 bg-emerald-50/40 whitespace-nowrap sticky top-[52px] z-30">Learning Progress</th>
-                                        <th className="p-4 border-r border-slate-50 bg-emerald-50/40 whitespace-nowrap sticky top-[52px] z-30">Exam</th>
+                                        <th className="p-4 border-r border-slate-100 bg-orange-50/40 whitespace-nowrap sticky top-[52px] z-30">Student</th>
+                                        <th className="p-4 border-r border-slate-50 bg-emerald-50/40 whitespace-nowrap sticky top-[52px] z-30">Progress</th>
                                         <th className="p-4 border-r border-slate-100 bg-emerald-50/40 whitespace-nowrap sticky top-[52px] z-30">Exam Date</th>
-                                        {/* OPERATION */}
                                         <th className="p-4 border-r border-slate-50 bg-blue-50/40 whitespace-nowrap sticky top-[52px] z-30">Fees</th>
-                                        <th className="p-4 border-r border-slate-50 bg-blue-50/40 whitespace-nowrap sticky top-[52px] z-30">Total</th>
-                                        <th className="p-4 border-r border-slate-50 bg-blue-50/40 whitespace-nowrap sticky top-[52px] z-30">Pending</th>
-                                        <th className="p-4 border-r border-slate-100 bg-blue-50/40 whitespace-nowrap sticky top-[52px] z-30">Test</th>
+                                        <th className="p-4 border-r border-slate-50 bg-blue-50/40 whitespace-nowrap sticky top-[52px] z-30">Report</th>
+                                        <th className="p-4 border-r border-slate-100 bg-blue-50/40 whitespace-nowrap sticky top-[52px] z-30">Schedule</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-50">
@@ -1607,11 +1561,15 @@
                                                     <td className="p-4 border-r border-gray-50">
                                                         <span className="text-[11px] font-bold text-slate-400">#{idx + 1}</span>
                                                     </td>
-                                                    {/* CLASS INFO */}
                                                     <td className="p-4 border-r border-gray-50 bg-brand-50/20 whitespace-nowrap">
-                                                        <div className="flex flex-col">
-                                                            <span className="text-[11px] font-black text-slate-800 uppercase tracking-tight leading-tight whitespace-nowrap">{item.className}</span>
-                                                            <span className="text-[9px] font-bold text-slate-400 uppercase mt-0.5">{item.idClass}</span>
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="p-2 bg-white rounded-lg shadow-sm text-brand-600 border border-brand-100 group-hover:bg-brand-600 group-hover:text-white transition-all">
+                                                                <Icon name={expandedRow === idx ? "ph-caret-up-bold" : "ph-caret-down-bold"} size={12} />
+                                                            </div>
+                                                            <div className="flex flex-col">
+                                                                <span className="text-[11px] font-black text-slate-800 uppercase tracking-tight leading-tight whitespace-nowrap">{item.className}</span>
+                                                                <span className="text-[9px] font-bold text-slate-400 uppercase mt-0.5">{item.idClass}</span>
+                                                            </div>
                                                         </div>
                                                     </td>
                                                     <td className="p-4 border-r border-gray-50 bg-brand-50/20 whitespace-nowrap">
@@ -1628,7 +1586,6 @@
                                                             </div>
                                                         </div>
                                                     </td>
-                                                    {/* TEACHER */}
                                                     <td className="p-4 border-r border-gray-50 bg-orange-50/20">
                                                         <span className={`px-2 py-1 rounded-lg text-[9px] font-black uppercase whitespace-nowrap ${item.teachingStatus === 'Excellent' ? 'bg-emerald-50 text-emerald-600' : item.teachingStatus === 'Good' ? 'bg-blue-50 text-blue-600' : 'bg-amber-50 text-amber-600'}`}>
                                                             {item.teachingStatus}
@@ -1639,50 +1596,55 @@
                                                             {item.studentStatus}
                                                         </span>
                                                     </td>
-                                                    <td className="p-4 border-r border-gray-100 bg-orange-50/20 whitespace-nowrap">
-                                                        <span className="text-[10px] font-bold text-slate-500 leading-tight block max-w-[120px] truncate" title={item.learningObjective}>
-                                                            {item.learningObjective}
-                                                        </span>
-                                                    </td>
-                                                    {/* ACADEMIC */}
                                                     <td className="p-4 border-r border-gray-50 bg-emerald-50/20 whitespace-nowrap">
                                                         <div className="flex items-center gap-1.5">
                                                             <div className={`w-1.5 h-1.5 rounded-full ${item.learningProgress.toLowerCase().includes('late') ? 'bg-red-500 animate-pulse' : 'bg-emerald-500'}`}></div>
                                                             <span className="text-[10px] font-black text-slate-800 uppercase tracking-tight">{item.learningProgress}</span>
                                                         </div>
                                                     </td>
-                                                    <td className="p-4 border-r border-gray-50 bg-emerald-50/20 whitespace-nowrap">
-                                                        <span className="text-[10px] font-bold text-slate-600">{item.exam}</span>
-                                                    </td>
                                                     <td className="p-4 border-r border-gray-100 bg-emerald-50/20 whitespace-nowrap">
                                                         <span className="text-[10px] font-bold text-slate-400">{item.examDate}</span>
                                                     </td>
-                                                    {/* OPERATION */}
                                                     <td className="p-4 border-r border-gray-50 bg-blue-50/20 whitespace-nowrap">
                                                         <span className={`px-2 py-1 rounded-lg text-[9px] font-black uppercase ${item.fees === 'Paid' ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'}`}>
                                                             {item.fees}
                                                         </span>
                                                     </td>
                                                     <td className="p-4 border-r border-gray-50 bg-blue-50/20 whitespace-nowrap">
-                                                        <span className="text-[11px] font-black text-slate-800">{item.totalAmount}</span>
-                                                    </td>
-                                                    <td className="p-4 border-r border-gray-50 bg-blue-50/20 whitespace-nowrap">
-                                                        <span className={`text-[11px] font-black ${item.pendingAmount !== '0' ? 'text-red-500' : 'text-slate-400'}`}>{item.pendingAmount}</span>
-                                                    </td>
-                                                    <td className="p-4 border-r border-gray-100 bg-blue-50/20 whitespace-nowrap">
                                                         <span className="text-[10px] font-bold text-slate-500">{item.test}</span>
                                                     </td>
-                                                    <td className="p-4 text-right">
-                                                        <button 
-                                                            className={`p-2 rounded-xl transition-all shadow-sm border ${expandedRow === idx ? 'bg-brand-600 text-white border-brand-600' : 'bg-slate-50 text-slate-400 border-slate-100 hover:bg-brand-600 hover:text-white'}`}
-                                                        >
-                                                            <Icon name={expandedRow === idx ? "ph-caret-up-bold" : "ph-caret-down-bold"} size={14} />
-                                                        </button>
+                                                    <td className="p-4 border-r border-gray-100 bg-blue-50/20 whitespace-nowrap">
+                                                        <span className="text-[10px] font-bold text-slate-500">{item.schedule}</span>
                                                     </td>
                                                 </tr>
                                                 {expandedRow === idx && (
                                                     <tr>
-                                                        <td colSpan="15" className="p-0 border-none">
+                                                        <td colSpan="11" className="p-0 border-none">
+                                                            <DetailView item={item} />
+                                                        </td>
+                                                    </tr>
+                                                )}
+                                            </React.Fragment>
+                                        ))
+                                    ) : (
+                                        <tr>
+                                            <td colSpan="11" className="p-20 text-center">
+                                                <div className="flex flex-col items-center gap-4 text-slate-300">
+                                                    <Icon name="ph-database" size={48} className="opacity-20" />
+                                                    <p className="font-black uppercase tracking-widest text-sm">No Class Data Found</p>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+<tr>
+                                                        <td colSpan="10" className="p-0 border-none">
                                                             <DetailView item={item} />
                                                         </td>
                                                     </tr>
@@ -1901,10 +1863,28 @@
                     </nav>
 
                     {/* Footer / Toggle */}
-                    <div className="sidebar-footer">
-                        <button id="sidebar-toggle" onClick={(e) => { e.preventDefault(); toggleOpen(); }} className="sidebar-toggle-btn">
+                    <div className="sidebar-footer mt-auto border-t border-gray-50 flex flex-col pt-4">
+                        {/* Admin Profile in Sidebar */}
+                        <div className={`flex items-center gap-3 px-4 py-4 mb-2 cursor-pointer group transition-all ${!isOpen ? 'justify-center' : ''}`}>
+                            <div className="relative shrink-0">
+                                <img 
+                                    src="https://i.pravatar.cc/150?img=11" 
+                                    alt="Profile" 
+                                    className="w-10 h-10 rounded-2xl border-2 border-white shadow-md object-cover group-hover:scale-105 transition-transform" 
+                                />
+                                <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full"></div>
+                            </div>
+                            {isOpen && (
+                                <div className="text-sm overflow-hidden animate-fade-in">
+                                    <p className="font-black text-slate-800 truncate uppercase tracking-tight">Admin Potato</p>
+                                    <p className="text-slate-400 text-[10px] font-bold truncate uppercase tracking-widest leading-none mt-1">Center Manager</p>
+                                </div>
+                            )}
+                        </div>
+
+                        <button id="sidebar-toggle" onClick={(e) => { e.preventDefault(); toggleOpen(); }} className="sidebar-toggle-btn border-t border-gray-50 rounded-none hover:bg-gray-50 transition-colors py-4">
                             <span className="arrow-icon transition-transform duration-300">❮</span>
-                             {isOpen && <span className="menu-text font-bold text-sm">Thu gọn</span>}
+                            {isOpen && <span className="menu-text font-black text-[11px] uppercase tracking-widest ml-3">Thu gọn</span>}
                         </button>
                     </div>
                 </aside>
@@ -2591,33 +2571,27 @@
                                 </div>
                                 <div className="text-center">
                                     <p className="font-black text-slate-800 text-xl tracking-tight uppercase italic">{activeTab.toUpperCase()}</p>
-                                    <p className="font-bold text-slate-400 mt-1">Đang trong quá trình hoàn thiện thiết kế...</p>
+                                    <p className="font-bold text-slate-400 text-sm mt-1 uppercase tracking-widest">Section under development</p>
                                 </div>
-                                <button onClick={() => setActiveTab('dashboard')} className="px-6 py-3 bg-white border border-slate-100 text-slate-600 rounded-2xl text-xs font-black uppercase tracking-widest shadow-sm hover:bg-slate-50 transition-all">Quay lại Dashboard</button>
                             </div>
                         );
                 }
             };
 
             return (
-                <div className="flex h-screen overflow-hidden bg-bgLight">
-                    {isLoading && (
-                        <div className="fixed inset-0 z-[200] bg-white/80 backdrop-blur-md flex flex-col items-center justify-center space-y-4">
-                            <div className="w-16 h-16 border-4 border-brand-100 border-t-brand-600 rounded-full animate-spin"></div>
-                            <p className="text-sm font-black text-brand-700 uppercase tracking-widest animate-pulse">Aggregating AppSheet Data...</p>
-                        </div>
-                    )}
+                <div className="dashboard-container h-screen flex overflow-hidden bg-bgLight">
                     <Sidebar 
                         activeTab={activeTab} 
                         setActiveTab={setActiveTab} 
-                        isOpen={isSidebarOpen} 
-                        toggleOpen={toggleSidebar} 
+                        isOpen={isOpen} 
+                        toggleOpen={toggleOpen} 
                         isMobile={isMobile}
                         mobileActive={mobileActive}
                         setMobileOpen={setMobileActive}
                     />
-                    <div className={`flex-1 flex flex-col min-w-0 overflow-hidden relative main-wrapper ${!isSidebarOpen ? 'expanded' : ''}`}>
-                        <header className="h-24 bg-bgLight flex items-center justify-between pl-0 pr-[30px] shrink-0 sticky top-0 z-40">
+
+                    <div className="main-content flex-1 flex flex-col min-w-0 h-screen overflow-hidden relative">
+                        <header className="h-[80px] bg-bgLight flex items-center justify-between px-8 z-50 shrink-0">
                             <div className="flex items-center gap-4">
                                 <button 
                                     id="menu-btn"
@@ -2626,40 +2600,24 @@
                                 >
                                     <Icon name={mobileActive ? "x" : "menu"} size={22} className="group-hover:scale-110 transition-transform" />
                                 </button>
-                                <div className="relative w-64 xl:w-96 hidden md:block">
-                                <Icon name="search" className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
-                                <input 
-                                    type="text" 
-                                    placeholder="Search anything here" 
-                                    className="w-full pl-10 pr-4 py-3 bg-white border border-gray-100 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-brand-100 focus:border-brand-300 transition-all shadow-sm"
-                                />
-                                </div>
                             </div>
-                            
-                            <div className="flex items-center gap-6">
-                                <button className="relative text-gray-500 hover:text-gray-800 transition-colors">
-                                    <Icon name="bell" size={20} />
+
+                            <div className="flex items-center gap-6 text-slate-400">
+                                <button className="relative hover:text-slate-800 transition-colors">
+                                    <Icon name="ph-bell" size={20} />
                                     <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full border-2 border-bgLight"></span>
                                 </button>
-                                <button className="text-gray-500 hover:text-gray-800 transition-colors hidden sm:block">
-                                    <Icon name="message-square" size={20} />
+                                <button className="hover:text-slate-800 transition-colors hidden sm:block">
+                                    <Icon name="ph-chat-circle-dots" size={20} />
                                 </button>
-                                <div className="flex items-center gap-3 border-l border-gray-200 pl-6 cursor-pointer group">
-                                    <img src="https://i.pravatar.cc/150?img=11" alt="Profile" className="w-10 h-10 rounded-full border-2 border-white shadow-sm object-cover group-hover:scale-105 transition-transform" />
-                                    <div className="text-sm hidden sm:block">
-                                        <p className="font-bold text-gray-800">Admin Potato</p>
-                                        <p className="text-gray-500 text-xs">Center Manager</p>
-                                    </div>
-                                    <Icon name="chevron-down" size={16} className="text-gray-400" />
-                                </div>
                             </div>
                         </header>
 
                         <main className="flex-1 overflow-y-auto no-scrollbar pl-0 pr-[30px] pb-[30px]">
-                            <div className="max-w-full pt-6">
-                                <div className="dashboard-header text-left">
-                                    <h1 className="welcome-text">
-                                        {activeTab === 'class' ? 'Welcome POTATO Class' : 'Welcome POTATO Dashboard'}
+                            <div className="max-w-full pt-2">
+                                <div className="dashboard-header text-left mb-6">
+                                    <h1 className="text-2xl font-black text-slate-800 uppercase tracking-tight">
+                                        {activeTab === 'class' ? 'POTATO Class' : 'POTATO Dashboard'}
                                     </h1>
                                 </div>
                                 {(() => {
