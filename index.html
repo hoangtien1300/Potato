@@ -376,7 +376,8 @@
                 'Danh_Sach_Lop': '2009932031',
                 'Hoc_Vien': '1989626144',
                 'Lich_Truc': '0',
-                'Class_Dashboard': '1019913137'
+                'Class_Dashboard': '1019913137',
+                'Fees': '1245774263'
             },
 
             async fetchData(tableName) {
@@ -621,17 +622,42 @@
             },
             mapDebt(rows) {
                 if (!rows || !Array.isArray(rows)) return null;
-                const total = rows.reduce((sum, r) => {
-                    if (!r) return sum;
-                    const val = parseFloat((r.Amount || r.amount || r["Sá»‘ tiá» n"] || r["Tá»•ng cá»™ng"] || r.Total || "0").toString().replace(/[^0-9.-]+/g,""));
-                    return sum + (isNaN(val) ? 0 : val);
-                }, 0);
-                const paid = rows.reduce((sum, r) => {
-                    if (!r) return sum;
-                    const val = parseFloat((r.Paid || r.paid || r["Ä Ã£ Ä‘Ã³ng"] || r["Thá»±c thu"] || "0").toString().replace(/[^0-9.-]+/g,""));
-                    return sum + (isNaN(val) ? 0 : val);
-                }, 0);
-                return { total, paid, pending: total - paid };
+                let total = 0;
+                let paid = 0;
+                let pending = 0;
+                let branches = {
+                    NQ: { total: 0, paid: 0, pending: 0 },
+                    HD: { total: 0, paid: 0, pending: 0 }
+                };
+
+                const parseMoney = (val) => {
+                    if (!val) return 0;
+                    if (typeof val === 'number') return val;
+                    return parseFloat(val.toString().replace(/,/g, '')) || 0;
+                };
+
+                rows.forEach(r => {
+                    if (!r) return;
+                    const branchStr = (r.Branch || r.branch || "").toLowerCase();
+                    const isNQ = branchStr.includes("ngô") || branchStr.includes("nq");
+                    const branchKey = isNQ ? "NQ" : (branchStr.includes("hưng") || branchStr.includes("hd") ? "HD" : null);
+
+                    const rTotal = parseMoney(r["Final Amount"] || r.Amount || r.amount || "0");
+                    const rPaid = parseMoney(r["Paid Amount"] || r.Paid || r.paid || "0");
+                    const rPending = parseMoney(r["Pending Amount"] || r.Pending || r.pending || "0");
+
+                    total += rTotal;
+                    paid += rPaid;
+                    pending += rPending;
+
+                    if (branchKey && branches[branchKey]) {
+                        branches[branchKey].total += rTotal;
+                        branches[branchKey].paid += rPaid;
+                        branches[branchKey].pending += rPending;
+                    }
+                });
+
+                return { total, paid, pending, branches };
             },
             mapStudents(rows) {
                 if (!rows || !Array.isArray(rows)) return null;
@@ -1679,64 +1705,127 @@
 
 
         const DebtOverviewCard = ({ data }) => {
-            const total = data?.total || 100000000;
-            const paid = data?.paid || 75000000;
-            const pending = data?.pending || 25000000;
-            const paidPct = Math.round((paid / total) * 100) || 0;
-            const pendingPct = 100 - paidPct;
+            const [showDetails, setShowDetails] = useState(false);
+
+            const total = data?.total || 0;
+            const paid = data?.paid || 0;
+            const pending = data?.pending || 0;
+            const paidPct = total ? Math.round((paid / total) * 100) : 0;
+            const pendingPct = total ? (100 - paidPct) : 0;
 
             const formatMoney = (val) => {
-                if (val >= 1000000) return (val / 1000000).toFixed(1) + 'M';
-                return val.toLocaleString();
+                if (val >= 1000000) return (val / 1000000).toFixed(1) + 'M đ';
+                return val.toLocaleString() + ' đ';
+            };
+
+            const branches = data?.branches || {
+                NQ: { total: 0, paid: 0, pending: 0 },
+                HD: { total: 0, paid: 0, pending: 0 }
             };
 
             return (
-                <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm group hover:shadow-md transition-all h-full flex flex-col items-center overflow-hidden">
-                    <div className="w-full flex justify-between items-center mb-10 shrink-0">
+                <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm group hover:shadow-md transition-all h-full flex flex-col items-center overflow-hidden relative">
+                    <div className="w-full flex justify-between items-center mb-10 shrink-0 relative z-10">
                         <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight flex items-center gap-3">
                             <Icon name="ph-chart-pie-slice" className="text-brand-600" size={24} /> Bảng công nợ
                         </h3>
-                        <button className="text-[10px] font-bold text-brand-600 hover:underline px-4 py-2 bg-brand-50 rounded-xl whitespace-nowrap">Chi tiết</button>
+                        <button 
+                            onClick={() => setShowDetails(!showDetails)}
+                            className={`text-[10px] font-bold px-4 py-2 rounded-xl whitespace-nowrap transition-colors ${showDetails ? 'bg-brand-600 text-white shadow-md' : 'bg-brand-50 text-brand-600 hover:bg-brand-100'}`}
+                        >
+                            {showDetails ? 'Quay lại' : 'Chi tiết'}
+                        </button>
                     </div>
                     
-                    <div className="flex-1 flex flex-col items-center justify-center w-full min-h-0">
-                        <div className="relative w-48 h-48 lg:w-56 lg:h-56 flex items-center justify-center shrink-0 mb-10">
-                            <svg className="w-full h-full transform -rotate-90" viewBox="0 0 224 224">
-                                <circle cx="112" cy="112" r="100" stroke="#f8fafc" strokeWidth="20" fill="transparent" />
-                                <circle cx="112" cy="112" r="100" stroke="#7c3aed" strokeWidth="20" fill="transparent" strokeDasharray={`${(paidPct * 628.3) / 100} 628.3`} strokeLinecap="round" />
-                                <circle cx="112" cy="112" r="100" stroke="#ec4899" strokeWidth="20" fill="transparent" strokeDasharray={`${(pendingPct * 628.3) / 100} 628.3`} strokeDashoffset={`${-(paidPct * 628.3) / 100}`} strokeLinecap="round" />
-                            </svg>
-                            <div className="absolute flex flex-col items-center">
-                                <span className="text-3xl font-black text-slate-800 tracking-tighter leading-none">{formatMoney(total)}</span>
-                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Total</span>
+                    {!showDetails ? (
+                        <div className="flex-1 flex flex-col items-center justify-center w-full min-h-0 animate-fade-in">
+                            <div className="relative w-48 h-48 lg:w-56 lg:h-56 flex items-center justify-center shrink-0 mb-10">
+                                <svg className="w-full h-full transform -rotate-90" viewBox="0 0 224 224">
+                                    <circle cx="112" cy="112" r="100" stroke="#f8fafc" strokeWidth="20" fill="transparent" />
+                                    <circle cx="112" cy="112" r="100" stroke="#7c3aed" strokeWidth="20" fill="transparent" strokeDasharray={`${(paidPct * 628.3) / 100} 628.3`} strokeLinecap="round" />
+                                    <circle cx="112" cy="112" r="100" stroke="#ec4899" strokeWidth="20" fill="transparent" strokeDasharray={`${(pendingPct * 628.3) / 100} 628.3`} strokeDashoffset={`${-(paidPct * 628.3) / 100}`} strokeLinecap="round" />
+                                </svg>
+                                <div className="absolute flex flex-col items-center">
+                                    <span className="text-3xl font-black text-slate-800 tracking-tighter leading-none">{formatMoney(total)}</span>
+                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Tổng cộng</span>
+                                </div>
                             </div>
-                        </div>
 
-                        <div className="w-full space-y-5 px-2">
-                            <div className="space-y-2">
-                                <div className="flex justify-between items-center gap-2">
-                                    <span className="font-bold text-slate-500 flex items-center gap-3 uppercase tracking-tighter text-[11px]">
-                                        <div className="w-3 h-3 rounded-full bg-brand-600 shrink-0" /> Paid Amount
-                                    </span>
-                                    <span className="font-black text-slate-800 text-base">{paidPct}%</span>
+                            <div className="w-full space-y-5 px-2">
+                                <div className="space-y-2">
+                                    <div className="flex justify-between items-center gap-2">
+                                        <span className="font-bold text-slate-500 flex items-center gap-3 uppercase tracking-tighter text-[11px]">
+                                            <div className="w-3 h-3 rounded-full bg-brand-600 shrink-0" /> Paid Amount
+                                        </span>
+                                        <div className="text-right">
+                                            <span className="font-black text-slate-800 text-base">{paidPct}%</span>
+                                            <span className="text-[10px] font-bold text-slate-400 ml-2">({formatMoney(paid)})</span>
+                                        </div>
+                                    </div>
+                                    <div className="h-2 w-full bg-gray-50 rounded-full overflow-hidden">
+                                        <div className="h-full bg-brand-600 rounded-full shadow-lg shadow-brand-200 transition-all duration-1000" style={{ width: `${paidPct}%` }} />
+                                    </div>
                                 </div>
-                                <div className="h-2 w-full bg-gray-50 rounded-full overflow-hidden">
-                                    <div className="h-full bg-brand-600 rounded-full shadow-lg shadow-brand-200 transition-all duration-1000" style={{ width: `${paidPct}%` }} />
-                                </div>
-                            </div>
-                            <div className="space-y-2">
-                                <div className="flex justify-between items-center gap-2">
-                                    <span className="font-bold text-slate-500 flex items-center gap-3 uppercase tracking-tighter text-[11px]">
-                                        <div className="w-3 h-3 rounded-full bg-pink-500 shrink-0" /> Pending Amount
-                                    </span>
-                                    <span className="font-black text-slate-800 text-base">{pendingPct}%</span>
-                                </div>
-                                <div className="h-2 w-full bg-gray-50 rounded-full overflow-hidden">
-                                    <div className="h-full bg-pink-500 rounded-full shadow-lg shadow-pink-200 transition-all duration-1000" style={{ width: `${pendingPct}%` }} />
+                                <div className="space-y-2">
+                                    <div className="flex justify-between items-center gap-2">
+                                        <span className="font-bold text-slate-500 flex items-center gap-3 uppercase tracking-tighter text-[11px]">
+                                            <div className="w-3 h-3 rounded-full bg-pink-500 shrink-0" /> Pending Amount
+                                        </span>
+                                        <div className="text-right">
+                                            <span className="font-black text-slate-800 text-base">{pendingPct}%</span>
+                                            <span className="text-[10px] font-bold text-slate-400 ml-2">({formatMoney(pending)})</span>
+                                        </div>
+                                    </div>
+                                    <div className="h-2 w-full bg-gray-50 rounded-full overflow-hidden">
+                                        <div className="h-full bg-pink-500 rounded-full shadow-lg shadow-pink-200 transition-all duration-1000" style={{ width: `${pendingPct}%` }} />
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    ) : (
+                        <div className="flex-1 w-full animate-fade-in flex flex-col justify-center space-y-6 overflow-y-auto no-scrollbar">
+                            {['NQ', 'HD'].map(branch => {
+                                const bData = branches[branch];
+                                const bTotal = bData.total || 0;
+                                const bPaid = bData.paid || 0;
+                                const bPending = bData.pending || 0;
+                                const bPaidPct = bTotal ? Math.round((bPaid / bTotal) * 100) : 0;
+                                const bPendingPct = bTotal ? (100 - bPaidPct) : 0;
+
+                                return (
+                                    <div key={branch} className="bg-slate-50 p-6 rounded-2xl border border-slate-100 space-y-4">
+                                        <div className="flex justify-between items-center border-b border-slate-200 pb-3">
+                                            <h4 className="font-black text-slate-800 text-sm uppercase tracking-widest flex items-center gap-2">
+                                                <Icon name="ph-buildings" className="text-slate-400" size={16} /> Chi nhánh {branch === 'NQ' ? 'Ngô Quyền' : 'Hưng Định'}
+                                            </h4>
+                                            <span className="text-[10px] font-black text-brand-600 bg-brand-50 px-2 py-1 rounded-lg uppercase tracking-widest">{formatMoney(bTotal)}</span>
+                                        </div>
+                                        
+                                        <div className="space-y-4">
+                                            <div className="space-y-1.5">
+                                                <div className="flex justify-between text-[11px] font-bold">
+                                                    <span className="text-slate-500 uppercase flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-brand-500"/> Paid</span>
+                                                    <span className="text-slate-800">{bPaidPct}% <span className="text-slate-400 ml-1">({formatMoney(bPaid)})</span></span>
+                                                </div>
+                                                <div className="h-1.5 w-full bg-gray-200 rounded-full overflow-hidden">
+                                                    <div className="h-full bg-brand-500 rounded-full" style={{ width: `${bPaidPct}%` }} />
+                                                </div>
+                                            </div>
+                                            <div className="space-y-1.5">
+                                                <div className="flex justify-between text-[11px] font-bold">
+                                                    <span className="text-slate-500 uppercase flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-pink-500"/> Pending</span>
+                                                    <span className="text-slate-800">{bPendingPct}% <span className="text-slate-400 ml-1">({formatMoney(bPending)})</span></span>
+                                                </div>
+                                                <div className="h-1.5 w-full bg-gray-200 rounded-full overflow-hidden">
+                                                    <div className="h-full bg-pink-500 rounded-full" style={{ width: `${bPendingPct}%` }} />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
                 </div>
             );
         };
@@ -2421,7 +2510,7 @@
             }, [appData, activeWeek]);
 
             const debtData = useMemo(() => {
-                const rows = appData['Cong_No'];
+                const rows = appData['Fees'];
                 return Array.isArray(rows) ? DataMapper.mapDebt(rows) : null;
             }, [appData]);
 
