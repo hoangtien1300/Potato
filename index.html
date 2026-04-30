@@ -1704,10 +1704,63 @@
 
 
 
-        const DebtOverviewCard = ({ data }) => {
-            const total = data?.total || 0;
-            const paid = data?.paid || 0;
-            const pending = data?.pending || 0;
+        const DebtOverviewCard = ({ rows }) => {
+            const [timeFilter, setTimeFilter] = useState('all');
+
+            const filteredRows = useMemo(() => {
+                if (!rows || !Array.isArray(rows)) return [];
+                if (timeFilter === 'all') return rows;
+
+                const now = new Date();
+                const currentYear = now.getFullYear();
+                const currentMonth = now.getMonth();
+                const currentQuarter = Math.floor(currentMonth / 3);
+
+                return rows.filter(r => {
+                    const dateStr = r["Paid Date"] || r["Created Date"] || r.Date || r.date;
+                    if (!dateStr) return false;
+                    
+                    const parts = dateStr.toString().split(/[\s/:-]+/);
+                    if (parts.length < 3) return true;
+                    
+                    // Assumes DD/MM/YYYY
+                    const day = parseInt(parts[0], 10);
+                    const month = parseInt(parts[1], 10) - 1;
+                    let year = parseInt(parts[2], 10);
+                    if (year < 100) year += 2000;
+                    
+                    const rowDate = new Date(year, month, day);
+                    if (isNaN(rowDate.getTime())) return true;
+
+                    const rowYear = rowDate.getFullYear();
+                    const rowMonth = rowDate.getMonth();
+                    const rowQuarter = Math.floor(rowMonth / 3);
+
+                    switch(timeFilter) {
+                        case 'this_month': return rowYear === currentYear && rowMonth === currentMonth;
+                        case 'last_month': {
+                            const lastM = currentMonth === 0 ? 11 : currentMonth - 1;
+                            const lastMY = currentMonth === 0 ? currentYear - 1 : currentYear;
+                            return rowYear === lastMY && rowMonth === lastM;
+                        }
+                        case 'this_quarter': return rowYear === currentYear && rowQuarter === currentQuarter;
+                        case 'last_quarter': {
+                            const lastQ = currentQuarter === 0 ? 3 : currentQuarter - 1;
+                            const lastQY = currentQuarter === 0 ? currentYear - 1 : currentYear;
+                            return rowYear === lastQY && rowQuarter === lastQ;
+                        }
+                        case 'this_year': return rowYear === currentYear;
+                        case 'last_year': return rowYear === currentYear - 1;
+                        default: return true;
+                    }
+                });
+            }, [rows, timeFilter]);
+
+            const data = useMemo(() => DataMapper.mapDebt(filteredRows) || {}, [filteredRows]);
+
+            const total = data.total || 0;
+            const paid = data.paid || 0;
+            const pending = data.pending || 0;
             const paidPct = total ? Math.round((paid / total) * 100) : 0;
             const pendingPct = total ? (100 - paidPct) : 0;
 
@@ -1726,6 +1779,19 @@
                         <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight flex items-center gap-3">
                             <Icon name="ph-chart-pie-slice" className="text-brand-600" size={24} /> Bảng công nợ
                         </h3>
+                        <select 
+                            value={timeFilter} 
+                            onChange={(e) => setTimeFilter(e.target.value)}
+                            className="text-xs font-bold text-slate-600 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 outline-none focus:border-brand-500 cursor-pointer"
+                        >
+                            <option value="all">Tất cả thời gian</option>
+                            <option value="this_month">Tháng này</option>
+                            <option value="last_month">Tháng trước</option>
+                            <option value="this_quarter">Quý này</option>
+                            <option value="last_quarter">Quý trước</option>
+                            <option value="this_year">Năm nay</option>
+                            <option value="last_year">Năm trước</option>
+                        </select>
                     </div>
                     
                     <div className="flex flex-col lg:flex-row gap-12 items-center lg:items-stretch w-full animate-fade-in">
@@ -2513,10 +2579,7 @@
                 };
             }, [appData, activeWeek]);
 
-            const debtData = useMemo(() => {
-                const rows = appData['Fees'];
-                return Array.isArray(rows) ? DataMapper.mapDebt(rows) : null;
-            }, [appData]);
+            const debtRows = appData['Fees'] || [];
 
             const studentData = useMemo(() => {
                 const rows = appData['Hoc_Vien'];
@@ -2775,7 +2838,7 @@
                                         allShifts={shiftsByWeek}
                                     />
 
-                                    <DebtOverviewCard data={debtData} />
+                                    <DebtOverviewCard rows={debtRows} />
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-[30px]">
                                         <TaskOverviewCard />
