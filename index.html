@@ -394,7 +394,7 @@
                     // Identify the actual header row dynamically
                     // Some AppSheet exports have category headers on the first row
                     // We look for a known column like "ID Dashboard" or "Class Name"
-                    const headerPattern = /ID Dashboard|Class Name|ID Class/;
+                    const headerPattern = /ID Dashboard|Class Name|ID Class|ID Emp/;
                     const match = csvText.match(headerPattern);
                     
                     let csvToParse = csvText;
@@ -2685,7 +2685,18 @@
                                             <tr key={idx} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors last:border-0">
                                                 <td className="p-4 text-xs font-black text-slate-800 uppercase tracking-tight">{c.name}</td>
                                                 <td className="p-4 text-center text-xs font-bold text-slate-600">{c.total}</td>
-                                                <td className="p-4 text-center text-xs font-bold text-brand-600">{c.teaching} <span className="text-slate-300 mx-1 font-normal">/</span> <span className="text-emerald-600">{c.completed}</span></td>
+                                                <td className="p-4 align-middle">
+                                                    <div className="flex flex-col gap-1.5 w-full max-w-[120px] mx-auto">
+                                                        <div className="flex items-center justify-between text-[9px] font-bold">
+                                                            <span className="text-brand-600" title="Teaching">{c.teaching} <span className="text-[7px] text-brand-400">T</span></span>
+                                                            <span className="text-emerald-600" title="Completed">{c.completed} <span className="text-[7px] text-emerald-400">C</span></span>
+                                                        </div>
+                                                        <div className="w-full bg-slate-100 rounded-full h-1.5 flex overflow-hidden">
+                                                            <div className="bg-brand-500 h-1.5 transition-all duration-500" style={{ width: `${(c.teaching/c.total)*100}%` }}></div>
+                                                            <div className="bg-emerald-500 h-1.5 transition-all duration-500" style={{ width: `${(c.completed/c.total)*100}%` }}></div>
+                                                        </div>
+                                                    </div>
+                                                </td>
                                             </tr>
                                         ))}
                                         {classSummary.length === 0 && (
