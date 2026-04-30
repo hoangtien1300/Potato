@@ -187,6 +187,7 @@
             .sidebar {
                 position: fixed;
                 left: -260px;
+                width: 260px !important;
                 z-index: 1000;
                 height: 100vh;
                 background: white;
@@ -2842,39 +2843,37 @@
                             <div className="space-y-[30px] animate-fade-in relative">
                                 {/* Section Tổng quan */}
                                 <div className="space-y-6">
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-1.5 h-6 bg-brand-600 rounded-full"></div>
-                                        <h2 className="text-sm font-extrabold text-gray-800 uppercase tracking-tight">Overview</h2>
-                                    </div>
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-[30px]">
-                                        <StatCardV3 
-                                            value={totalStudents || "0"} 
-                                            label="Students" 
-                                            icon="users" 
-                                            iconbg="bg-potato-blue" 
-                                        />
-                                        <StatCardV3 
-                                            value={classes?.metrics?.total || "0"} 
-                                            label="Class" 
-                                            icon="book-open" 
-                                            iconbg="bg-potato-yellow" 
-                                        />
-                                        <StatCardV3 
-                                            value={Array.isArray(appData['Lich_Truc']) ? [...new Set(appData['Lich_Truc'].map(r => r.Staff || r["Nhân viên"]))].length : "21"} 
-                                            label="Employee" 
-                                            icon="user-check" 
-                                            iconbg="bg-potato-pink" 
-                                        />
-                                    </div>
-                                    
-                                    <div className="flex justify-center mt-2">
-                                        <button 
-                                            onClick={() => setShowUnifiedOverview(!showUnifiedOverview)}
-                                            className="px-6 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-full text-xs font-bold hover:bg-gray-50 hover:border-brand-300 transition-all shadow-sm flex items-center gap-2"
-                                        >
-                                            <Icon name={showUnifiedOverview ? "caret-up" : "caret-down"} className="text-brand-500" />
-                                            {showUnifiedOverview ? "Ẩn chi tiết" : "Xem chi tiết"}
-                                        </button>
+                                    <div 
+                                        className="cursor-pointer group transition-all duration-300"
+                                        onClick={() => setShowUnifiedOverview(!showUnifiedOverview)}
+                                    >
+                                        <div className="flex items-center gap-4 mb-6">
+                                            <div className="w-1.5 h-6 bg-brand-600 rounded-full"></div>
+                                            <h2 className="text-sm font-extrabold text-gray-800 uppercase tracking-tight flex items-center gap-2">
+                                                Overview
+                                                <Icon name={showUnifiedOverview ? "caret-up" : "caret-down"} className="text-brand-500 transition-transform group-hover:translate-y-0.5" size={16} />
+                                            </h2>
+                                        </div>
+                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-[30px]">
+                                            <StatCardV3 
+                                                value={totalStudents || "0"} 
+                                                label="Students" 
+                                                icon="users" 
+                                                iconbg="bg-potato-blue" 
+                                            />
+                                            <StatCardV3 
+                                                value={classes?.metrics?.total || "0"} 
+                                                label="Class" 
+                                                icon="book-open" 
+                                                iconbg="bg-potato-yellow" 
+                                            />
+                                            <StatCardV3 
+                                                value={Array.isArray(appData['Lich_Truc']) ? [...new Set(appData['Lich_Truc'].map(r => r.Staff || r["Nhân viên"]))].length : "21"} 
+                                                label="Employee" 
+                                                icon="user-check" 
+                                                iconbg="bg-potato-pink" 
+                                            />
+                                        </div>
                                     </div>
 
                                     {/* Sub-Views for Overview */}
@@ -2966,7 +2965,7 @@
                     />
 
                     <div className="main-content flex-1 flex flex-col min-w-0 h-screen overflow-hidden relative">
-                        <header className="h-[80px] bg-bgLight flex items-center justify-between px-8 z-50 shrink-0">
+                        <header className="h-[80px] bg-bgLight flex items-center justify-between px-4 md:px-8 z-50 shrink-0">
                             <div className="flex items-center gap-4">
                                 <button 
                                     id="menu-btn"
@@ -2985,7 +2984,7 @@
                             </div>
                         </header>
 
-                        <main className="flex-1 overflow-y-auto no-scrollbar pl-0 pr-[30px] pb-[30px]">
+                        <main className="flex-1 overflow-y-auto no-scrollbar px-4 md:px-0 md:pr-[30px] pb-6 md:pb-[30px]">
                             <div className="max-w-full pt-2">
                                 {(() => {
                                     try {
