@@ -378,7 +378,8 @@
                 'Hoc_Vien': '1989626144',
                 'Lich_Truc': '0',
                 'Class_Dashboard': '1019913137',
-                'Fees': '1245774263'
+                'Fees': '1245774263',
+                'Employee': '790611745'
             },
 
             async fetchData(tableName) {
@@ -2599,21 +2600,22 @@
             // Process Employee Data
             const employeeSummary = useMemo(() => {
                 if (!Array.isArray(employeeData)) return [];
-                const depts = {};
+                const positions = {};
                 const seen = new Set();
                 employeeData.forEach(r => {
-                    const staff = r.Staff || r["Nhân viên"] || r.staff;
-                    const dept = r.Department || r.department || r.Dept || r.dept;
-                    if (!staff || !dept) return;
+                    if (r.Status && !r.Status.includes('Working')) return;
+                    const staff = r["Full Name"] || r.Staff || r["Nhân viên"] || r.staff;
+                    const pos = r.Position || r.position || "Unknown";
+                    if (!staff || !pos || pos.trim() === "") return;
                     
-                    const uniqueKey = `${staff}_${dept}`;
+                    const uniqueKey = `${staff}_${pos}`;
                     if (!seen.has(uniqueKey)) {
                         seen.add(uniqueKey);
-                        if (!depts[dept]) depts[dept] = 0;
-                        depts[dept]++;
+                        if (!positions[pos]) positions[pos] = 0;
+                        positions[pos]++;
                     }
                 });
-                return Object.entries(depts).map(([name, count]) => ({ name, count })).sort((a,b) => b.count - a.count);
+                return Object.entries(positions).map(([name, count]) => ({ name, count })).sort((a,b) => b.count - a.count);
             }, [employeeData]);
 
             // Students: Align NQ and HD statuses into rows
@@ -2705,7 +2707,7 @@
                                 <table className="w-full text-left border-collapse min-w-full">
                                     <thead className="bg-slate-50/80">
                                         <tr>
-                                            <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">Bộ phận</th>
+                                            <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">Vị trí</th>
                                             <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center border-b border-slate-100">Số lượng</th>
                                         </tr>
                                     </thead>
@@ -2870,7 +2872,7 @@
                                                 iconbg="bg-potato-yellow" 
                                             />
                                             <StatCardV3 
-                                                value={Array.isArray(appData['Lich_Truc']) ? [...new Set(appData['Lich_Truc'].map(r => r.Staff || r["Nhân viên"]))].length : "21"} 
+                                                value={Array.isArray(appData['Employee']) ? appData['Employee'].filter(r => r.Status && r.Status.includes('Working')).length : "0"} 
                                                 label="Employee" 
                                                 icon="user-check" 
                                                 iconbg="bg-potato-pink" 
@@ -2883,7 +2885,7 @@
                                         <UnifiedOverviewDetails 
                                             studentData={studentData}
                                             classDashboard={appData['Class_Dashboard']}
-                                            employeeData={appData['Lich_Truc']}
+                                            employeeData={appData['Employee']}
                                         />
                                     )}
                                 </div>
