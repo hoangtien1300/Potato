@@ -1986,8 +1986,10 @@
             const [viewMode, setViewMode] = React.useState('week');
             const [startDayIdx, setStartDayIdx] = React.useState(0);
 
-            let shifts = [];
             const dataToUse = allShifts || SHIFT_DATA;
+            
+            // Standard fetch for week/day view
+            let shifts = [];
             if (shiftDept === 'All') {
                 Object.keys(dataToUse).forEach(dept => {
                     const weekData = dataToUse[dept][currentWeek];
@@ -2032,7 +2034,6 @@
                     const { start, end } = timeToMinutes(s.time);
                     return { ...s, start, end };
                 });
-                
                 processed.sort((a, b) => a.start - b.start);
                 
                 let columns = [];
@@ -2060,7 +2061,6 @@
                     s.top = `${pos.top}%`;
                     s.height = `${pos.height}%`;
                 });
-                
                 return processed;
             };
 
@@ -2070,10 +2070,8 @@
             if (viewMode === 'day') visibleDaysCount = 1;
             else if (viewMode === '3days') visibleDaysCount = 3;
             else if (viewMode === 'week') visibleDaysCount = 7;
-            else if (viewMode === 'month') visibleDaysCount = 30;
 
             const visibleDays = [];
-            
             const weekDatesStr = {
                 14: "April 06 - April 12",
                 15: "April 13 - April 19",
@@ -2094,7 +2092,6 @@
             for (let i = 0; i < visibleDaysCount; i++) {
                 let dayIndex = (startDayIdx + i) % 7;
                 let dayName = allDays[dayIndex];
-                
                 let date = new Date(startDate);
                 date.setDate(date.getDate() + startDayIdx + i);
                 let dateStr = `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}`;
@@ -2106,27 +2103,77 @@
                 });
             }
 
+            // Month View Setup
+            const monthDays = [];
+            let allMonthShifts = [];
+            if (viewMode === 'month') {
+                let firstDayOfMonth = new Date(startDate.getFullYear(), startDate.getMonth(), 1);
+                let dayOfWeek = firstDayOfMonth.getDay(); 
+                let offset = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+                let monthStart = new Date(firstDayOfMonth);
+                monthStart.setDate(monthStart.getDate() - offset);
+                
+                for (let i = 0; i < 35; i++) {
+                    let d = new Date(monthStart);
+                    d.setDate(d.getDate() + i);
+                    monthDays.push({
+                        dateObj: d,
+                        day: d.getDate(),
+                        isCurrentMonth: d.getMonth() === startDate.getMonth(),
+                        dayName: allDays[i % 7]
+                    });
+                }
+
+                Object.keys(dataToUse).forEach(dept => {
+                    if (shiftDept !== 'All' && dept !== shiftDept) return;
+                    Object.keys(dataToUse[dept]).forEach(weekKey => {
+                        let wIdx = parseInt(weekKey);
+                        if (isNaN(wIdx)) return;
+                        let weekDiff = wIdx - currentWeek;
+                        if (Math.abs(weekDiff) > 5) return;
+                        
+                        let wMonday = new Date(startDate);
+                        wMonday.setDate(wMonday.getDate() + (weekDiff * 7));
+                        let wShifts = dataToUse[dept][weekKey];
+                        if (wShifts) {
+                            wShifts.forEach(s => {
+                                if (s.staff === 'OFF') return;
+                                let dayIndex = allDays.indexOf(s.day);
+                                if (dayIndex === -1) return;
+                                let sDate = new Date(wMonday);
+                                sDate.setDate(sDate.getDate() + dayIndex);
+                                allMonthShifts.push({
+                                    ...s,
+                                    department: dept,
+                                    dateKey: `${sDate.getFullYear()}-${sDate.getMonth()}-${sDate.getDate()}`
+                                });
+                            });
+                        }
+                    });
+                });
+            }
+
             return (
                 <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 animate-fade-in relative overflow-hidden group">
                     <div className="flex flex-col gap-6 mb-8 relative z-10">
-                        {/* Header with Title */}
-                        <div className="flex items-center gap-5">
-                            <div className="w-14 h-14 rounded-2xl bg-brand-50 flex items-center justify-center text-brand-600 shadow-inner group-hover:scale-110 transition-transform duration-500">
-                                <Icon name="calendar" size={28} />
+                        {/* Header Row: Title on Left, View Filters on Right */}
+                        <div className="flex flex-col md:flex-row justify-between items-start md:items-start gap-6">
+                            {/* Title (Left) */}
+                            <div className="flex items-center gap-5">
+                                <div className="w-14 h-14 rounded-2xl bg-brand-50 flex items-center justify-center text-brand-600 shadow-inner group-hover:scale-110 transition-transform duration-500">
+                                    <Icon name="calendar" size={28} />
+                                </div>
+                                <div>
+                                    <h2 className="text-sm font-extrabold text-gray-800 uppercase tracking-tight leading-none mb-1">Schedule</h2>
+                                    <p className="text-xs font-bold text-gray-400 uppercase tracking-wide flex items-center gap-1">
+                                        This week - <span className="lowercase italic font-medium">{weekDatesStr}</span>
+                                    </p>
+                                </div>
                             </div>
-                            <div>
-                                <h2 className="text-sm font-extrabold text-gray-800 uppercase tracking-tight leading-none mb-1">Schedule</h2>
-                                <p className="text-xs font-bold text-gray-400 uppercase tracking-wide flex items-center gap-1">
-                                    This week - <span className="lowercase italic font-medium">{weekDatesStr}</span>
-                                </p>
-                            </div>
-                        </div>
 
-                        {/* Top Controls: View Filter, Week Filter, Dept Filter */}
-                        <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4">
-                            
-                            {/* Filters Row 1: Week Nav and View Mode */}
-                            <div className="flex flex-wrap items-center gap-3">
+                            {/* Filters (Right, Stacked) */}
+                            <div className="flex flex-col items-end gap-3">
+                                {/* Row 1: Week Filter */}
                                 <div className="flex items-center bg-gray-50/50 p-1 rounded-xl border border-gray-100">
                                     <button onClick={() => setActiveWeek(prev => Math.max(1, prev - 1))} className="p-1.5 hover:bg-white rounded-lg transition-all text-gray-400 hover:text-brand-600">
                                         <Icon name="chevron-left" size={14} />
@@ -2137,121 +2184,169 @@
                                     </button>
                                 </div>
                                 
-                                <div className="flex items-center bg-gray-50/50 p-1 rounded-xl border border-gray-100">
-                                    {['day', '3days', 'week', 'month'].map(v => (
-                                        <button 
-                                            key={v}
-                                            onClick={() => { setViewMode(v); setStartDayIdx(0); }}
-                                            className={`px-3 py-1.5 rounded-lg text-[10px] font-black transition-all uppercase tracking-widest ${viewMode === v ? 'bg-white text-brand-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
-                                        >
-                                            {v === 'day' ? '1 Day' : v === '3days' ? '3 Days' : v}
-                                        </button>
-                                    ))}
-                                </div>
-                                
-                                {(viewMode === 'day' || viewMode === '3days') && (
+                                {/* Row 2: View Mode Filter */}
+                                <div className="flex items-center gap-2">
                                     <div className="flex items-center bg-gray-50/50 p-1 rounded-xl border border-gray-100">
-                                        <button onClick={() => setStartDayIdx(prev => Math.max(0, prev - 1))} className="p-1.5 hover:bg-white rounded-lg transition-all text-gray-400 hover:text-brand-600">
-                                            <Icon name="caret-left" size={14} />
-                                        </button>
-                                        <button onClick={() => setStartDayIdx(prev => prev + 1)} className="p-1.5 hover:bg-white rounded-lg transition-all text-gray-400 hover:text-brand-600">
-                                            <Icon name="caret-right" size={14} />
-                                        </button>
+                                        {['day', '3days', 'week', 'month'].map(v => (
+                                            <button 
+                                                key={v}
+                                                onClick={() => { setViewMode(v); setStartDayIdx(0); }}
+                                                className={`px-3 py-1.5 rounded-lg text-[10px] font-black transition-all uppercase tracking-widest ${viewMode === v ? 'bg-white text-brand-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
+                                            >
+                                                {v === 'day' ? '1 Day' : v === '3days' ? '3 Days' : v}
+                                            </button>
+                                        ))}
                                     </div>
-                                )}
-                            </div>
 
-                            {/* Dept Filter */}
-                            <div className="flex flex-wrap items-center gap-2">
-                                {['All', 'Operation', 'Teacher', 'Academic'].map(dept => (
-                                    <button 
-                                        key={dept}
-                                        onClick={() => setShiftDept(dept)}
-                                        className={`px-4 py-2 rounded-lg text-[9px] font-black transition-all uppercase tracking-widest border ${shiftDept === dept ? 'bg-brand-600 border-brand-600 text-white shadow-md shadow-brand-100' : 'bg-white border-gray-100 text-gray-400 hover:border-brand-200 hover:text-gray-600'}`}
-                                    >
-                                        {dept === 'All' ? 'View All' : dept}
-                                    </button>
-                                ))}
+                                    {(viewMode === 'day' || viewMode === '3days') && (
+                                        <div className="flex items-center bg-gray-50/50 p-1 rounded-xl border border-gray-100">
+                                            <button onClick={() => setStartDayIdx(prev => Math.max(0, prev - 1))} className="p-1.5 hover:bg-white rounded-lg transition-all text-gray-400 hover:text-brand-600">
+                                                <Icon name="caret-left" size={14} />
+                                            </button>
+                                            <button onClick={() => setStartDayIdx(prev => prev + 1)} className="p-1.5 hover:bg-white rounded-lg transition-all text-gray-400 hover:text-brand-600">
+                                                <Icon name="caret-right" size={14} />
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
+                        </div>
+
+                        {/* Dept Filter */}
+                        <div className="flex flex-wrap items-center justify-start gap-2">
+                            {['All', 'Operation', 'Teacher', 'Academic'].map(dept => (
+                                <button 
+                                    key={dept}
+                                    onClick={() => setShiftDept(dept)}
+                                    className={`px-4 py-2 rounded-lg text-[9px] font-black transition-all uppercase tracking-widest border ${shiftDept === dept ? 'bg-brand-600 border-brand-600 text-white shadow-md shadow-brand-100' : 'bg-white border-gray-100 text-gray-400 hover:border-brand-200 hover:text-gray-600'}`}
+                                >
+                                    {dept === 'All' ? 'View All' : dept}
+                                </button>
+                            ))}
                         </div>
                     </div>
 
-                    {/* Time Grid View with Scroll */}
-                    <div className="calendar-grid shadow-inner flex flex-col max-h-[600px] overflow-y-auto overflow-x-auto border border-gray-100 rounded-2xl bg-gray-50/10 relative">
-                        {/* Day Headers - Sticky */}
-                        <div className="flex border-b border-gray-100 bg-white sticky top-0 z-30 shrink-0 min-w-max">
-                            <div className="w-[60px] border-r border-gray-100 flex items-center justify-center bg-gray-50/50 shrink-0 sticky left-0 z-40">
-                                <Icon name="clock" size={14} className="text-gray-400" />
-                            </div>
-                            <div className="flex-1 flex divide-x divide-gray-100" style={{ minWidth: `${visibleDaysCount * 120}px` }}>
-                                {visibleDays.map((day, idx) => (
-                                    <div key={idx} className={`py-3 flex flex-col items-center justify-center flex-1 ${day.originalName === 'Chủ Nhật' ? 'bg-red-50/30' : ''}`}>
-                                        <p className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">{day.name}</p>
-                                        <p className="text-[9px] font-bold text-brand-600 mt-0.5">{day.dateStr}</p>
+                    {viewMode === 'month' ? (
+                        <div className="bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm">
+                            {/* Days of week header */}
+                            <div className="grid grid-cols-7 border-b border-gray-100 bg-gray-50/50">
+                                {allDays.map(d => (
+                                    <div key={d} className="py-3 text-center border-r border-gray-100 last:border-0">
+                                        <span className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">{d}</span>
                                     </div>
                                 ))}
                             </div>
-                        </div>
-
-                        {/* Calendar Body Container */}
-                        <div className="flex flex-1 relative min-h-[1200px] min-w-max"> 
-                            {/* Time axis markers */}
-                            <div className="w-[60px] bg-gray-50/20 border-r border-gray-100 relative shrink-0 sticky left-0 z-20">
-                                {HOURS.map(hour => (
-                                    <div key={hour} className="absolute w-full flex items-start justify-center" style={{ top: `${(hour / 24) * 100}%` }}>
-                                        <span className={`text-[9px] font-black tracking-tighter ${hour % 2 === 0 ? 'text-gray-400' : 'text-gray-300'}`}>
-                                            {hour < 10 ? `0${hour}:00` : `${hour}:00`}
-                                        </span>
-                                    </div>
-                                ))}
-                            </div>
-
-                            {/* Columns for Shifts */}
-                            <div className="flex-1 flex divide-x divide-gray-100 relative" style={{ minWidth: `${visibleDaysCount * 120}px` }}>
-                                {/* Horizontal Grid Lines for Hours */}
-                                {HOURS.map((hour) => (
-                                    <div key={hour} className="absolute w-full border-t border-gray-100/40 pointer-events-none" style={{ top: `${(hour / 24) * 100}%` }}></div>
-                                ))}
-
-                                {visibleDays.map((day, dayIdx) => {
-                                    const dayShifts = shifts.filter(s => s.day === day.originalName && s.staff !== 'OFF');
-                                    const processedShifts = processDayShifts(dayShifts);
+                            
+                            {/* Calendar 35 days grid */}
+                            <div className="grid grid-cols-7">
+                                {monthDays.map((dObj, idx) => {
+                                    const dateKey = `${dObj.dateObj.getFullYear()}-${dObj.dateObj.getMonth()}-${dObj.dateObj.getDate()}`;
+                                    const dayShifts = allMonthShifts.filter(s => s.dateKey === dateKey);
                                     
+                                    dayShifts.sort((a, b) => timeToMinutes(a.time).start - timeToMinutes(b.time).start);
+
                                     return (
-                                        <div key={dayIdx} className={`relative h-full flex-1 transition-colors ${day.originalName === 'Chủ Nhật' ? 'bg-red-50/5' : ''}`}>
-                                            {processedShifts.map((s, sIdx) => {
-                                                const deptClass = s.department === 'Operation' ? 'operation' : s.department === 'Teacher' ? 'teacher' : 'academic';
-                                                
-                                                return (
-                                                    <div 
-                                                        key={sIdx}
-                                                        className={`absolute event-card ${deptClass} flex flex-col justify-between group/item p-1.5`}
-                                                        style={{ 
-                                                            top: s.top, 
-                                                            height: s.height, 
-                                                            left: s.left, 
-                                                            width: s.width,
-                                                            borderRight: '1px solid rgba(255,255,255,0.5)' 
-                                                        }}
-                                                    >
-                                                        <div className="space-y-0.5 overflow-hidden">
-                                                            <h4 className="font-bold leading-tight uppercase tracking-tight text-[9px] truncate">{s.staff}</h4>
-                                                            <p className="text-[7px] font-semibold opacity-90 truncate">{s.time}</p>
+                                        <div key={idx} className={`min-h-[120px] border-r border-b border-gray-100 p-1.5 ${!dObj.isCurrentMonth ? 'bg-gray-50/50 opacity-50' : ''} ${dObj.dayName === 'Chủ Nhật' ? 'bg-red-50/5' : ''}`}>
+                                            <div className="text-right mb-1">
+                                                <span className={`text-[10px] font-bold ${dObj.dateObj.toDateString() === new Date().toDateString() ? 'bg-brand-600 text-white w-5 h-5 inline-flex items-center justify-center rounded-full ml-auto' : 'text-gray-500'}`}>
+                                                    {dObj.day}
+                                                </span>
+                                            </div>
+                                            <div className="flex flex-col gap-1 max-h-[90px] overflow-y-auto no-scrollbar">
+                                                {dayShifts.map((s, sIdx) => {
+                                                    const deptClass = s.department === 'Operation' ? 'bg-brand-50 text-brand-700 border-l-2 border-brand-500' : 
+                                                                    s.department === 'Teacher' ? 'bg-pink-50 text-pink-700 border-l-2 border-pink-500' : 
+                                                                    'bg-amber-50 text-amber-700 border-l-2 border-amber-500';
+                                                    return (
+                                                        <div key={sIdx} className={`p-1 rounded text-[8px] flex flex-col gap-0.5 ${deptClass}`}>
+                                                            <span className="font-bold truncate" title={s.staff}>{s.staff}</span>
+                                                            <span className="opacity-80 truncate" title={s.time}>{s.time}</span>
                                                         </div>
-                                                        <div className="mt-auto hidden sm:block">
-                                                            <span className="px-1 py-0.5 rounded bg-white/30 text-[6px] font-bold uppercase tracking-widest truncate">
-                                                                {s.role || s.department}
-                                                            </span>
-                                                        </div>
-                                                    </div>
-                                                );
-                                            })}
+                                                    );
+                                                })}
+                                            </div>
                                         </div>
                                     );
                                 })}
                             </div>
                         </div>
-                    </div>
+                    ) : (
+                        <div className="calendar-grid shadow-inner flex flex-col max-h-[600px] overflow-y-auto overflow-x-auto border border-gray-100 rounded-2xl bg-gray-50/10 relative">
+                            {/* Day Headers - Sticky */}
+                            <div className="flex border-b border-gray-100 bg-white sticky top-0 z-30 shrink-0 min-w-max">
+                                <div className="w-[60px] border-r border-gray-100 flex items-center justify-center bg-gray-50/50 shrink-0 sticky left-0 z-40">
+                                    <Icon name="clock" size={14} className="text-gray-400" />
+                                </div>
+                                <div className="flex-1 flex divide-x divide-gray-100" style={{ minWidth: `${visibleDaysCount * 120}px` }}>
+                                    {visibleDays.map((day, idx) => (
+                                        <div key={idx} className={`py-3 flex flex-col items-center justify-center flex-1 ${day.originalName === 'Chủ Nhật' ? 'bg-red-50/30' : ''}`}>
+                                            <p className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">{day.name}</p>
+                                            <p className="text-[9px] font-bold text-brand-600 mt-0.5">{day.dateStr}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Calendar Body Container */}
+                            <div className="flex flex-1 relative min-h-[1200px] min-w-max"> 
+                                {/* Time axis markers */}
+                                <div className="w-[60px] bg-gray-50/20 border-r border-gray-100 relative shrink-0 sticky left-0 z-20">
+                                    {HOURS.map(hour => (
+                                        <div key={hour} className="absolute w-full flex items-start justify-center" style={{ top: `${(hour / 24) * 100}%` }}>
+                                            <span className={`text-[9px] font-black tracking-tighter ${hour % 2 === 0 ? 'text-gray-400' : 'text-gray-300'}`}>
+                                                {hour < 10 ? `0${hour}:00` : `${hour}:00`}
+                                            </span>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                {/* Columns for Shifts */}
+                                <div className="flex-1 flex divide-x divide-gray-100 relative" style={{ minWidth: `${visibleDaysCount * 120}px` }}>
+                                    {/* Horizontal Grid Lines for Hours */}
+                                    {HOURS.map((hour) => (
+                                        <div key={hour} className="absolute w-full border-t border-gray-100/40 pointer-events-none" style={{ top: `${(hour / 24) * 100}%` }}></div>
+                                    ))}
+
+                                    {visibleDays.map((day, dayIdx) => {
+                                        const dayShifts = shifts.filter(s => s.day === day.originalName && s.staff !== 'OFF');
+                                        const processedShifts = processDayShifts(dayShifts);
+                                        
+                                        return (
+                                            <div key={dayIdx} className={`relative h-full flex-1 transition-colors ${day.originalName === 'Chủ Nhật' ? 'bg-red-50/5' : ''}`}>
+                                                {processedShifts.map((s, sIdx) => {
+                                                    const deptClass = s.department === 'Operation' ? 'operation' : s.department === 'Teacher' ? 'teacher' : 'academic';
+                                                    
+                                                    return (
+                                                        <div 
+                                                            key={sIdx}
+                                                            className={`absolute event-card ${deptClass} flex flex-col justify-between group/item p-1.5`}
+                                                            style={{ 
+                                                                top: s.top, 
+                                                                height: s.height, 
+                                                                left: s.left, 
+                                                                width: s.width,
+                                                                borderRight: '1px solid rgba(255,255,255,0.5)' 
+                                                            }}
+                                                        >
+                                                            <div className="space-y-0.5 overflow-hidden">
+                                                                <h4 className="font-bold leading-tight uppercase tracking-tight text-[9px] truncate">{s.staff}</h4>
+                                                                <p className="text-[7px] font-semibold opacity-90 truncate">{s.time}</p>
+                                                            </div>
+                                                            <div className="mt-auto hidden sm:block">
+                                                                <span className="px-1 py-0.5 rounded bg-white/30 text-[6px] font-bold uppercase tracking-widest truncate">
+                                                                    {s.role || s.department}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        </div>
+                    )}
 
                     <div className="mt-8 flex flex-wrap items-center justify-between gap-6 px-4">
                         <div className="flex items-center gap-6 text-[9px] font-black uppercase tracking-[0.2em] text-gray-400">
@@ -2269,7 +2364,7 @@
                              </div>
                         </div>
                         <p className="text-[10px] font-bold text-gray-400 italic flex items-center gap-1.5">
-                             <Icon name="info" size={12} className="text-brand-500" /> Use the scrollbar to view full 24h schedule
+                             <Icon name="info" size={12} className="text-brand-500" /> Use the scrollbar to view full {viewMode === 'month' ? 'month' : '24h'} schedule
                         </p>
                     </div>
                 </div>
