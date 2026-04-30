@@ -749,7 +749,7 @@
             return (
                 <div 
                     onClick={onClick}
-                    className={`bg-white rounded-2xl p-6 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] border ${isActive ? 'border-brand-500 ring-2 ring-brand-100' : 'border-gray-50'} flex justify-between items-center group hover:shadow-md transition-all duration-300 cursor-pointer`}
+                    className={`bg-white rounded-2xl p-6 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] border ${isActive ? 'border-brand-500 ring-2 ring-brand-100' : 'border-gray-50'} flex justify-between items-center group ${onClick ? 'hover:shadow-md transition-all duration-300 cursor-pointer' : ''}`}
                 >
                     <div>
                         <h3 className="text-gray-500 text-xs font-medium mb-1 uppercase tracking-wider">{label || title}</h3>
@@ -2576,6 +2576,157 @@
             );
         };
 
+        const UnifiedOverviewDetails = ({ studentData, classDashboard, employeeData }) => {
+            // Process Class Data
+            const classSummary = useMemo(() => {
+                if (!Array.isArray(classDashboard)) return [];
+                const groups = {};
+                classDashboard.forEach(r => {
+                    const grp = r.Group || r.group || 'Other';
+                    if (!groups[grp]) groups[grp] = { name: grp, total: 0, active: 0 };
+                    groups[grp].total++;
+                    const status = (r.Status || r.status || '').toLowerCase();
+                    if (status.includes('teaching') || status.includes('completed') || status.includes('active')) {
+                        groups[grp].active++;
+                    }
+                });
+                return Object.values(groups).sort((a,b) => b.total - a.total);
+            }, [classDashboard]);
+
+            // Process Employee Data
+            const employeeSummary = useMemo(() => {
+                if (!Array.isArray(employeeData)) return [];
+                const depts = {};
+                const seen = new Set();
+                employeeData.forEach(r => {
+                    const staff = r.Staff || r["Nhân viên"] || r.staff;
+                    const dept = r.Department || r.department || r.Dept || r.dept;
+                    if (!staff || !dept) return;
+                    
+                    const uniqueKey = `${staff}_${dept}`;
+                    if (!seen.has(uniqueKey)) {
+                        seen.add(uniqueKey);
+                        if (!depts[dept]) depts[dept] = 0;
+                        depts[dept]++;
+                    }
+                });
+                return Object.entries(depts).map(([name, count]) => ({ name, count })).sort((a,b) => b.count - a.count);
+            }, [employeeData]);
+
+            // Students: Align NQ and HD statuses into rows
+            const studentStatuses = useMemo(() => {
+                const statuses = ['New', 'Trial', 'Waiting', 'Student', 'Again'];
+                const nqData = studentData?.find(d => d.branch.includes('NQ') || d.branch.includes('Ngô'))?.statuses || [];
+                const hdData = studentData?.find(d => d.branch.includes('HD') || d.branch.includes('Hưng'))?.statuses || [];
+                
+                return statuses.map((statusName, idx) => {
+                    return {
+                        name: statusName,
+                        nq: nqData[idx]?.count || 0,
+                        hd: hdData[idx]?.count || 0
+                    };
+                });
+            }, [studentData]);
+
+            return (
+                <div className="bg-white rounded-[32px] border border-gray-100 shadow-sm overflow-hidden animate-fade-in p-8 mt-6">
+                    <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight flex items-center gap-3 mb-8 pb-4 border-b border-gray-100">
+                        <Icon name="ph-squares-four" className="text-brand-600" size={24} /> Chi tiết Tổng quan
+                    </h3>
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+                        {/* Students Column */}
+                        <div className="flex flex-col space-y-4">
+                            <h4 className="text-sm font-black text-potato-blue uppercase tracking-widest flex items-center gap-2 pb-2">
+                                <Icon name="users" size={18} /> Students
+                            </h4>
+                            <div className="overflow-x-auto no-scrollbar border border-slate-100 rounded-2xl">
+                                <table className="w-full text-left border-collapse min-w-full">
+                                    <thead className="bg-slate-50/80">
+                                        <tr>
+                                            <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">Trạng thái</th>
+                                            <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center bg-yellow-50/30 border-b border-slate-100">Ngô Quyền</th>
+                                            <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center bg-brand-50/30 border-b border-slate-100">Hưng Định</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {studentStatuses.map((s, idx) => (
+                                            <tr key={idx} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors last:border-0">
+                                                <td className="p-4 text-xs font-black text-slate-800 uppercase tracking-tight">{s.name}</td>
+                                                <td className="p-4 text-center text-xs font-bold text-slate-600 bg-yellow-50/10">{s.nq}</td>
+                                                <td className="p-4 text-center text-xs font-bold text-slate-600 bg-brand-50/10">{s.hd}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        {/* Class Column */}
+                        <div className="flex flex-col space-y-4">
+                            <h4 className="text-sm font-black text-potato-yellow uppercase tracking-widest flex items-center gap-2 pb-2">
+                                <Icon name="book-open" size={18} /> Class
+                            </h4>
+                            <div className="overflow-x-auto no-scrollbar border border-slate-100 rounded-2xl">
+                                <table className="w-full text-left border-collapse min-w-full">
+                                    <thead className="bg-slate-50/80">
+                                        <tr>
+                                            <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">Group</th>
+                                            <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center border-b border-slate-100">Tổng lớp</th>
+                                            <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center border-b border-slate-100">Teaching/Completed</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {classSummary.map((c, idx) => (
+                                            <tr key={idx} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors last:border-0">
+                                                <td className="p-4 text-xs font-black text-slate-800 uppercase tracking-tight">{c.name}</td>
+                                                <td className="p-4 text-center text-xs font-bold text-slate-600">{c.total}</td>
+                                                <td className="p-4 text-center text-xs font-bold text-brand-600">{c.active}</td>
+                                            </tr>
+                                        ))}
+                                        {classSummary.length === 0 && (
+                                            <tr>
+                                                <td colSpan="3" className="p-8 text-center text-xs font-bold text-slate-400">Không có dữ liệu</td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        {/* Employee Column */}
+                        <div className="flex flex-col space-y-4">
+                            <h4 className="text-sm font-black text-potato-pink uppercase tracking-widest flex items-center gap-2 pb-2">
+                                <Icon name="user-check" size={18} /> Employee
+                            </h4>
+                            <div className="overflow-x-auto no-scrollbar border border-slate-100 rounded-2xl">
+                                <table className="w-full text-left border-collapse min-w-full">
+                                    <thead className="bg-slate-50/80">
+                                        <tr>
+                                            <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">Bộ phận</th>
+                                            <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center border-b border-slate-100">Số lượng</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {employeeSummary.map((e, idx) => (
+                                            <tr key={idx} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors last:border-0">
+                                                <td className="p-4 text-xs font-black text-slate-800 uppercase tracking-tight">{e.name}</td>
+                                                <td className="p-4 text-center text-xs font-bold text-brand-600 bg-brand-50 mx-auto rounded-lg px-2 py-1 inline-block mt-2 mb-2 w-12">{e.count}</td>
+                                            </tr>
+                                        ))}
+                                        {employeeSummary.length === 0 && (
+                                            <tr>
+                                                <td colSpan="2" className="p-8 text-center text-xs font-bold text-slate-400">Không có dữ liệu</td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
         const MainApp = () => {
             const [activeTab, setActiveTab] = useState('dashboard');
             const [activeWeek, setActiveWeek] = useState(15);
@@ -2640,7 +2791,7 @@
             // Persist Sidebar State
             const savedState = localStorage.getItem('sidebarState');
             const [isSidebarOpen, setSidebarOpen] = useState(savedState !== 'collapsed');
-            const [activeOverview, setActiveOverview] = useState(null); // 'students', 'class', 'employee'
+            const [showUnifiedOverview, setShowUnifiedOverview] = useState(false);
             
             const [isMobile, setIsMobile] = useState(window.innerWidth <= 1024);
             const [mobileActive, setMobileActive] = useState(false);
@@ -2701,176 +2852,38 @@
                                             label="Students" 
                                             icon="users" 
                                             iconbg="bg-potato-blue" 
-                                            isActive={activeOverview === 'students'}
-                                            onClick={() => setActiveOverview(activeOverview === 'students' ? null : 'students')}
                                         />
                                         <StatCardV3 
                                             value={classes?.metrics?.total || "0"} 
                                             label="Class" 
                                             icon="book-open" 
                                             iconbg="bg-potato-yellow" 
-                                            isActive={activeOverview === 'class'}
-                                            onClick={() => setActiveOverview(activeOverview === 'class' ? null : 'class')}
                                         />
                                         <StatCardV3 
                                             value={Array.isArray(appData['Lich_Truc']) ? [...new Set(appData['Lich_Truc'].map(r => r.Staff || r["Nhân viên"]))].length : "21"} 
                                             label="Employee" 
                                             icon="user-check" 
                                             iconbg="bg-potato-pink" 
-                                            isActive={activeOverview === 'employee'}
-                                            onClick={() => setActiveOverview(activeOverview === 'employee' ? null : 'employee')}
                                         />
+                                    </div>
+                                    
+                                    <div className="flex justify-center mt-2">
+                                        <button 
+                                            onClick={() => setShowUnifiedOverview(!showUnifiedOverview)}
+                                            className="px-6 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-full text-xs font-bold hover:bg-gray-50 hover:border-brand-300 transition-all shadow-sm flex items-center gap-2"
+                                        >
+                                            <Icon name={showUnifiedOverview ? "caret-up" : "caret-down"} className="text-brand-500" />
+                                            {showUnifiedOverview ? "Ẩn chi tiết" : "Xem chi tiết"}
+                                        </button>
                                     </div>
 
                                     {/* Sub-Views for Overview */}
-                                    {/* Sub-Views for Overview - Summary Tables */}
-                                    {activeOverview === 'students' && (
-                                        <div className="bg-white rounded-[32px] border border-gray-100 shadow-sm overflow-hidden animate-fade-in">
-                                            <div className="overflow-x-auto">
-                                                <table className="w-full text-left border-collapse min-w-[600px]">
-                                                    <thead>
-                                                        <tr className="bg-slate-50/50 border-b border-slate-100">
-                                                            <th className="p-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Chi nhánh</th>
-                                                            <th className="p-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Tổng HV</th>
-                                                            <th className="p-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">New</th>
-                                                            <th className="p-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Trial</th>
-                                                            <th className="p-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Waiting</th>
-                                                            <th className="p-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Student</th>
-                                                            <th className="p-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Again</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        {studentData?.map((info, idx) => (
-                                                            <tr key={idx} className="border-b border-slate-50 last:border-0 hover:bg-slate-50/30 transition-colors">
-                                                                <td className="p-5">
-                                                                    <span className="text-xs font-black text-slate-800 uppercase tracking-tight">{info.branch}</span>
-                                                                </td>
-                                                                <td className="p-5 text-center">
-                                                                    <span className="text-sm font-black text-brand-600 bg-brand-50 px-3 py-1 rounded-lg">{info.total}</span>
-                                                                </td>
-                                                                {info.statuses.map((s, i) => (
-                                                                    <td key={i} className="p-5 text-center">
-                                                                        <div className="flex flex-col items-center gap-1">
-                                                                            <span className="text-xs font-black text-slate-800">{s.count}</span>
-                                                                            <div className={`w-1.5 h-1.5 rounded-full ${s.color}`}></div>
-                                                                        </div>
-                                                                    </td>
-                                                                ))}
-                                                            </tr>
-                                                        ))}
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {activeOverview === 'class' && classes?.metrics && (
-                                        <div className="bg-white rounded-[32px] border border-gray-100 shadow-sm overflow-hidden animate-fade-in">
-                                            <div className="overflow-x-auto">
-                                                <table className="w-full text-left border-collapse min-w-[600px]">
-                                                    <thead>
-                                                        <tr className="bg-slate-50/50 border-b border-slate-100">
-                                                            <th className="p-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Phân loại lớp</th>
-                                                            <th className="p-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center bg-yellow-50/20">NQ (Ngô Quyền)</th>
-                                                            <th className="p-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center bg-brand-50/20">HĐ (Hưng Định)</th>
-                                                            <th className="p-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Tổng số lớp</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        {(() => {
-                                                            const allCourses = new Set();
-                                                            Object.values(classes.metrics.branches).forEach(b => {
-                                                                b.courseList.forEach(c => allCourses.add(c.label));
-                                                            });
-                                                            
-                                                            const sortedCourses = Array.from(allCourses).sort((a,b) => {
-                                                                const order = [
-                                                                    "Friendly Kid", "Happy Junior", "Starters", "Movers", "Flyers", 
-                                                                    "Leading Teen", "KET", "PET", "IELTS"
-                                                                ];
-                                                                const getRank = (name) => {
-                                                                    const safeName = (name || "").toString().toLowerCase();
-                                                                    const found = order.findIndex(o => safeName.includes(o.toLowerCase()));
-                                                                    return found === -1 ? 999 : found;
-                                                                };
-                                                                return getRank(a) - getRank(b);
-                                                            });
-
-                                                            return sortedCourses.map((courseName, idx) => {
-                                                                const countNQ = classes.metrics.branches['NQ']?.courses[courseName] || 0;
-                                                                const countHD = classes.metrics.branches['HD']?.courses[courseName] || 0;
-                                                                const total = countNQ + countHD;
-                                                                if (total === 0) return null;
-
-                                                                return (
-                                                                    <tr key={idx} className="border-b border-slate-50 last:border-0 hover:bg-slate-50/30 transition-colors">
-                                                                        <td className="p-5">
-                                                                            <div className="flex items-center gap-3">
-                                                                                <div className={`w-1 h-4 rounded-full ${courseName.toLowerCase().includes('ielts') ? 'bg-indigo-500' : 'bg-brand-500'}`}></div>
-                                                                                <span className="text-xs font-black text-slate-800 uppercase tracking-tight">{courseName}</span>
-                                                                            </div>
-                                                                        </td>
-                                                                        <td className="p-5 text-center font-bold text-slate-600 bg-yellow-50/5">{countNQ}</td>
-                                                                        <td className="p-5 text-center font-bold text-slate-600 bg-brand-50/5">{countHD}</td>
-                                                                        <td className="p-5 text-center">
-                                                                            <span className="text-sm font-black text-slate-800">{total}</span>
-                                                                        </td>
-                                                                    </tr>
-                                                                );
-                                                            });
-                                                        })()}
-                                                        <tr className="bg-slate-50/50 font-black">
-                                                            <td className="p-5 text-[10px] uppercase tracking-widest text-slate-400">Tổng cộng</td>
-                                                            <td className="p-5 text-center text-slate-800">{classes.metrics.branches['NQ']?.count || 0}</td>
-                                                            <td className="p-5 text-center text-slate-800">{classes.metrics.branches['HD']?.count || 0}</td>
-                                                            <td className="p-5 text-center text-brand-600 border-l border-slate-100">{classes.metrics.total}</td>
-                                                        </tr>
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {activeOverview === 'employee' && (
-                                        <div className="bg-white rounded-[32px] border border-gray-100 shadow-sm overflow-hidden animate-fade-in">
-                                            <div className="overflow-x-auto">
-                                                <table className="w-full text-left border-collapse min-w-[600px]">
-                                                    <thead>
-                                                        <tr className="bg-slate-50/50 border-b border-slate-100">
-                                                            <th className="p-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Bộ phận</th>
-                                                            <th className="p-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Số lượng</th>
-                                                            <th className="p-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Phân quyền/Vai trò phổ biến</th>
-                                                            <th className="p-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Trạng thái</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        {[
-                                                            { dept: 'Operation', count: 5, icon: 'ph-gear', color: 'text-blue-600', roles: 'Quản lý, Phục vụ, Kinh doanh' },
-                                                            { dept: 'Academic', count: 4, icon: 'ph-book-open', color: 'text-green-600', roles: 'Chấm bài, Giám sát, Điều phối' },
-                                                            { dept: 'Teacher', count: 12, icon: 'ph-student', color: 'text-pink-600', roles: 'Giáo viên, Senior Teacher, Trợ giảng' }
-                                                        ].map((d, idx) => (
-                                                            <tr key={idx} className="border-b border-slate-50 last:border-0 hover:bg-slate-50/30 transition-colors">
-                                                                <td className="p-5">
-                                                                    <div className="flex items-center gap-3">
-                                                                        <Icon name={d.icon} className={d.color} size={18} />
-                                                                        <span className="text-xs font-black text-slate-800 uppercase tracking-tight">{d.dept}</span>
-                                                                    </div>
-                                                                </td>
-                                                                <td className="p-5 text-center">
-                                                                    <span className="text-sm font-black text-slate-800">{d.count}</span>
-                                                                </td>
-                                                                <td className="p-5 text-[10px] font-bold text-slate-400 italic">
-                                                                    {d.roles}
-                                                                </td>
-                                                                <td className="p-5 text-center">
-                                                                    <span className="px-2 py-1 bg-emerald-50 text-emerald-600 rounded text-[9px] font-black uppercase">Active</span>
-                                                                </td>
-                                                            </tr>
-                                                        ))}
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                        </div>
+                                    {showUnifiedOverview && (
+                                        <UnifiedOverviewDetails 
+                                            studentData={studentData}
+                                            classDashboard={appData['Class_Dashboard']}
+                                            employeeData={appData['Lich_Truc']}
+                                        />
                                     )}
                                 </div>
 
