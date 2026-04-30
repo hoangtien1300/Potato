@@ -1714,7 +1714,6 @@
             const pendingPct = total ? (100 - paidPct) : 0;
 
             const formatMoney = (val) => {
-                if (val >= 1000000) return (val / 1000000).toFixed(1) + 'M đ';
                 return val.toLocaleString() + ' đ';
             };
 
@@ -1724,109 +1723,129 @@
             };
 
             return (
+                <>
                 <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm group hover:shadow-md transition-all h-full flex flex-col items-center overflow-hidden relative">
                     <div className="w-full flex justify-between items-center mb-10 shrink-0 relative z-10">
                         <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight flex items-center gap-3">
                             <Icon name="ph-chart-pie-slice" className="text-brand-600" size={24} /> Bảng công nợ
                         </h3>
                         <button 
-                            onClick={() => setShowDetails(!showDetails)}
-                            className={`text-[10px] font-bold px-4 py-2 rounded-xl whitespace-nowrap transition-colors ${showDetails ? 'bg-brand-600 text-white shadow-md' : 'bg-brand-50 text-brand-600 hover:bg-brand-100'}`}
+                            onClick={() => setShowDetails(true)}
+                            className="text-[10px] font-bold px-4 py-2 rounded-xl whitespace-nowrap transition-colors bg-brand-50 text-brand-600 hover:bg-brand-100"
                         >
-                            {showDetails ? 'Quay lại' : 'Chi tiết'}
+                            Chi tiết
                         </button>
                     </div>
                     
-                    {!showDetails ? (
-                        <div className="flex-1 flex flex-col items-center justify-center w-full min-h-0 animate-fade-in">
-                            <div className="relative w-48 h-48 lg:w-56 lg:h-56 flex items-center justify-center shrink-0 mb-10">
-                                <svg className="w-full h-full transform -rotate-90" viewBox="0 0 224 224">
-                                    <circle cx="112" cy="112" r="100" stroke="#f8fafc" strokeWidth="20" fill="transparent" />
-                                    <circle cx="112" cy="112" r="100" stroke="#7c3aed" strokeWidth="20" fill="transparent" strokeDasharray={`${(paidPct * 628.3) / 100} 628.3`} strokeLinecap="round" />
-                                    <circle cx="112" cy="112" r="100" stroke="#ec4899" strokeWidth="20" fill="transparent" strokeDasharray={`${(pendingPct * 628.3) / 100} 628.3`} strokeDashoffset={`${-(paidPct * 628.3) / 100}`} strokeLinecap="round" />
-                                </svg>
-                                <div className="absolute flex flex-col items-center">
-                                    <span className="text-3xl font-black text-slate-800 tracking-tighter leading-none">{formatMoney(total)}</span>
-                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Tổng cộng</span>
+                    <div className="flex-1 flex flex-col items-center justify-center w-full min-h-0 animate-fade-in">
+                        <div className="relative w-48 h-48 lg:w-56 lg:h-56 flex items-center justify-center shrink-0 mb-10">
+                            <svg className="w-full h-full transform -rotate-90" viewBox="0 0 224 224">
+                                <circle cx="112" cy="112" r="100" stroke="#f8fafc" strokeWidth="20" fill="transparent" />
+                                <circle cx="112" cy="112" r="100" stroke="#7c3aed" strokeWidth="20" fill="transparent" strokeDasharray={`${(paidPct * 628.3) / 100} 628.3`} strokeLinecap="round" />
+                                <circle cx="112" cy="112" r="100" stroke="#ec4899" strokeWidth="20" fill="transparent" strokeDasharray={`${(pendingPct * 628.3) / 100} 628.3`} strokeDashoffset={`${-(paidPct * 628.3) / 100}`} strokeLinecap="round" />
+                            </svg>
+                            <div className="absolute flex flex-col items-center">
+                                <span className="text-xl lg:text-2xl font-black text-slate-800 tracking-tighter leading-none">{formatMoney(total)}</span>
+                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-2">Tổng cộng</span>
+                            </div>
+                        </div>
+
+                        <div className="w-full space-y-5 px-2">
+                            <div className="space-y-2">
+                                <div className="flex justify-between items-center gap-2">
+                                    <span className="font-bold text-slate-500 flex items-center gap-3 uppercase tracking-tighter text-[11px]">
+                                        <div className="w-3 h-3 rounded-full bg-brand-600 shrink-0" /> Paid Amount
+                                    </span>
+                                    <div className="text-right">
+                                        <span className="font-black text-slate-800 text-base">{paidPct}%</span>
+                                        <span className="text-[10px] font-bold text-slate-400 ml-2">({formatMoney(paid)})</span>
+                                    </div>
+                                </div>
+                                <div className="h-2 w-full bg-gray-50 rounded-full overflow-hidden">
+                                    <div className="h-full bg-brand-600 rounded-full shadow-lg shadow-brand-200 transition-all duration-1000" style={{ width: `${paidPct}%` }} />
                                 </div>
                             </div>
-
-                            <div className="w-full space-y-5 px-2">
-                                <div className="space-y-2">
-                                    <div className="flex justify-between items-center gap-2">
-                                        <span className="font-bold text-slate-500 flex items-center gap-3 uppercase tracking-tighter text-[11px]">
-                                            <div className="w-3 h-3 rounded-full bg-brand-600 shrink-0" /> Paid Amount
-                                        </span>
-                                        <div className="text-right">
-                                            <span className="font-black text-slate-800 text-base">{paidPct}%</span>
-                                            <span className="text-[10px] font-bold text-slate-400 ml-2">({formatMoney(paid)})</span>
-                                        </div>
-                                    </div>
-                                    <div className="h-2 w-full bg-gray-50 rounded-full overflow-hidden">
-                                        <div className="h-full bg-brand-600 rounded-full shadow-lg shadow-brand-200 transition-all duration-1000" style={{ width: `${paidPct}%` }} />
+                            <div className="space-y-2">
+                                <div className="flex justify-between items-center gap-2">
+                                    <span className="font-bold text-slate-500 flex items-center gap-3 uppercase tracking-tighter text-[11px]">
+                                        <div className="w-3 h-3 rounded-full bg-pink-500 shrink-0" /> Pending Amount
+                                    </span>
+                                    <div className="text-right">
+                                        <span className="font-black text-slate-800 text-base">{pendingPct}%</span>
+                                        <span className="text-[10px] font-bold text-slate-400 ml-2">({formatMoney(pending)})</span>
                                     </div>
                                 </div>
-                                <div className="space-y-2">
-                                    <div className="flex justify-between items-center gap-2">
-                                        <span className="font-bold text-slate-500 flex items-center gap-3 uppercase tracking-tighter text-[11px]">
-                                            <div className="w-3 h-3 rounded-full bg-pink-500 shrink-0" /> Pending Amount
-                                        </span>
-                                        <div className="text-right">
-                                            <span className="font-black text-slate-800 text-base">{pendingPct}%</span>
-                                            <span className="text-[10px] font-bold text-slate-400 ml-2">({formatMoney(pending)})</span>
-                                        </div>
-                                    </div>
-                                    <div className="h-2 w-full bg-gray-50 rounded-full overflow-hidden">
-                                        <div className="h-full bg-pink-500 rounded-full shadow-lg shadow-pink-200 transition-all duration-1000" style={{ width: `${pendingPct}%` }} />
-                                    </div>
+                                <div className="h-2 w-full bg-gray-50 rounded-full overflow-hidden">
+                                    <div className="h-full bg-pink-500 rounded-full shadow-lg shadow-pink-200 transition-all duration-1000" style={{ width: `${pendingPct}%` }} />
                                 </div>
                             </div>
                         </div>
-                    ) : (
-                        <div className="flex-1 w-full animate-fade-in flex flex-col justify-center space-y-6 overflow-y-auto no-scrollbar">
-                            {['NQ', 'HD'].map(branch => {
-                                const bData = branches[branch];
-                                const bTotal = bData.total || 0;
-                                const bPaid = bData.paid || 0;
-                                const bPending = bData.pending || 0;
-                                const bPaidPct = bTotal ? Math.round((bPaid / bTotal) * 100) : 0;
-                                const bPendingPct = bTotal ? (100 - bPaidPct) : 0;
-
-                                return (
-                                    <div key={branch} className="bg-slate-50 p-6 rounded-2xl border border-slate-100 space-y-4">
-                                        <div className="flex justify-between items-center border-b border-slate-200 pb-3">
-                                            <h4 className="font-black text-slate-800 text-sm uppercase tracking-widest flex items-center gap-2">
-                                                <Icon name="ph-buildings" className="text-slate-400" size={16} /> Chi nhánh {branch === 'NQ' ? 'Ngô Quyền' : 'Hưng Định'}
-                                            </h4>
-                                            <span className="text-[10px] font-black text-brand-600 bg-brand-50 px-2 py-1 rounded-lg uppercase tracking-widest">{formatMoney(bTotal)}</span>
-                                        </div>
-                                        
-                                        <div className="space-y-4">
-                                            <div className="space-y-1.5">
-                                                <div className="flex justify-between text-[11px] font-bold">
-                                                    <span className="text-slate-500 uppercase flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-brand-500"/> Paid</span>
-                                                    <span className="text-slate-800">{bPaidPct}% <span className="text-slate-400 ml-1">({formatMoney(bPaid)})</span></span>
-                                                </div>
-                                                <div className="h-1.5 w-full bg-gray-200 rounded-full overflow-hidden">
-                                                    <div className="h-full bg-brand-500 rounded-full" style={{ width: `${bPaidPct}%` }} />
-                                                </div>
-                                            </div>
-                                            <div className="space-y-1.5">
-                                                <div className="flex justify-between text-[11px] font-bold">
-                                                    <span className="text-slate-500 uppercase flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-pink-500"/> Pending</span>
-                                                    <span className="text-slate-800">{bPendingPct}% <span className="text-slate-400 ml-1">({formatMoney(bPending)})</span></span>
-                                                </div>
-                                                <div className="h-1.5 w-full bg-gray-200 rounded-full overflow-hidden">
-                                                    <div className="h-full bg-pink-500 rounded-full" style={{ width: `${bPendingPct}%` }} />
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    )}
+                    </div>
                 </div>
+
+                {showDetails && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-fade-in">
+                        <div className="bg-white w-full max-w-2xl rounded-3xl p-8 shadow-2xl relative">
+                            <div className="flex justify-between items-center mb-6">
+                                <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight flex items-center gap-3">
+                                    <Icon name="ph-buildings" className="text-brand-600" size={28} /> Chi tiết công nợ chi nhánh
+                                </h3>
+                                <button onClick={() => setShowDetails(false)} className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors">
+                                    <Icon name="x" size={24} />
+                                </button>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                {['NQ', 'HD'].map(branch => {
+                                    const bData = branches[branch];
+                                    const bTotal = bData.total || 0;
+                                    const bPaid = bData.paid || 0;
+                                    const bPending = bData.pending || 0;
+                                    const bPaidPct = bTotal ? Math.round((bPaid / bTotal) * 100) : 0;
+                                    const bPendingPct = bTotal ? (100 - bPaidPct) : 0;
+
+                                    return (
+                                        <div key={branch} className="bg-slate-50 p-6 rounded-2xl border border-slate-100 space-y-5 shadow-inner">
+                                            <div className="flex flex-col border-b border-slate-200 pb-4 gap-2">
+                                                <h4 className="font-black text-slate-800 text-base uppercase tracking-widest flex items-center gap-2">
+                                                    Chi nhánh {branch === 'NQ' ? 'Ngô Quyền' : 'Hưng Định'}
+                                                </h4>
+                                                <span className="text-sm font-black text-brand-600">{formatMoney(bTotal)}</span>
+                                            </div>
+                                            
+                                            <div className="space-y-5">
+                                                <div className="space-y-2">
+                                                    <div className="flex justify-between text-[11px] font-bold">
+                                                        <span className="text-slate-500 uppercase flex items-center gap-2"><div className="w-2.5 h-2.5 rounded-full bg-brand-500"/> Paid</span>
+                                                        <div className="text-right">
+                                                            <span className="text-slate-800 text-sm">{bPaidPct}%</span>
+                                                            <span className="text-slate-400 ml-2">({formatMoney(bPaid)})</span>
+                                                        </div>
+                                                    </div>
+                                                    <div className="h-2 w-full bg-gray-200 rounded-full overflow-hidden">
+                                                        <div className="h-full bg-brand-500 rounded-full shadow-sm" style={{ width: `${bPaidPct}%` }} />
+                                                    </div>
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <div className="flex justify-between text-[11px] font-bold">
+                                                        <span className="text-slate-500 uppercase flex items-center gap-2"><div className="w-2.5 h-2.5 rounded-full bg-pink-500"/> Pending</span>
+                                                        <div className="text-right">
+                                                            <span className="text-slate-800 text-sm">{bPendingPct}%</span>
+                                                            <span className="text-slate-400 ml-2">({formatMoney(bPending)})</span>
+                                                        </div>
+                                                    </div>
+                                                    <div className="h-2 w-full bg-gray-200 rounded-full overflow-hidden">
+                                                        <div className="h-full bg-pink-500 rounded-full shadow-sm" style={{ width: `${bPendingPct}%` }} />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    </div>
+                )}
+                </>
             );
         };
 
