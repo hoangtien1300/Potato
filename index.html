@@ -379,7 +379,8 @@
                 'Lich_Truc': '0',
                 'Class_Dashboard': '1019913137',
                 'Fees': '1245774263',
-                'Employee': '790611745'
+                'Employee': '790611745',
+                'HR': '585528165'
             },
 
             async fetchData(tableName) {
@@ -394,7 +395,7 @@
                     // Identify the actual header row dynamically
                     // Some AppSheet exports have category headers on the first row
                     // We look for a known column like "ID Dashboard" or "Class Name"
-                    const headerPattern = /ID Dashboard|Class Name|ID Class|ID Emp/;
+                    const headerPattern = /ID Dashboard|Class Name|ID Class|ID Emp|ID HR/;
                     const match = csvText.match(headerPattern);
                     
                     let csvToParse = csvText;
@@ -433,20 +434,53 @@
                 if (!rows || !Array.isArray(rows)) return null;
                 return rows.map(r => {
                     if (!r) return null;
-                    let time = r.Time || r.time || r["Giờ"] || r["Thời gian"] || "-";
-                    // Handle split columns if they exist
-                    if (r["Giờ bắt đầu"] || r["Giờ_Bắt_Đầu"]) {
-                        const start = r["Giờ bắt đầu"] || r["Giờ_Bắt_Đầu"];
-                        const end = r["Giờ kết thúc"] || r["Giờ_Kết_Thúc"] || "";
-                        time = end ? `${start} - ${end}` : start;
+                    
+                    let time = "-";
+                    if (r["Time In"] && r["Time Out"]) {
+                        const formatTime = (t) => {
+                            if (!t) return "";
+                            return t.substring(0, 5);
+                        };
+                        time = `${formatTime(r["Time In"])} - ${formatTime(r["Time Out"])}`;
+                    } else {
+                        time = r.Time || r.time || r["Giờ"] || r["Thời gian"] || "-";
+                    }
+
+                    let weekNum = 0;
+                    if (r.Week) {
+                        const match = r.Week.match(/Week\s+(\d+)/i);
+                        if (match) weekNum = parseInt(match[1]);
+                    }
+                    
+                    const label = r.Label || r.label || "";
+                    const status = r.Status || r.status || "";
+
+                    // Parse Working Date (DD/MM/YYYY)
+                    let dateKey = "";
+                    let workingDate = r["Working Date"] || r[" Working Date"] || "";
+                    if (workingDate) {
+                        const parts = workingDate.split('/');
+                        if (parts.length === 3) {
+                            // Convert to YYYY-MM-DD
+                            dateKey = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+                        } else {
+                            // Try to parse if it's already YYYY-MM-DD
+                            const matchISO = workingDate.match(/^(\d{4})-(\d{2})-(\d{2})/);
+                            if (matchISO) {
+                                dateKey = `${matchISO[1]}-${matchISO[2]}-${matchISO[3]}`;
+                            }
+                        }
                     }
 
                     return {
+                        week: weekNum,
+                        dateKey: dateKey,
                         day: r.Day || r.day || r["Thứ"] || "",
-                        staff: r.Staff || r.staff || r["Nhân viên"] || r["Tài khoản"] || "N/A",
+                        staff: label || r["Employee Name"] || r.Staff || r.staff || "N/A",
                         time: time,
                         role: r.Role || r.role || r["Vai trò"] || r["Chức vụ"] || "",
-                        department: r.Department || r.dept || r["Bộ phận"] || r["Phòng ban"] || "Operation"
+                        department: r.Division || r.Department || r.dept || "Operation",
+                        status: status
                     };
                 }).filter(Boolean);
             },
@@ -2189,27 +2223,24 @@
             }
         };
 
-        const ShiftScheduler = ({ currentWeek, shiftDept, setShiftDept, setActiveWeek, allShifts }) => {
+        const ShiftScheduler = ({ shiftDept, setShiftDept, allShifts }) => {
             const [viewMode, setViewMode] = React.useState('week');
-            const [startDayIdx, setStartDayIdx] = React.useState(0);
+            const [viewDate, setViewDate] = React.useState(new Date());
 
-            const dataToUse = allShifts || SHIFT_DATA;
+            const dataToUse = allShifts || { "Operation": [], "Teacher": [], "Academic": [] };
             
-            // Standard fetch for week/day view
-            let shifts = [];
-            if (shiftDept === 'All') {
-                Object.keys(dataToUse).forEach(dept => {
-                    const weekData = dataToUse[dept][currentWeek];
-                    if (weekData) {
-                        weekData.forEach(s => {
-                            shifts.push({ ...s, department: dept });
-                        });
-                    }
-                });
-            } else {
-                shifts = (dataToUse[shiftDept] && dataToUse[shiftDept][currentWeek]) || [];
-                shifts = shifts.map(s => ({ ...s, department: shiftDept }));
-            }
+            const formatDateKey = (d) => {
+                return `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`;
+            };
+
+            const shiftDate = (direction) => {
+                const newDate = new Date(viewDate);
+                if (viewMode === 'day') newDate.setDate(newDate.getDate() + direction);
+                else if (viewMode === '3days') newDate.setDate(newDate.getDate() + direction);
+                else if (viewMode === 'week') newDate.setDate(newDate.getDate() + (direction * 7));
+                else if (viewMode === 'month') newDate.setMonth(newDate.getMonth() + direction);
+                setViewDate(newDate);
+            };
 
             const HOURS = Array.from({ length: 25 }, (_, i) => i);
             
@@ -2274,90 +2305,80 @@
             const allDays = ["Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7", "Chủ Nhật"];
 
             let visibleDaysCount = 7;
-            if (viewMode === 'day') visibleDaysCount = 1;
-            else if (viewMode === '3days') visibleDaysCount = 3;
-            else if (viewMode === 'week') visibleDaysCount = 7;
+            let startDate = new Date(viewDate);
+
+            if (viewMode === 'day') {
+                visibleDaysCount = 1;
+            } else if (viewMode === '3days') {
+                visibleDaysCount = 3;
+            } else if (viewMode === 'week') {
+                visibleDaysCount = 7;
+                const dayOfWeek = startDate.getDay();
+                const offsetToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+                startDate.setDate(startDate.getDate() - offsetToMonday);
+            }
 
             const visibleDays = [];
-            const weekDatesStr = {
-                14: "April 06 - April 12",
-                15: "April 13 - April 19",
-                16: "April 20 - April 26"
-            }[currentWeek] || "April 13 - April 19";
-            
-            let startDate = new Date();
-            try {
-                const monthNames = { "January": 0, "February": 1, "March": 2, "April": 3, "May": 4, "June": 5, "July": 6, "August": 7, "September": 8, "October": 9, "November": 10, "December": 11 };
-                const match = weekDatesStr.match(/([A-Za-z]+)\s(\d+)/);
-                if (match) {
-                    const month = monthNames[match[1]];
-                    const day = parseInt(match[2]);
-                    startDate = new Date(new Date().getFullYear(), month, day);
-                }
-            } catch (e) {}
-
             for (let i = 0; i < visibleDaysCount; i++) {
-                let dayIndex = (startDayIdx + i) % 7;
-                let dayName = allDays[dayIndex];
                 let date = new Date(startDate);
-                date.setDate(date.getDate() + startDayIdx + i);
+                date.setDate(date.getDate() + i);
+                let dayIndex = date.getDay() === 0 ? 6 : date.getDay() - 1;
+                let dayName = allDays[dayIndex];
                 let dateStr = `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}`;
                 
                 visibleDays.push({
                     name: dayName,
                     dateStr: dateStr,
+                    dateKey: formatDateKey(date),
                     originalName: dayName
                 });
+            }
+
+            // Generate Title String
+            let dateTitleStr = "";
+            if (viewMode === 'day') {
+                dateTitleStr = visibleDays[0].dateStr + "/" + startDate.getFullYear();
+            } else if (viewMode === 'month') {
+                const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+                dateTitleStr = monthNames[viewDate.getMonth()] + " " + viewDate.getFullYear();
+            } else {
+                dateTitleStr = visibleDays[0].dateStr + " - " + visibleDays[visibleDays.length - 1].dateStr;
+            }
+
+            // Prepare shifts list
+            let activeShifts = [];
+            if (shiftDept === 'All') {
+                Object.values(dataToUse).forEach(arr => {
+                    activeShifts = activeShifts.concat(arr);
+                });
+            } else {
+                activeShifts = dataToUse[shiftDept] || [];
             }
 
             // Month View Setup
             const monthDays = [];
             let allMonthShifts = [];
             if (viewMode === 'month') {
-                let firstDayOfMonth = new Date(startDate.getFullYear(), startDate.getMonth(), 1);
+                let firstDayOfMonth = new Date(viewDate.getFullYear(), viewDate.getMonth(), 1);
                 let dayOfWeek = firstDayOfMonth.getDay(); 
                 let offset = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
                 let monthStart = new Date(firstDayOfMonth);
                 monthStart.setDate(monthStart.getDate() - offset);
                 
-                for (let i = 0; i < 35; i++) {
+                for (let i = 0; i < 42; i++) {
                     let d = new Date(monthStart);
                     d.setDate(d.getDate() + i);
                     monthDays.push({
                         dateObj: d,
+                        dateKey: formatDateKey(d),
                         day: d.getDate(),
-                        isCurrentMonth: d.getMonth() === startDate.getMonth(),
+                        isCurrentMonth: d.getMonth() === viewDate.getMonth(),
                         dayName: allDays[i % 7]
                     });
                 }
-
-                Object.keys(dataToUse).forEach(dept => {
-                    if (shiftDept !== 'All' && dept !== shiftDept) return;
-                    Object.keys(dataToUse[dept]).forEach(weekKey => {
-                        let wIdx = parseInt(weekKey);
-                        if (isNaN(wIdx)) return;
-                        let weekDiff = wIdx - currentWeek;
-                        if (Math.abs(weekDiff) > 5) return;
-                        
-                        let wMonday = new Date(startDate);
-                        wMonday.setDate(wMonday.getDate() + (weekDiff * 7));
-                        let wShifts = dataToUse[dept][weekKey];
-                        if (wShifts) {
-                            wShifts.forEach(s => {
-                                if (s.staff === 'OFF') return;
-                                let dayIndex = allDays.indexOf(s.day);
-                                if (dayIndex === -1) return;
-                                let sDate = new Date(wMonday);
-                                sDate.setDate(sDate.getDate() + dayIndex);
-                                allMonthShifts.push({
-                                    ...s,
-                                    department: dept,
-                                    dateKey: `${sDate.getFullYear()}-${sDate.getMonth()}-${sDate.getDate()}`
-                                });
-                            });
-                        }
-                    });
-                });
+                
+                const monthDateKeys = monthDays.map(d => d.dateKey);
+                allMonthShifts = activeShifts.filter(s => monthDateKeys.includes(s.dateKey));
             }
 
             return (
@@ -2373,20 +2394,20 @@
                                 <div>
                                     <h2 className="text-sm font-extrabold text-gray-800 uppercase tracking-tight leading-none mb-1">Schedule</h2>
                                     <p className="text-xs font-bold text-gray-400 uppercase tracking-wide flex items-center gap-1">
-                                        This week - <span className="lowercase italic font-medium">{weekDatesStr}</span>
+                                        <span className="italic font-medium">{dateTitleStr}</span>
                                     </p>
                                 </div>
                             </div>
 
                             {/* Filters (Right, Stacked) */}
                             <div className="flex flex-col items-end gap-3">
-                                {/* Row 1: Week Filter */}
+                                {/* Row 1: Filter */}
                                 <div className="flex items-center bg-gray-50/50 p-1 rounded-xl border border-gray-100">
-                                    <button onClick={() => setActiveWeek(prev => Math.max(1, prev - 1))} className="p-1.5 hover:bg-white rounded-lg transition-all text-gray-400 hover:text-brand-600">
+                                    <button onClick={() => shiftDate(-1)} className="p-1.5 hover:bg-white rounded-lg transition-all text-gray-400 hover:text-brand-600">
                                         <Icon name="chevron-left" size={14} />
                                     </button>
-                                    <span className="text-[10px] font-black text-gray-700 w-16 text-center uppercase tracking-widest">W. {currentWeek}</span>
-                                    <button onClick={() => setActiveWeek(prev => prev + 1)} className="p-1.5 hover:bg-white rounded-lg transition-all text-gray-400 hover:text-brand-600">
+                                    <span className="text-[10px] font-black text-gray-700 w-24 text-center uppercase tracking-widest">{viewMode}</span>
+                                    <button onClick={() => shiftDate(1)} className="p-1.5 hover:bg-white rounded-lg transition-all text-gray-400 hover:text-brand-600">
                                         <Icon name="chevron-right" size={14} />
                                     </button>
                                 </div>
@@ -2397,41 +2418,18 @@
                                         {['day', '3days', 'week', 'month'].map(v => (
                                             <button 
                                                 key={v}
-                                                onClick={() => { setViewMode(v); setStartDayIdx(0); }}
+                                                onClick={() => setViewMode(v)}
                                                 className={`px-3 py-1.5 rounded-lg text-[10px] font-black transition-all uppercase tracking-widest ${viewMode === v ? 'bg-white text-brand-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
                                             >
                                                 {v === 'day' ? '1 Day' : v === '3days' ? '3 Days' : v}
                                             </button>
                                         ))}
                                     </div>
-
-                                    {(viewMode === 'day' || viewMode === '3days') && (
-                                        <div className="flex items-center bg-gray-50/50 p-1 rounded-xl border border-gray-100">
-                                            <button onClick={() => setStartDayIdx(prev => Math.max(0, prev - 1))} className="p-1.5 hover:bg-white rounded-lg transition-all text-gray-400 hover:text-brand-600">
-                                                <Icon name="caret-left" size={14} />
-                                            </button>
-                                            <button onClick={() => setStartDayIdx(prev => prev + 1)} className="p-1.5 hover:bg-white rounded-lg transition-all text-gray-400 hover:text-brand-600">
-                                                <Icon name="caret-right" size={14} />
-                                            </button>
-                                        </div>
-                                    )}
                                 </div>
                             </div>
                         </div>
 
-                        {/* Dept Filter */}
-                        <div className="flex flex-wrap items-center justify-start gap-2">
-                            {['All', 'Operation', 'Teacher', 'Academic'].map(dept => (
-                                <button 
-                                    key={dept}
-                                    onClick={() => setShiftDept(dept)}
-                                    className={`px-4 py-2 rounded-lg text-[9px] font-black transition-all uppercase tracking-widest border ${shiftDept === dept ? 'bg-brand-600 border-brand-600 text-white shadow-md shadow-brand-100' : 'bg-white border-gray-100 text-gray-400 hover:border-brand-200 hover:text-gray-600'}`}
-                                >
-                                    {dept === 'All' ? 'View All' : dept}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
+
 
                     {viewMode === 'month' ? (
                         <div className="bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm">
@@ -2444,11 +2442,10 @@
                                 ))}
                             </div>
                             
-                            {/* Calendar 35 days grid */}
+                            {/* Calendar 42 days grid */}
                             <div className="grid grid-cols-7">
                                 {monthDays.map((dObj, idx) => {
-                                    const dateKey = `${dObj.dateObj.getFullYear()}-${dObj.dateObj.getMonth()}-${dObj.dateObj.getDate()}`;
-                                    const dayShifts = allMonthShifts.filter(s => s.dateKey === dateKey);
+                                    const dayShifts = allMonthShifts.filter(s => s.dateKey === dObj.dateKey);
                                     
                                     dayShifts.sort((a, b) => timeToMinutes(a.time).start - timeToMinutes(b.time).start);
 
@@ -2461,12 +2458,13 @@
                                             </div>
                                             <div className="flex flex-col gap-1 max-h-[90px] overflow-y-auto no-scrollbar">
                                                 {dayShifts.map((s, sIdx) => {
-                                                    const deptStr = (s.department || "").toLowerCase();
-                                                    const deptClass = deptStr.includes('oper') ? 'bg-brand-50 text-brand-700 border-l-2 border-brand-500' : 
-                                                                    deptStr.includes('teach') ? 'bg-pink-50 text-pink-700 border-l-2 border-pink-500' : 
-                                                                    'bg-amber-50 text-amber-700 border-l-2 border-amber-500';
+                                                    const todayKey = formatDateKey(new Date());
+                                                    const isPast = s.dateKey < todayKey;
+                                                    const shiftClass = isPast 
+                                                        ? 'bg-gray-50 text-gray-400 border-l-2 border-gray-200' 
+                                                        : 'bg-brand-50 text-brand-700 border-l-2 border-brand-500 shadow-sm';
                                                     return (
-                                                        <div key={sIdx} className={`p-1 rounded text-[8px] flex flex-col gap-0.5 ${deptClass}`}>
+                                                        <div key={sIdx} className={`p-1 rounded text-[8px] flex flex-col gap-0.5 ${shiftClass}`}>
                                                             <span className="font-bold truncate" title={s.staff}>{s.staff}</span>
                                                             <span className="opacity-80 truncate" title={s.time}>{s.time}</span>
                                                         </div>
@@ -2516,19 +2514,22 @@
                                     ))}
 
                                     {visibleDays.map((day, dayIdx) => {
-                                        const dayShifts = shifts.filter(s => s.day === day.originalName && s.staff !== 'OFF');
+                                        const dayShifts = activeShifts.filter(s => s.dateKey === day.dateKey && s.staff !== 'OFF');
                                         const processedShifts = processDayShifts(dayShifts);
                                         
                                         return (
                                             <div key={dayIdx} className={`relative h-full flex-1 transition-colors ${day.originalName === 'Chủ Nhật' ? 'bg-red-50/5' : ''}`}>
                                                 {processedShifts.map((s, sIdx) => {
-                                                    const deptStr = (s.department || "").toLowerCase();
-                                                    const deptClass = deptStr.includes('oper') ? 'operation' : deptStr.includes('teach') ? 'teacher' : 'academic';
+                                                    const todayKey = formatDateKey(new Date());
+                                                    const isPast = s.dateKey < todayKey;
+                                                    const shiftClass = isPast 
+                                                        ? 'bg-gray-50 text-gray-500 border-l-[3px] border-gray-300' 
+                                                        : 'bg-brand-50 text-brand-700 border-l-[3px] border-brand-500 shadow-sm';
                                                     
                                                     return (
                                                         <div 
                                                             key={sIdx}
-                                                            className={`absolute event-card ${deptClass} flex flex-col justify-between group/item p-1.5`}
+                                                            className={`absolute flex flex-col justify-between group/item p-1.5 rounded-r ${shiftClass} overflow-hidden`}
                                                             style={{ 
                                                                 top: s.top, 
                                                                 height: s.height, 
@@ -2538,8 +2539,8 @@
                                                             }}
                                                         >
                                                             <div className="space-y-0.5 overflow-hidden">
-                                                                <h4 className="font-bold leading-tight uppercase tracking-tight text-[9px] truncate">{s.staff}</h4>
-                                                                <p className="text-[7px] font-semibold opacity-90 truncate">{s.time}</p>
+                                                                <h4 className="font-bold leading-tight uppercase tracking-tight text-[9px] truncate" title={s.staff}>{s.staff}</h4>
+                                                                <p className="text-[7px] font-semibold opacity-90 truncate" title={s.time}>{s.time}</p>
                                                             </div>
                                                             <div className="mt-auto hidden sm:block">
                                                                 <span className="px-1 py-0.5 rounded bg-white/30 text-[6px] font-bold uppercase tracking-widest truncate">
@@ -2747,8 +2748,7 @@
 
         const MainApp = () => {
             const [activeTab, setActiveTab] = useState('dashboard');
-            const [activeWeek, setActiveWeek] = useState(15);
-            const [shiftDept, setShiftDept] = useState('Operation');
+            const [shiftDept, setShiftDept] = useState('All');
             
             // --- APPSHEET DATA STATE ---
             const [appData, setAppData] = useState({});
@@ -2780,19 +2780,20 @@
                 return Array.isArray(rows) && rows.length > 0 ? DataMapper.mapClassDashboard(rows) : null;
             }, [appData]);
 
-            const shiftsByWeek = useMemo(() => {
-                const rows = appData['Lich_Truc'];
+            const allShifts = useMemo(() => {
+                const rows = appData['HR'];
                 if (!Array.isArray(rows) || rows.length === 0) return SHIFT_DATA;
                 
-                const mapped = DataMapper.mapShifts(rows);
+                // Only load approved shifts
+                const mapped = DataMapper.mapShifts(rows).filter(s => s.status && s.status.toString().toLowerCase().includes('approved'));
                 if (!Array.isArray(mapped)) return SHIFT_DATA;
 
                 return {
-                    "Operation": { [activeWeek]: mapped.filter(s => s.department?.toString().toLowerCase().includes('oper')) },
-                    "Teacher": { [activeWeek]: mapped.filter(s => s.department?.toString().toLowerCase().includes('teach')) },
-                    "Academic": { [activeWeek]: mapped.filter(s => s.department?.toString().toLowerCase().includes('acad')) }
+                    "Operation": mapped.filter(s => s.department?.toString().toLowerCase().includes('oper')),
+                    "Teacher": mapped.filter(s => s.department?.toString().toLowerCase().includes('teach')),
+                    "Academic": mapped.filter(s => s.department?.toString().toLowerCase().includes('acad'))
                 };
-            }, [appData, activeWeek]);
+            }, [appData]);
 
             const debtRows = appData['Fees'] || [];
 
@@ -2839,21 +2840,6 @@
             }, []);
 
             const renderContent = () => {
-                if (activeWeek < 14) {
-                    return (
-                        <div className="flex flex-col items-center justify-center p-32 space-y-6 animate-fade-in bg-white rounded-2xl border border-gray-100 shadow-sm">
-                            <div className="w-24 h-24 bg-brand-50 rounded-full flex items-center justify-center">
-                                <Icon name="database" className="text-brand-500 opacity-40" size={48} />
-                            </div>
-                            <div className="text-center">
-                                <p className="font-extrabold text-gray-900 text-2xl tracking-tight">Dữ liệu chưa sẵn sàng</p>
-                                <p className="text-gray-500 mt-2">Hệ thống chưa có dữ liệu báo cáo cho Tuần {activeWeek}.</p>
-                            </div>
-                            <button onClick={() => setActiveWeek(14)} className="px-8 py-3 bg-brand-600 text-white rounded-xl font-bold hover:bg-brand-700 transition-all shadow-lg shadow-brand-100">Quay lại Tuần 14</button>
-                        </div>
-                    );
-                }
-
                 switch(activeTab) {
                     case 'dashboard':
                         return (
@@ -2878,6 +2864,7 @@
                                                 icon="users" 
                                                 iconbg="bg-potato-blue" 
                                             />
+ 
                                             <StatCardV3 
                                                 value={classes?.metrics?.total || "0"} 
                                                 label="Class" 
@@ -2906,11 +2893,9 @@
                                 {/* Main Sequential Layout (1 Column Full Width) */}
                                 <div className="space-y-[30px] min-w-0">
                                     <ShiftScheduler 
-                                        currentWeek={activeWeek} 
                                         shiftDept={shiftDept} 
                                         setShiftDept={setShiftDept} 
-                                        setActiveWeek={setActiveWeek} 
-                                        allShifts={shiftsByWeek}
+                                        allShifts={allShifts}
                                     />
 
                                     <DebtOverviewCard rows={debtRows} />
