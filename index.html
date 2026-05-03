@@ -3049,7 +3049,7 @@
                     case 'class':
                         return <ClassView initialData={classDashboard} />;
                     case 'teacher':
-                        return <TeacherView classData={appData['Class_Dashboard']} employeeData={appData['Employee']} />;
+                        return <TeacherView classData={classDashboard} employeeData={appData['Employee']} />;
                     case 'academic':
                         return <AcademicView />;
                     case 'operation':
