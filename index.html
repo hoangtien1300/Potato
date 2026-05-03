@@ -890,223 +890,6 @@
             );
         };
 
-        const ACADEMIC_REPORT_DATA = {
-            title: "Kế hoạch Tối ưu hóa Quý 2/2026",
-            subtitle: "Phòng Học vụ - Quản trị 200 học viên",
-            status: "ĐANG THỰC THI",
-            completionRates: [
-                { label: "KID", value: 95, color: "emerald" },
-                { label: "JUNIOR", value: 80, color: "amber" },
-                { label: "JUNIOR+", value: 90, color: "emerald" },
-                { label: "TEEN", value: 100, color: "emerald" },
-                { label: "TEEN+ / PRE-IELTS", value: 50, color: "rose" },
-                { label: "IELTS", value: 100, color: "emerald" }
-            ],
-            rates: [
-                { label: "KID", value: 95, color: "emerald" },
-                { label: "JUNIOR", value: 80, color: "amber" },
-                { label: "JUNIOR+", value: 90, color: "emerald" },
-                { label: "TEEN", value: 100, color: "emerald" },
-                { label: "TEEN+ / PRE-IELTS", value: 50, color: "rose" },
-                { label: "IELTS", value: 100, color: "emerald" }
-            ],
-            matrix: [
-                {
-                    category: "Lộ trình",
-                    icon: "map",
-                    color: "brand",
-                    done: [
-                        "Kiểm tra đánh giá trình độ & viết lộ trình phù hợp cho các lớp.",
-                        "Tìm sách bổ sung Ngữ pháp + Từ vựng cho TEEN+: B1 Destination cho PET."
-                    ],
-                    issues: [
-                        { title: "KET/PET: Cần tinh chỉnh", desc: "Bổ sung bài tập nghe mỗi buổi học để tăng cường kỹ năng thực tế cho HV." },
-                        { title: "IELTS: Cần chi tiết hóa", desc: "Danh sách bài giảng còn sơ sài; cần lược bỏ các nội dung không trọng tâm." }
-                    ],
-                    actions: [
-                        { period: "Tuần 1 (06/04)", tasks: ["Tinh chỉnh lộ trình KET - PET.", "Hoàn tất thông tin khóa học: Kid - Junior."] },
-                        { period: "Tuần 2 (13/04)", tasks: ["Chi tiết hóa lộ trình IELTS.", "Hoàn tất thông tin khóa học: Teen."] },
-                        { period: "Tuần 3 (20/04)", tasks: ["Hoàn tất thông tin khóa học: Junior+."] },
-                        { period: "Tuần 4 (27/04)", tasks: ["Hoàn tất thông tin khóa học: Teen+."] }
-                    ]
-                },
-                {
-                    category: "Đề thi",
-                    icon: "clipboard-list",
-                    color: "emerald",
-                    done: [
-                        "Hoàn thành 90% đề thi còn thiếu (Khối KID & PRE-IELTS 2)."
-                    ],
-                    issues: [
-                        { title: "Tối ưu quy trình Đầu vào", desc: "Chuẩn hóa lại bộ đề Placement Test và tiêu chí đánh giá để phân loại học sinh chính xác hơn." }
-                    ],
-                    actions: [
-                        { period: "Tháng 4 (06/04)", tasks: ["Review và hoàn tất bộ đề kiểm tra hiện hữu."] },
-                        { period: "Tháng 5", tasks: ["Đánh giá các đề kiểm tra đang triển khai."] },
-                        { period: "Tháng 6", tasks: ["Nâng cấp Placement test & Tiêu chí xếp lớp."] }
-                    ]
-                },
-                {
-                    category: "Học cụ",
-                    icon: "package",
-                    color: "purple",
-                    done: [
-                        "Bổ sung Flashcards cho lớp JUNIOR 6+ Hưng Định.",
-                        "Stories Spark: Chốt danh sách lớp thực hiện, check học cụ & dạy demo."
-                    ],
-                    issues: [], 
-                    actions: [
-                        { period: "Tuần 1 (06/04)", tasks: ["Hoàn tất học cụ cơ bản Junior+.", "Stories Spark: Trích bài giảng + Hoạt động."] },
-                        { period: "Tuần 2 (13/04)", tasks: ["Hoàn tất học cụ Teen+."] },
-                        { period: "Tuần 3 (20/04)", tasks: ["Học cụ số PRE-IELTS."] },
-                        { period: "Tháng 5", tasks: ["Stories Spark vận hành chính thức cho các khối JUNIOR."] }
-                    ]
-                }
-            ]
-        };
-
-        const AcademicView = () => {
-            return (
-                <div className="space-y-10 pb-20">
-                    {/* Header Banner */}
-                    <div className="rounded-2xl p-10 bg-gradient-to-br from-brand-600 to-brand-700 text-white relative overflow-hidden shadow-lg shadow-brand-100">
-                        <div className="absolute top-0 right-0 w-80 h-80 bg-white/10 rounded-full blur-3xl -mr-40 -mt-40"></div>
-                        <div className="absolute bottom-0 left-0 w-64 h-64 bg-white/5 rounded-full blur-2xl -ml-32 -mb-32"></div>
-                        <div className="relative z-10 text-center md:text-left">
-                            <h1 className="text-3xl font-extrabold tracking-tight uppercase mb-4">
-                                {ACADEMIC_REPORT_DATA.title.split(' Quý')[0]} <span className="opacity-60">Quý 2/2026</span>
-                            </h1>
-                            <div className="flex flex-wrap items-center justify-center md:justify-start gap-3">
-                                <div className="px-4 py-2 bg-white/10 backdrop-blur-md rounded-xl border border-white/20 whitespace-nowrap">
-                                    <p className="text-white font-bold uppercase tracking-wider text-[10px] flex items-center gap-2">
-                                        <Icon name="shield-check" size={14} /> {ACADEMIC_REPORT_DATA.subtitle}
-                                    </p>
-                                </div>
-                                <div className="px-4 py-2 bg-pink-500 text-white rounded-xl shadow-md whitespace-nowrap">
-                                     <p className="text-[10px] font-bold uppercase tracking-wider">{ACADEMIC_REPORT_DATA.status}</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Completion Rates Grid */}
-                    <div className="space-y-6">
-                        <div className="flex items-center justify-between px-2">
-                            <h2 className="text-xl font-extrabold text-gray-800 flex items-center gap-2">
-                                <Icon name="BarChart" className="text-green-500" size={20} /> Hoàn thiện học cụ theo khối
-                            </h2>
-                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Live Status Update</span>
-                        </div>
-                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
-                            {ACADEMIC_REPORT_DATA.rates.map((rate, idx) => (
-                                <div key={idx} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 text-center group hover:border-brand-200 transition-all">
-                                    <p className="text-[9px] font-extrabold text-gray-400 uppercase tracking-tight mb-4 h-8 flex items-center justify-center leading-tight">
-                                        {rate.label}
-                                    </p>
-                                    <div className="relative w-16 h-16 mx-auto mb-4">
-                                        <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
-                                            <circle cx="18" cy="18" r="16" fill="none" className="text-gray-50" strokeWidth="4" stroke="currentColor" />
-                                            <circle cx="18" cy="18" r="16" fill="none" className={rate.color === 'emerald' ? 'text-green-500' : rate.color === 'amber' ? 'text-amber-500' : 'text-red-500'} strokeWidth="4" strokeDasharray={`${rate.value}, 100`} strokeLinecap="round" stroke="currentColor" />
-                                        </svg>
-                                        <div className="absolute inset-0 flex items-center justify-center text-[10px] font-extrabold text-gray-800">
-                                            {rate.value}%
-                                        </div>
-                                    </div>
-                                    <div className={`w-1.5 h-1.5 rounded-full mx-auto ${rate.color === 'emerald' ? 'bg-green-500 shadow-green-100' : rate.color === 'amber' ? 'bg-amber-500 shadow-amber-100' : 'bg-red-500 shadow-red-100'} shadow-md`}></div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* Action Matrix Rows */}
-                    <div className="space-y-8">
-                        {ACADEMIC_REPORT_DATA.matrix.map((row, rIdx) => (
-                            <div key={rIdx} className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 group">
-                                <div className="grid grid-cols-1 lg:grid-cols-12">
-                                    {/* Column 1: Category & Done */}
-                                    <div className="lg:col-span-4 p-8 border-r border-gray-50 bg-gray-50/30">
-                                        <div className="flex items-center gap-4 mb-8">
-                                            <div className="w-12 h-12 rounded-xl bg-white text-brand-600 flex items-center justify-center shadow-sm border border-gray-50">
-                                                <Icon name={row.icon} size={24} />
-                                            </div>
-                                            <h3 className="text-xl font-extrabold text-gray-800 uppercase tracking-tight">{row.category}</h3>
-                                        </div>
-                                        <div className="space-y-4">
-                                            <p className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">Đã thực hiện tuần qua</p>
-                                            {row.done.map((task, tIdx) => (
-                                                <div key={tIdx} className="flex gap-3 items-start">
-                                                    <div className="w-5 h-5 rounded-full bg-green-50 flex items-center justify-center shrink-0 mt-0.5">
-                                                        <Icon name="check" className="text-green-600" size={10} />
-                                                    </div>
-                                                    <p className="text-[11px] font-medium text-gray-600 leading-relaxed">{task}</p>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-
-                                    {/* Column 2: Issues */}
-                                    <div className="lg:col-span-4 p-8 border-r border-gray-50 bg-white">
-                                        <div className="space-y-6">
-                                            <p className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">Vấn đề tồn đọng</p>
-                                            {row.issues.length > 0 ? (
-                                                row.issues.map((issue, iIdx) => (
-                                                    <div key={iIdx} className="p-5 rounded-xl bg-red-50 border-l-3 border-red-500 space-y-2">
-                                                        <h4 className="text-[11px] font-extrabold text-red-600 uppercase tracking-tight">{issue.title}</h4>
-                                                        <p className="text-[11px] font-medium text-gray-500 leading-relaxed">{issue.desc}</p>
-                                                    </div>
-                                                ))
-                                            ) : (
-                                                <div className="p-10 rounded-xl border border-dashed border-gray-100 flex flex-col items-center justify-center text-center opacity-40">
-                                                    <Icon name="ShieldCheck" className="text-green-500 mb-2" size={32} />
-                                                    <p className="text-[10px] font-bold text-gray-400 uppercase">Safe Zone</p>
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-
-                                    {/* Column 3: Actions & Timeline */}
-                                    <div className="lg:col-span-4 p-8 bg-white">
-                                        <div className="space-y-6">
-                                            <p className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">Hành động & Thời hạn</p>
-                                            <div className="space-y-6 relative pl-4">
-                                                <div className="absolute left-1.5 top-2 bottom-2 w-0.5 bg-gray-50 rounded-full"></div>
-                                                {row.actions.map((action, aIdx) => (
-                                                    <div key={aIdx} className="relative pl-6">
-                                                        <div className="absolute left-[-1.1rem] top-1.5 w-4 h-4 rounded-full bg-white border border-brand-500 flex items-center justify-center">
-                                                            <div className="w-1.5 h-1.5 rounded-full bg-brand-500"></div>
-                                                        </div>
-                                                        <h4 className="text-[10px] font-extrabold text-brand-600 mb-2 uppercase tracking-tight">{action.period}</h4>
-                                                        <div className="space-y-1.5">
-                                                            {action.tasks.map((task, kIdx) => (
-                                                                <p key={kIdx} className="text-[10px] font-bold text-gray-500 flex items-start gap-2">
-                                                                    <span className="mt-1.5 w-1 h-1 rounded-full bg-gray-300 shrink-0"></span>
-                                                                    {task}
-                                                                </p>
-                                                            ))}
-                                                        </div>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-
-                    {/* Footer Status */}
-                    <div className="bg-gradient-to-br from-brand-600 to-indigo-700 rounded-2xl p-8 text-white relative overflow-hidden shadow-lg shadow-brand-100 flex flex-col md:flex-row justify-between items-center gap-6">
-                        <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl -mr-32 -mt-32"></div>
-                        <div className="relative z-10 text-center md:text-left">
-                            <h3 className="text-lg font-extrabold mb-2 uppercase tracking-tight flex items-center justify-center md:justify-start gap-3">
-                                <Icon name="Rocket" size={24} className="animate-pulse" /> Quản trị Vận hành & Chất lượng Q2
-                            </h3>
-                            <p className="text-[10px] text-white/70 font-bold uppercase tracking-widest">Hệ thống hóa Lộ trình - Chuẩn hóa Đầu vào - Tối ưu hóa Học cụ</p>
-                        </div>
-                        <div className="relative z-10">
-                            <div className="px-8 py-4 bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 text-center">
-                                <p className="text-[9px] font-bold text-white/50 uppercase tracking-widest mb-1">Tình trạng</p>
-                                <p className="text-lg font-extrabold italic uppercase">{ACADEMIC_REPORT_DATA.status}</p>
                             </div>
                         </div>
                     </div>
@@ -1187,7 +970,9 @@
                  // Đếm số lớp cho mỗi giáo viên
                  return activeTeachers.map(emp => {
                      const teacherId = emp['ID Emp'] || '';
-                     const activeClasses = classData.filter(c => c.teacherName === teacherId);
+                     const activeClasses = classData.filter(c => 
+                        (c.teacherName && (c.teacherName.includes(emp['Eng Name']) || c.teacherName.includes(emp['Full Name'])))
+                     );
                      
                      return {
                          id: teacherId,
@@ -1405,7 +1190,9 @@
                  // Đếm số lớp cho mỗi nhân sự Academic
                  return activeAcademic.map(emp => {
                      const staffId = emp['ID Emp'] || '';
-                     const activeClasses = classData.filter(c => c.teacherName === staffId);
+                     const activeClasses = classData.filter(c => 
+                        (c.academic && (c.academic.includes(emp['Eng Name']) || c.academic.includes(emp['Full Name'])))
+                     );
                      
                      return {
                          id: staffId,
