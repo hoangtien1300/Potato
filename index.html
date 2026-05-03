@@ -1382,6 +1382,193 @@
              );
         };
 
+        const AcademicView = ({ classData, employeeData }) => {
+             const [expandedAcademicId, setExpandedAcademicId] = useState(null);
+             
+             // Utility to strip leading numbers and dots
+             const cleanText = (text) => {
+                 if (!text || text === 'N/A') return '-';
+                 return text.toString().replace(/^\d+\.\s*/, '');
+             };
+
+             // Process Academic Statistics
+             const academicStats = useMemo(() => {
+                 if (!employeeData || !classData) return [];
+                 
+                 // Lấy danh sách nhân sự Academic (những người có Academic Level)
+                 const activeAcademic = employeeData.filter(emp => {
+                     const hasAcadLevel = (emp['Academic Level'] || '').trim() !== '';
+                     const isWorking = (emp['Status'] || '').toLowerCase().includes('working');
+                     return hasAcadLevel && isWorking;
+                 });
+                 
+                 // Đếm số lớp cho mỗi nhân sự Academic
+                 return activeAcademic.map(emp => {
+                     const staffId = emp['ID Emp'] || '';
+                     const activeClasses = classData.filter(c => c.teacherName === staffId);
+                     
+                     return {
+                         id: staffId,
+                         fullName: emp['Full Name'] || 'N/A',
+                         engName: emp['Eng Name'] || 'N/A',
+                         photo: emp['Photo'] || '',
+                         level: cleanText(emp['Academic Level']),
+                         band: emp['Academic Band'] || 'N/A',
+                         activeClassesCount: activeClasses.length,
+                         classes: activeClasses
+                     };
+                 }).sort((a, b) => b.activeClassesCount - a.activeClassesCount);
+             }, [employeeData, classData]);
+             
+             const stats = [
+                 { label: 'Coordinator', count: academicStats.filter(s => s.level.includes('Coordinator')).length, color: 'bg-brand-500' },
+                 { label: 'Leader', count: academicStats.filter(s => s.level.includes('Leader')).length, color: 'bg-pink-500' },
+                 { label: 'Total Staff', count: academicStats.length, color: 'bg-potato-yellow' },
+                 { label: 'Active Support', count: academicStats.filter(s => s.activeClassesCount > 0).length, color: 'bg-emerald-500' }
+             ];
+
+             return (
+                 <div className="space-y-10 pb-20 animate-fade-in">
+                     {/* 1. Header & Stats */}
+                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                         {stats.map((s, idx) => (
+                             <div key={idx} className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm group hover:shadow-md transition-all">
+                                 <div className="flex justify-between items-center">
+                                     <div>
+                                         <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{s.label}</p>
+                                         <p className="text-3xl font-black text-slate-800 mt-2 tracking-tighter">{s.count}</p>
+                                     </div>
+                                     <div className={`w-12 h-12 rounded-2xl ${s.color} bg-opacity-10 flex items-center justify-center`}>
+                                         <Icon name="ph-graduation-cap" className={s.color.replace('bg-', 'text-')} size={24} />
+                                     </div>
+                                 </div>
+                             </div>
+                         ))}
+                     </div>
+
+                     {/* 2. Academic Statistics Table */}
+                     <div className="bg-white rounded-[40px] border border-gray-100 shadow-sm overflow-hidden">
+                         <div className="p-8 border-b border-gray-50 flex justify-between items-center">
+                             <div>
+                                 <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight">Academic Statistics</h3>
+                                 <p className="text-xs font-bold text-slate-400 mt-1 uppercase tracking-widest">Learning Progress & Material Quality</p>
+                             </div>
+                         </div>
+                         <div className="table-responsive">
+                            <table className="w-full text-left border-collapse">
+                                <thead>
+                                    <tr className="bg-gray-50/50 text-gray-400 text-[10px] uppercase tracking-widest font-black">
+                                        <th className="p-6 pl-8">Academic Info</th>
+                                        <th className="p-6">Academic Level</th>
+                                        <th className="p-6">Academic Band</th>
+                                        <th className="p-6 text-center">Active Support</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-50">
+                                    {academicStats.length > 0 ? (
+                                        academicStats.map((t, idx) => (
+                                            <React.Fragment key={idx}>
+                                                <tr onClick={() => setExpandedAcademicId(expandedAcademicId === t.id ? null : t.id)} className={`transition-all hover:bg-slate-50/80 cursor-pointer group ${expandedAcademicId === t.id ? 'bg-slate-50/50' : ''}`}>
+                                                    <td className="p-6 pl-8 flex items-center gap-4">
+                                                        <div className="relative shrink-0">
+                                                            <img 
+                                                                src={t.photo && t.photo.startsWith('http') ? t.photo : "https://i.pravatar.cc/150?img=" + (20 + idx)} 
+                                                                alt={t.engName}
+                                                                className="w-12 h-12 rounded-2xl object-cover border border-gray-100 shadow-sm group-hover:scale-105 transition-transform"
+                                                            />
+                                                            <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-indigo-500 border-2 border-white rounded-full"></div>
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-sm font-black text-slate-800 uppercase tracking-tight group-hover:text-brand-600 transition-colors">{t.fullName}</p>
+                                                            <p className="text-[10px] font-bold text-brand-600 mt-0.5 uppercase tracking-widest">({t.engName})</p>
+                                                        </div>
+                                                    </td>
+                                                    <td className="p-6">
+                                                        <span className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border shadow-sm ${
+                                                            t.level.includes('Leader') ? 'bg-indigo-50 text-indigo-600 border-indigo-100' : 
+                                                            t.level.includes('Coordinator') ? 'bg-brand-50 text-brand-600 border-brand-100' :
+                                                            'bg-slate-50 text-slate-600 border-slate-200'
+                                                        }`}>
+                                                            {t.level || '-'}
+                                                        </span>
+                                                    </td>
+                                                    <td className="p-6">
+                                                        <span className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border shadow-sm ${
+                                                            t.band === 'A' ? 'bg-indigo-50 text-indigo-600 border-indigo-100' :
+                                                            t.band === 'B' ? 'bg-blue-50 text-blue-600 border-blue-100' :
+                                                            t.band === 'C' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
+                                                            'bg-gray-50 text-gray-500 border-gray-200'
+                                                        }`}>
+                                                            {t.band || '-'}
+                                                        </span>
+                                                    </td>
+                                                    <td className="p-6 text-center">
+                                                        <span className="bg-indigo-50 text-indigo-600 text-sm font-black px-4 py-2 rounded-xl border border-indigo-100 shadow-sm">
+                                                            {t.activeClassesCount}
+                                                        </span>
+                                                        <Icon name={expandedAcademicId === t.id ? "caret-up" : "caret-down"} className="inline-block ml-3 text-gray-400 group-hover:text-brand-500 transition-colors" size={16} />
+                                                    </td>
+                                                </tr>
+                                                {expandedAcademicId === t.id && t.classes.length > 0 && (
+                                                    <tr className="bg-slate-50/30">
+                                                        <td colSpan="4" className="p-6">
+                                                            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden animate-fade-in">
+                                                                <div className="overflow-x-auto">
+                                                                    <table className="w-full text-left min-w-[1200px]">
+                                                                        <thead className="bg-slate-50 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">
+                                                                            <tr>
+                                                                                <th className="p-4 sticky left-0 bg-slate-50 z-10">Class</th>
+                                                                                <th className="p-4">Learning Progress</th>
+                                                                                <th className="p-4">Material</th>
+                                                                                <th className="p-4">Aid</th>
+                                                                                <th className="p-4">Roadmap</th>
+                                                                                <th className="p-4">Exam</th>
+                                                                                <th className="p-4">Exam Date</th>
+                                                                                <th className="p-4 max-w-[150px]">Achievement</th>
+                                                                                <th className="p-4 max-w-[150px]">Red Flag</th>
+                                                                                <th className="p-4 max-w-[150px]">Action</th>
+                                                                            </tr>
+                                                                        </thead>
+                                                                        <tbody className="divide-y divide-gray-50">
+                                                                            {t.classes.map((c, cIdx) => (
+                                                                                <tr key={cIdx} className="hover:bg-slate-50 transition-colors">
+                                                                                    <td className="p-4 sticky left-0 bg-white z-10 shadow-[2px_0_5px_rgba(0,0,0,0.05)]">
+                                                                                        <p className="text-xs font-black text-slate-800 tracking-tight">{c.className}</p>
+                                                                                        <p className="text-[10px] font-medium text-slate-400 mt-0.5">{c.idClass}</p>
+                                                                                    </td>
+                                                                                    <td className="p-4 text-[11px] font-bold text-slate-600">{cleanText(c.academic?.learningProgress)}</td>
+                                                                                    <td className="p-4 text-[11px] font-bold text-slate-600">{cleanText(c.academic?.material)}</td>
+                                                                                    <td className="p-4 text-[11px] font-bold text-slate-600">{cleanText(c.academic?.aid)}</td>
+                                                                                    <td className="p-4 text-[11px] font-bold text-slate-600">{cleanText(c.academic?.roadmap)}</td>
+                                                                                    <td className="p-4 text-[11px] font-bold text-slate-600">{cleanText(c.academic?.exam)}</td>
+                                                                                    <td className="p-4 text-[11px] font-bold text-slate-600">{c.academic?.examDate || '-'}</td>
+                                                                                    <td className="p-4 text-[11px] font-medium text-slate-600 max-w-[150px] truncate" title={c.academic?.academicWin}>{cleanText(c.academic?.academicWin)}</td>
+                                                                                    <td className="p-4 text-[11px] font-medium text-red-600 max-w-[150px] truncate" title={c.academic?.academicPending}>{cleanText(c.academic?.academicPending)}</td>
+                                                                                    <td className="p-4 text-[11px] font-medium text-amber-600 max-w-[150px] truncate" title={c.academic?.academicAction}>{cleanText(c.academic?.academicAction)}</td>
+                                                                                </tr>
+                                                                            ))}
+                                                                        </tbody>
+                                                                    </table>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                )}
+                                            </React.Fragment>
+                                        ))
+                                    ) : (
+                                        <tr>
+                                            <td colSpan="4" className="p-20 text-center text-gray-400 font-bold uppercase tracking-widest">Không có dữ liệu Academic</td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                         </div>
+                     </div>
+                 </div>
+             );
+        };
+
         const LeaderReportView = () => {
              const reports = [
                 { title: "Upload Ảnh Học Sinh", value: "90%", sub: "Trừ Movers HD & lý do cá nhân (5%)", icon: "camera", color: "text-blue-600", bg: "bg-blue-50" },
@@ -2960,7 +3147,7 @@
                     case 'teacher':
                         return <TeacherView classData={classDashboard} employeeData={appData['Employee']} />;
                     case 'academic':
-                        return <AcademicView />;
+                        return <AcademicView classData={classDashboard} employeeData={appData['Employee']} />;
                     case 'operation':
                         return <LeaderReportView />;
                     case 'playbook-teen':
