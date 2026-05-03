@@ -1,0 +1,2052 @@
+
+        const { useState, useEffect, useMemo } = React;
+        
+        // --- APPSHEET SERVICE & MAPPING ---
+        
+        const AppSheetService = {
+            spreadsheetId: '1dTcxPgSS2olUtgjjk2ZUvUo8e53Vi6J5Kk4bynKL0OE',
+            gids: {
+                'Danh_Sach_Lop': '2009932031',
+                'Hoc_Vien': '1989626144',
+                'Lich_Truc': '0',
+                'Cong_No': '1019913137'
+            },
+
+            async fetchData(tableName) {
+                const gid = this.gids[tableName];
+                if (!gid) return null;
+
+                const url = `https://docs.google.com/spreadsheets/d/${this.spreadsheetId}/export?format=csv&gid=${gid}`;
+                try {
+                    const response = await fetch(url);
+                    const csvText = await response.text();
+                    
+                    const cleanCsv = csvText.split('\n').slice(1).join('\n');
+                    
+                    return new Promise((resolve) => {
+                        Papa.parse(cleanCsv, {
+                            header: true,
+                            skipEmptyLines: true,
+                            complete: (results) => resolve(results.data)
+                        });
+                    });
+                } catch (error) {
+                    console.error(`Error fetching ${tableName}:`, error);
+                    return null;
+                }
+            },
+
+            async fetchAll() {
+                const results = {};
+                for (const table of Object.keys(this.gids)) {
+                    results[table] = await this.fetchData(table);
+                }
+                return results;
+            }
+        };
+
+        const DataMapper = {
+            mapShifts(rows) {
+                if (!rows || !Array.isArray(rows)) return null;
+                return rows.map(r => {
+                    let time = r.Time || r.time || r["Giờ"] || r["Thời gian"] || "-";
+                    // Handle split columns if they exist
+                    if (r["Giờ bắt đầu"] || r["Giờ_Bắt_Đầu"]) {
+                        const start = r["Giờ bắt đầu"] || r["Giờ_Bắt_Đầu"];
+                        const end = r["Giờ kết thúc"] || r["Giờ_Kết_Thúc"] || "";
+                        time = end ? `${start} - ${end}` : start;
+                    }
+
+                    return {
+                        day: r.Day || r.day || r["Thứ"] || "",
+                        staff: r.Staff || r.staff || r["Nhân viên"] || r["Tài khoản"] || "N/A",
+                        time: time,
+                        role: r.Role || r.role || r["Vai trò"] || r["Chức vụ"] || "",
+                        department: r.Department || r.dept || r["Bộ phận"] || r["Phòng ban"] || "Operation"
+                    };
+                });
+            },
+            mapClasses(rows) {
+                if (!rows || !Array.isArray(rows)) return null;
+
+                const list = rows.map(r => {
+                    const branchStr = (r.Branch || r.branch || "").toLowerCase();
+                    const isNQ = branchStr.includes("ngô");
+                    return {
+                        id: r["ID Class"] || r.id,
+                        status: r.Status || r.status || "N/A",
+                        branch: isNQ ? "Ngô Quyền (NQ)" : "Hưng Định (HĐ)",
+                        course: r.Course || r.course || "N/A",
+                        room: r.Room || r.room || "N/A",
+                        fullName: `${isNQ ? "NQ" : "HĐ"} | ${r.Course || r["Tên lớp"] || ""} | ${r.Room || ""} + ${r.Teacher || ""}`
+                    };
+                });
+
+                const metrics = {
+                    total: list.length,
+                    branches: {
+                        "NQ": { label: 'Ngô Quyền (NQ)', count: 0, courses: {} },
+                        "HĐ": { label: 'Hưng Định (HĐ)', count: 0, courses: {} }
+                    }
+                };
+
+                rows.forEach(r => {
+                    const branchStr = (r.Branch || r.branch || "").toLowerCase();
+                    const isNQ = branchStr.includes("ngô");
+                    const branchKey = isNQ ? "NQ" : "HĐ";
+                    const courseName = r.Course || r.course || "Other";
+
+                    metrics.branches[branchKey].count++;
+                    if (!metrics.branches[branchKey].courses[courseName]) {
+                        metrics.branches[branchKey].courses[courseName] = 0;
+                    }
+                    metrics.branches[branchKey].courses[courseName]++;
+                });
+
+                Object.values(metrics.branches).forEach(b => {
+                    b.courseList = Object.entries(b.courses).map(([label, count]) => {
+                        let color = 'bg-slate-400';
+                        if (label.toLowerCase().includes('ielts')) color = 'bg-indigo-500';
+                        else if (label.toLowerCase().includes('junior')) color = 'bg-brand-500';
+                        else if (label.toLowerCase().includes('kid')) color = 'bg-orange-400';
+                        else if (label.toLowerCase().includes('starter')) color = 'bg-yellow-400';
+                        
+                        return { label, count, color };
+                    }).sort((a,b) => b.count - a.count);
+                });
+
+                return { list, metrics };
+            },
+            mapDebt(rows) {
+                if (!rows || !Array.isArray(rows)) return null;
+                const total = rows.reduce((sum, r) => {
+                    const val = parseFloat((r.Amount || r.amount || r["Số tiền"] || r["Tổng cộng"] || "0").toString().replace(/[^0-9.-]+/g,""));
+                    return sum + val;
+                }, 0);
+                const paid = rows.reduce((sum, r) => {
+                    const val = parseFloat((r.Paid || r.paid || r["Đã đóng"] || r["Thực thu"] || "0").toString().replace(/[^0-9.-]+/g,""));
+                    return sum + val;
+                }, 0);
+                return { total, paid, pending: total - paid };
+            },
+            mapStudents(rows) {
+                if (!rows || !Array.isArray(rows)) return null;
+                
+                const categories = [
+                    { label: 'New', pattern: '1. new', color: 'bg-red-500' },
+                    { label: 'Trial', pattern: '5. trial', color: 'bg-potato-blue' },
+                    { label: 'Waiting', pattern: '6. waiting', color: 'bg-orange-500' },
+                    { label: 'Student', pattern: '7. student', color: 'bg-brand-500' },
+                    { label: 'Again', pattern: '3. again', color: 'bg-purple-500' }
+                ];
+
+                const branches = {
+                    "NQ": { branch: 'Ngô Quyền (NQ)', total: 0, statuses: categories.map(c => ({ ...c, count: 0 })) },
+                    "HĐ": { branch: 'Hưng Định (HĐ)', total: 0, statuses: categories.map(c => ({ ...c, count: 0 })) }
+                };
+
+                rows.forEach(r => {
+                    const rawStatus = (r.Status || r.status || "").toLowerCase();
+                    
+                    // Exclusion Filter: Skip Hold, Leave, Reject
+                    if (rawStatus.includes("hold") || rawStatus.includes("leave") || rawStatus.includes("reject")) {
+                        return;
+                    }
+
+                    const branchStr = (r.Branch || r.branch || "").toLowerCase();
+                    const group = branchStr.includes("ngô") ? branches.NQ : branches.HĐ;
+                    
+                    // In Master List mode, each row is 1 student
+                    group.total++;
+                    
+                    const catIdx = categories.findIndex(c => rawStatus.includes(c.pattern));
+                    if (catIdx !== -1) {
+                        group.statuses[catIdx].count++;
+                    } else if (rawStatus.includes("7.")) { // Fallback for various "7. Student" formats
+                        group.statuses[3].count++;
+                    }
+                });
+                return Object.values(branches);
+            }
+        };
+
+        // --- REDESIGNED COMPONENTS (Geex Style) ---
+
+        const LucideIcon = ({ name, className = "", size = 20 }) => {
+            useEffect(() => {
+                if (window.lucide) {
+                    window.lucide.createIcons();
+                }
+            }, [name]);
+            return <i data-lucide={name} className={`${className}`} style={{ width: size, height: size }} />;
+        };
+
+        const Icon = ({ name, className = "", size = 20 }) => {
+            if (name.startsWith('ph-')) {
+                return <i className={`ph ${name} ${className}`} style={{ fontSize: size }} />;
+            }
+            return <LucideIcon name={name} className={className} size={size} />;
+        };
+
+        // Helper for SVG Sparkline
+        const Sparkline = ({ data, color }) => {
+            const width = 100;
+            const height = 40;
+            const max = Math.max(...data);
+            const min = Math.min(...data);
+            const range = max - min || 1;
+            const points = data.map((val, i) => {
+                const x = (i / (data.length - 1)) * width;
+                const y = height - ((val - min) / range) * height;
+                return `${x},${y}`;
+            }).join(' ');
+
+            return (
+                <svg viewBox={`0 0 ${width} ${height}`} className="w-24 h-10 overflow-visible">
+                    <polyline points={points} className="sparkline" style={{ stroke: color }} />
+                </svg>
+            );
+        };
+
+        const StatCardV3 = ({ title, value, label, icon, color, iconbg, onClick, isActive }) => (
+            <div 
+                onClick={onClick}
+                className={`bg-white rounded-2xl p-6 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] border ${isActive ? 'border-brand-500 ring-2 ring-brand-100' : 'border-gray-50'} flex justify-between items-center group hover:shadow-md transition-all duration-300 cursor-pointer`}
+            >
+                <div>
+                    <p className="text-gray-500 text-sm font-medium mb-1">{label}</p>
+                    <h3 className="text-3xl font-extrabold text-gray-800">{value}</h3>
+                </div>
+                <div className={`w-12 h-12 rounded-xl ${iconbg.replace('bg-', 'bg-').replace('potato-', 'brand-').replace('blue', '50').replace('yellow', '50').replace('pink', '50').replace('green', '50')} flex items-center justify-center ${isActive ? 'bg-brand-500 text-white' : iconbg.replace('bg-', 'text-').replace('potato-', 'brand-').replace('blue', '500').replace('yellow', '500').replace('pink', '500').replace('green', '500')}`}>
+                    <Icon name={icon.replace('ph-', '')} size={24} />
+                </div>
+            </div>
+        );
+
+        const ReviewCard = ({ name, date, text, avatar, status }) => (
+            <div className="bg-white rounded-2xl p-6 min-w-[320px] max-w-[320px] flex flex-col justify-between border border-gray-50 shadow-sm transition-all hover:shadow-md">
+                <div>
+                    <div className="flex items-center gap-4 mb-5">
+                        <img src={avatar} className="w-12 h-12 rounded-xl object-cover shadow-sm bg-gray-100" />
+                        <div>
+                            <h4 className="text-sm font-bold text-gray-800 leading-tight">{name}</h4>
+                            <p className="text-[11px] font-medium text-gray-400 mt-0.5">{date}</p>
+                        </div>
+                    </div>
+                    <p className="text-xs font-medium text-gray-600 leading-relaxed line-clamp-4">"{text}"</p>
+                </div>
+                <div className="mt-6 flex justify-between items-center">
+                    <div className="flex gap-4">
+                        <button className="text-[10px] font-bold text-gray-400 hover:text-red-500 uppercase tracking-wider transition-colors">Archive</button>
+                        <button className="text-[10px] font-bold text-brand-600 hover:text-brand-700 uppercase tracking-wider transition-colors">Accept</button>
+                    </div>
+                    {status && <span className="text-[10px] font-bold text-brand-500 italic">Published →</span>}
+                </div>
+            </div>
+        );
+
+
+
+        const MasterTable = ({ data }) => {
+            const statusStyle = (status) => {
+                switch(status) {
+                    case 'Đúng Tiến Độ': return 'text-brand-600 bg-brand-50';
+                    case 'Rủi Ro': return 'text-red-600 bg-red-50 animate-pulse';
+                    case 'Hoàn Thành': return 'text-green-600 bg-green-50';
+                    default: return 'text-gray-500 bg-gray-50';
+                }
+            };
+
+            return (
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div className="p-6 flex justify-between items-center bg-white border-b border-gray-50">
+                        <div>
+                            <h3 className="text-lg font-bold text-gray-800">Lớp Học & Vận Hành</h3>
+                            <p className="text-xs text-gray-400 mt-0.5">Báo cáo vận hành hàng tuần</p>
+                        </div>
+                        <div className="flex items-center gap-3">
+                             <span className="text-xs font-medium text-gray-400">Lọc:</span>
+                             <select className="text-xs font-bold text-gray-700 bg-gray-50 border border-gray-100 px-3 py-1.5 rounded-lg outline-none cursor-pointer">
+                                 <option>Mã lớp</option>
+                                 <option>Giáo viên</option>
+                             </select>
+                        </div>
+                    </div>
+                    <div className="table-responsive no-scrollbar">
+                        {data.length > 0 ? (
+                            <table className="w-full text-left border-collapse">
+                                <thead>
+                                    <tr className="bg-gray-50 text-gray-400 text-[10px] uppercase tracking-wider font-bold border-b border-gray-50">
+                                        <th className="p-4 pl-6">Mã Lớp / Tên Khóa</th>
+                                        <th className="p-4">Sĩ số</th>
+                                        <th className="p-4">Giáo Viên</th>
+                                        <th className="p-4 text-center">Trạng Thái SOP</th>
+                                        <th className="p-4 text-right pr-6">Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-50">
+                                    {data.map((item, idx) => (
+                                        <tr key={idx} className="transition-all border-b border-gray-50 last:border-none group">
+                                            <td className="p-4 pl-6">
+                                                <div className="flex flex-col">
+                                                    <span className="text-xs font-bold text-gray-800 group-hover:text-brand-600 transition-colors uppercase">{item.name}</span>
+                                                    <span className="text-[10px] text-gray-400 mt-0.5">POTATO English</span>
+                                                </div>
+                                            </td>
+                                            <td className="p-4 text-gray-500 font-bold text-xs">{item.students} HV</td>
+                                            <td className="p-4 text-gray-700 font-semibold text-xs">{item.teacher}</td>
+                                            <td className="p-4 text-center">
+                                                <span className={`px-3 py-1 rounded-lg text-[10px] font-bold uppercase transition-all ${statusStyle(item.status)}`}>
+                                                    {item.status}
+                                                </span>
+                                            </td>
+                                            <td className="p-4 text-right pr-6">
+                                                <button className="touch-target w-10 h-10 bg-gray-50 text-gray-400 rounded-lg flex items-center justify-center hover:bg-brand-600 hover:text-white transition-all ml-auto">
+                                                    <Icon name="chevron-right" size={16} />
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                    <tr><td colSpan="5" className="h-4"></td></tr>
+                                </tbody>
+                            </table>
+                        ) : (
+                            <div className="p-10 text-center text-gray-400 italic">Chưa có dữ liệu</div>
+                        )}
+                    </div>
+                </div>
+            );
+        };
+
+        const ACADEMIC_REPORT_DATA = {
+            title: "Kế hoạch Tối ưu hóa Quý 2/2026",
+            subtitle: "Phòng Học vụ - Quản trị 200 học viên",
+            status: "ĐANG THỰC THI",
+            completionRates: [
+                { label: "KID", value: 95, color: "emerald" },
+                { label: "JUNIOR", value: 80, color: "amber" },
+                { label: "JUNIOR+", value: 90, color: "emerald" },
+                { label: "TEEN", value: 100, color: "emerald" },
+                { label: "TEEN+ / PRE-IELTS", value: 50, color: "rose" },
+                { label: "IELTS", value: 100, color: "emerald" }
+            ],
+            rates: [
+                { label: "KID", value: 95, color: "emerald" },
+                { label: "JUNIOR", value: 80, color: "amber" },
+                { label: "JUNIOR+", value: 90, color: "emerald" },
+                { label: "TEEN", value: 100, color: "emerald" },
+                { label: "TEEN+ / PRE-IELTS", value: 50, color: "rose" },
+                { label: "IELTS", value: 100, color: "emerald" }
+            ],
+            matrix: [
+                {
+                    category: "Lộ trình",
+                    icon: "map",
+                    color: "brand",
+                    done: [
+                        "Kiểm tra đánh giá trình độ & viết lộ trình phù hợp cho các lớp.",
+                        "Tìm sách bổ sung Ngữ pháp + Từ vựng cho TEEN+: B1 Destination cho PET."
+                    ],
+                    issues: [
+                        { title: "KET/PET: Cần tinh chỉnh", desc: "Bổ sung bài tập nghe mỗi buổi học để tăng cường kỹ năng thực tế cho HV." },
+                        { title: "IELTS: Cần chi tiết hóa", desc: "Danh sách bài giảng còn sơ sài; cần lược bỏ các nội dung không trọng tâm." }
+                    ],
+                    actions: [
+                        { period: "Tuần 1 (06/04)", tasks: ["Tinh chỉnh lộ trình KET - PET.", "Hoàn tất thông tin khóa học: Kid - Junior."] },
+                        { period: "Tuần 2 (13/04)", tasks: ["Chi tiết hóa lộ trình IELTS.", "Hoàn tất thông tin khóa học: Teen."] },
+                        { period: "Tuần 3 (20/04)", tasks: ["Hoàn tất thông tin khóa học: Junior+."] },
+                        { period: "Tuần 4 (27/04)", tasks: ["Hoàn tất thông tin khóa học: Teen+."] }
+                    ]
+                },
+                {
+                    category: "Đề thi",
+                    icon: "clipboard-list",
+                    color: "emerald",
+                    done: [
+                        "Hoàn thành 90% đề thi còn thiếu (Khối KID & PRE-IELTS 2)."
+                    ],
+                    issues: [
+                        { title: "Tối ưu quy trình Đầu vào", desc: "Chuẩn hóa lại bộ đề Placement Test và tiêu chí đánh giá để phân loại học sinh chính xác hơn." }
+                    ],
+                    actions: [
+                        { period: "Tháng 4 (06/04)", tasks: ["Review và hoàn tất bộ đề kiểm tra hiện hữu."] },
+                        { period: "Tháng 5", tasks: ["Đánh giá các đề kiểm tra đang triển khai."] },
+                        { period: "Tháng 6", tasks: ["Nâng cấp Placement test & Tiêu chí xếp lớp."] }
+                    ]
+                },
+                {
+                    category: "Học cụ",
+                    icon: "package",
+                    color: "purple",
+                    done: [
+                        "Bổ sung Flashcards cho lớp JUNIOR 6+ Hưng Định.",
+                        "Stories Spark: Chốt danh sách lớp thực hiện, check học cụ & dạy demo."
+                    ],
+                    issues: [], 
+                    actions: [
+                        { period: "Tuần 1 (06/04)", tasks: ["Hoàn tất học cụ cơ bản Junior+.", "Stories Spark: Trích bài giảng + Hoạt động."] },
+                        { period: "Tuần 2 (13/04)", tasks: ["Hoàn tất học cụ Teen+."] },
+                        { period: "Tuần 3 (20/04)", tasks: ["Học cụ số PRE-IELTS."] },
+                        { period: "Tháng 5", tasks: ["Stories Spark vận hành chính thức cho các khối JUNIOR."] }
+                    ]
+                }
+            ]
+        };
+
+        const AcademicView = () => {
+            return (
+                <div className="space-y-10 pb-20">
+                    {/* Header Banner */}
+                    <div className="rounded-2xl p-10 bg-gradient-to-br from-brand-600 to-brand-700 text-white relative overflow-hidden shadow-lg shadow-brand-100">
+                        <div className="absolute top-0 right-0 w-80 h-80 bg-white/10 rounded-full blur-3xl -mr-40 -mt-40"></div>
+                        <div className="absolute bottom-0 left-0 w-64 h-64 bg-white/5 rounded-full blur-2xl -ml-32 -mb-32"></div>
+                        <div className="relative z-10 text-center md:text-left">
+                            <h1 className="text-3xl font-extrabold tracking-tight uppercase mb-4">
+                                {ACADEMIC_REPORT_DATA.title.split(' Quý')[0]} <span className="opacity-60">Quý 2/2026</span>
+                            </h1>
+                            <div className="flex flex-wrap items-center justify-center md:justify-start gap-3">
+                                <div className="px-4 py-2 bg-white/10 backdrop-blur-md rounded-xl border border-white/20 whitespace-nowrap">
+                                    <p className="text-white font-bold uppercase tracking-wider text-[10px] flex items-center gap-2">
+                                        <Icon name="shield-check" size={14} /> {ACADEMIC_REPORT_DATA.subtitle}
+                                    </p>
+                                </div>
+                                <div className="px-4 py-2 bg-pink-500 text-white rounded-xl shadow-md whitespace-nowrap">
+                                     <p className="text-[10px] font-bold uppercase tracking-wider">{ACADEMIC_REPORT_DATA.status}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Completion Rates Grid */}
+                    <div className="space-y-6">
+                        <div className="flex items-center justify-between px-2">
+                            <h2 className="text-xl font-extrabold text-gray-800 flex items-center gap-2">
+                                <Icon name="BarChart" className="text-green-500" size={20} /> Hoàn thiện học cụ theo khối
+                            </h2>
+                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Live Status Update</span>
+                        </div>
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
+                            {ACADEMIC_REPORT_DATA.rates.map((rate, idx) => (
+                                <div key={idx} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 text-center group hover:border-brand-200 transition-all">
+                                    <p className="text-[9px] font-extrabold text-gray-400 uppercase tracking-tight mb-4 h-8 flex items-center justify-center leading-tight">
+                                        {rate.label}
+                                    </p>
+                                    <div className="relative w-16 h-16 mx-auto mb-4">
+                                        <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                                            <circle cx="18" cy="18" r="16" fill="none" className="text-gray-50" strokeWidth="4" stroke="currentColor" />
+                                            <circle cx="18" cy="18" r="16" fill="none" className={rate.color === 'emerald' ? 'text-green-500' : rate.color === 'amber' ? 'text-amber-500' : 'text-red-500'} strokeWidth="4" strokeDasharray={`${rate.value}, 100`} strokeLinecap="round" stroke="currentColor" />
+                                        </svg>
+                                        <div className="absolute inset-0 flex items-center justify-center text-[10px] font-extrabold text-gray-800">
+                                            {rate.value}%
+                                        </div>
+                                    </div>
+                                    <div className={`w-1.5 h-1.5 rounded-full mx-auto ${rate.color === 'emerald' ? 'bg-green-500 shadow-green-100' : rate.color === 'amber' ? 'bg-amber-500 shadow-amber-100' : 'bg-red-500 shadow-red-100'} shadow-md`}></div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Action Matrix Rows */}
+                    <div className="space-y-8">
+                        {ACADEMIC_REPORT_DATA.matrix.map((row, rIdx) => (
+                            <div key={rIdx} className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 group">
+                                <div className="grid grid-cols-1 lg:grid-cols-12">
+                                    {/* Column 1: Category & Done */}
+                                    <div className="lg:col-span-4 p-8 border-r border-gray-50 bg-gray-50/30">
+                                        <div className="flex items-center gap-4 mb-8">
+                                            <div className="w-12 h-12 rounded-xl bg-white text-brand-600 flex items-center justify-center shadow-sm border border-gray-50">
+                                                <Icon name={row.icon} size={24} />
+                                            </div>
+                                            <h3 className="text-xl font-extrabold text-gray-800 uppercase tracking-tight">{row.category}</h3>
+                                        </div>
+                                        <div className="space-y-4">
+                                            <p className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">Đã thực hiện tuần qua</p>
+                                            {row.done.map((task, tIdx) => (
+                                                <div key={tIdx} className="flex gap-3 items-start">
+                                                    <div className="w-5 h-5 rounded-full bg-green-50 flex items-center justify-center shrink-0 mt-0.5">
+                                                        <Icon name="check" className="text-green-600" size={10} />
+                                                    </div>
+                                                    <p className="text-[11px] font-medium text-gray-600 leading-relaxed">{task}</p>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* Column 2: Issues */}
+                                    <div className="lg:col-span-4 p-8 border-r border-gray-50 bg-white">
+                                        <div className="space-y-6">
+                                            <p className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">Vấn đề tồn đọng</p>
+                                            {row.issues.length > 0 ? (
+                                                row.issues.map((issue, iIdx) => (
+                                                    <div key={iIdx} className="p-5 rounded-xl bg-red-50 border-l-3 border-red-500 space-y-2">
+                                                        <h4 className="text-[11px] font-extrabold text-red-600 uppercase tracking-tight">{issue.title}</h4>
+                                                        <p className="text-[11px] font-medium text-gray-500 leading-relaxed">{issue.desc}</p>
+                                                    </div>
+                                                ))
+                                            ) : (
+                                                <div className="p-10 rounded-xl border border-dashed border-gray-100 flex flex-col items-center justify-center text-center opacity-40">
+                                                    <Icon name="ShieldCheck" className="text-green-500 mb-2" size={32} />
+                                                    <p className="text-[10px] font-bold text-gray-400 uppercase">Safe Zone</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {/* Column 3: Actions & Timeline */}
+                                    <div className="lg:col-span-4 p-8 bg-white">
+                                        <div className="space-y-6">
+                                            <p className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">Hành động & Thời hạn</p>
+                                            <div className="space-y-6 relative pl-4">
+                                                <div className="absolute left-1.5 top-2 bottom-2 w-0.5 bg-gray-50 rounded-full"></div>
+                                                {row.actions.map((action, aIdx) => (
+                                                    <div key={aIdx} className="relative pl-6">
+                                                        <div className="absolute left-[-1.1rem] top-1.5 w-4 h-4 rounded-full bg-white border border-brand-500 flex items-center justify-center">
+                                                            <div className="w-1.5 h-1.5 rounded-full bg-brand-500"></div>
+                                                        </div>
+                                                        <h4 className="text-[10px] font-extrabold text-brand-600 mb-2 uppercase tracking-tight">{action.period}</h4>
+                                                        <div className="space-y-1.5">
+                                                            {action.tasks.map((task, kIdx) => (
+                                                                <p key={kIdx} className="text-[10px] font-bold text-gray-500 flex items-start gap-2">
+                                                                    <span className="mt-1.5 w-1 h-1 rounded-full bg-gray-300 shrink-0"></span>
+                                                                    {task}
+                                                                </p>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Footer Status */}
+                    <div className="bg-gradient-to-br from-brand-600 to-indigo-700 rounded-2xl p-8 text-white relative overflow-hidden shadow-lg shadow-brand-100 flex flex-col md:flex-row justify-between items-center gap-6">
+                        <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl -mr-32 -mt-32"></div>
+                        <div className="relative z-10 text-center md:text-left">
+                            <h3 className="text-lg font-extrabold mb-2 uppercase tracking-tight flex items-center justify-center md:justify-start gap-3">
+                                <Icon name="Rocket" size={24} className="animate-pulse" /> Quản trị Vận hành & Chất lượng Q2
+                            </h3>
+                            <p className="text-[10px] text-white/70 font-bold uppercase tracking-widest">Hệ thống hóa Lộ trình - Chuẩn hóa Đầu vào - Tối ưu hóa Học cụ</p>
+                        </div>
+                        <div className="relative z-10">
+                            <div className="px-8 py-4 bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 text-center">
+                                <p className="text-[9px] font-bold text-white/50 uppercase tracking-widest mb-1">Tình trạng</p>
+                                <p className="text-lg font-extrabold italic uppercase">{ACADEMIC_REPORT_DATA.status}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const TEACHER_REPORT_DATA = {
+            week: "Tuần 4 - Tháng 3",
+            seniorTeacher: "Phan Trần Khôi",
+            summary: [
+                { label: "Chỉ số ổn định", value: "85%", trend: "↑ 3% so với tuần trước", color: "emerald", icon: "trending-up" },
+                { label: "Tỷ lệ làm HW", value: "78%", trend: "Cần cải thiện khối Junior", color: "amber", icon: "book" },
+                { label: "Tiến độ Final Test", value: "100%", trend: "Đã hoàn tất soạn đề", color: "sky", icon: "check-circle" }
+            ],
+            chartData: [
+                { label: "Kids 2", value: 85, color: "#10B981" },
+                { label: "Kids 4", value: 92, color: "#10B981" },
+                { label: "Teen 1 WFE", value: 88, color: "#0EA5E9" },
+                { label: "Junior 2", value: 65, color: "#F43F5E" },
+                { label: "Junior 5", value: 75, color: "#3B82F6" },
+                { label: "Teen 1A SSM", value: 95, color: "#0EA5E9" },
+                { label: "Teen 2+ KET", value: 70, color: "#F59E0B" },
+                { label: "Teen 3", value: 72, color: "#64748B" }
+            ],
+            categories: [
+                {
+                    name: "Kids",
+                    color: "emerald",
+                    classes: [
+                        { name: "Kids 2", sub: "Young Learners", status: "Chênh lệch trình độ", desc: "Các bạn mới đang bắt kịp tiến độ tốt. Cần tránh gây nhàm chán cho các bạn cũ.", solution: "Kết hợp ôn tập lồng ghép thực hành Stage 3." },
+                        { name: "Kids 4", sub: "Young Learners", status: "Ổn định & Nội quy", desc: "Các bạn tuân thủ tốt. Đang chuẩn bị chuyển giao sang Stage 4 quan trọng.", solution: "Đã soạn xong Final Test, tập trung ôn luyện trọng tâm." }
+                    ]
+                },
+                {
+                    name: "Junior",
+                    color: "blue",
+                    classes: [
+                        { name: "Junior 2", sub: "Warning Zone", status: "Lệch độ tuổi & Kỹ năng", desc: "Nói tốt nhưng viết yếu. Ken nghỉ nhiều và yếu. Đang thử nghiệm Story Spark.", solution: "Giao BT riêng cho nhóm viết yếu. Liên hệ PH Ken." },
+                        { name: "Junior 5", sub: "Junior", status: "Khó khăn chuyển cấp", desc: "Các bạn lớp 2 (Michelle, Aria...) bắt đầu thấy khó khăn với bài tập mới.", solution: "Dạy chắc từ vựng, hướng dẫn kỹ phương pháp làm ngữ pháp." }
+                    ]
+                },
+                {
+                    name: "Teen",
+                    color: "indigo",
+                    classes: [
+                        { name: "Teen 1 WFE", sub: "Teen Focus", status: "Chuẩn bị Final Test", desc: "Thái độ tốt, làm HW đầy đủ. Ngữ pháp cần được gia cố thêm trước kỳ thi.", solution: "Ôn tập bám sát cấu trúc đề thi Final." },
+                        { name: "Teen 1A SSM", sub: "Teen Focus", status: "Duy trì sự tiến bộ", desc: "Học giỏi đều, feedback Ms Sue rất tốt. Cần rèn thêm ngữ pháp nâng cao.", solution: "Áp dụng phương pháp luyện Grammar & Vocab mới." },
+                        { name: "Teen 2+ KET", sub: "Cambridge Prep", status: "Kỹ năng Nghe & Đọc", desc: "Đọc có tiến bộ, Nghe cần tăng cường. Hailey nỗ lực nhưng chưa thuộc từ.", solution: "Tăng cường bài tập, áp dụng PP mới, theo dõi Hailey." },
+                        { name: "Teen 3", sub: "Weekend Class", status: "Tỷ lệ chuyên cần", desc: "Nghiêm túc nhưng vắng nhiều do bận cuối tuần. Kỹ năng ngữ pháp còn yếu.", solution: "Gửi kiến thức cô đọng cho HS vắng ôn tại nhà." }
+                    ]
+                },
+                {
+                    name: "IELTS",
+                    color: "rose",
+                    classes: []
+                }
+            ],
+            strategies: [
+                { title: "Story Spark Integration", desc: "Đã áp dụng vào lớp Junior 2, bước đầu nhận được sự hào hứng từ học sinh. Sẽ theo dõi tiến độ tiếp thu trong 2 tuần tới.", icon: "ph-book-open" }
+            ]
+        };
+
+        const TeacherView = () => {
+             const [viewWeek, setViewWeek] = useState(14);
+             
+             const stats = [
+                 { label: 'Full Time', count: 4, color: 'bg-brand-500' },
+                 { label: 'Part Time', count: 6, color: 'bg-pink-500' },
+                 { label: 'Head Teacher', count: 1, color: 'bg-potato-yellow' },
+                 { label: 'Senior Teacher', count: 1, color: 'bg-emerald-500' }
+             ];
+
+             const teacherTasks = [
+                 { id: 1, task: 'Lên giáo án cho tuần 15', status: 'In Progress', notes: 'Gia cố phần Grammar cho khối Teen' },
+                 { id: 2, task: 'Họp chuyên môn tháng 4', status: 'Planned', notes: 'Bàn về giáo trình Stories Spark mới' },
+                 { id: 3, task: 'Review đề thi Final KET', status: 'Done', notes: 'Phần Listening đã được tinh chỉnh' },
+                 { id: 4, task: 'Check Homework khối Kids', status: 'In Progress', notes: 'Lớp Kid 2 cần lưu ý bạn Ruby' }
+             ];
+
+             const teacherShifts = (SHIFT_DATA["Teacher"] && SHIFT_DATA["Teacher"][viewWeek]) || [];
+
+             return (
+                 <div className="space-y-10 pb-20 animate-fade-in">
+                     {/* 1. Header & Stats */}
+                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                         {stats.map((s, idx) => (
+                             <div key={idx} className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm group hover:shadow-md transition-all">
+                                 <div className="flex justify-between items-center">
+                                     <div>
+                                         <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{s.label}</p>
+                                         <p className="text-3xl font-black text-slate-800 mt-2 tracking-tighter">{s.count}</p>
+                                     </div>
+                                     <div className={`w-12 h-12 rounded-2xl ${s.color} bg-opacity-10 flex items-center justify-center`}>
+                                         <Icon name="ph-users" className={s.color.replace('bg-', 'text-')} size={24} />
+                                     </div>
+                                 </div>
+                             </div>
+                         ))}
+                     </div>
+
+                     {/* 2. Weekly Calendar */}
+                     <div className="bg-white p-8 rounded-[40px] border border-gray-100 shadow-sm">
+                         <div className="flex justify-between items-center mb-10">
+                             <div>
+                                 <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight">Lịch Trực Tuần {viewWeek}</h3>
+                                 <p className="text-xs font-bold text-slate-400 mt-1 uppercase tracking-widest">Teacher Department Schedule</p>
+                             </div>
+                             <div className="flex gap-2">
+                                 <button onClick={() => setViewWeek(14)} className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${viewWeek === 14 ? 'bg-brand-600 text-white shadow-lg shadow-brand-100' : 'bg-gray-50 text-gray-400 hover:bg-gray-100'}`}>W14</button>
+                                 <button onClick={() => setViewWeek(15)} className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${viewWeek === 15 ? 'bg-brand-600 text-white shadow-lg shadow-brand-100' : 'bg-gray-50 text-gray-400 hover:bg-gray-100'}`}>W15</button>
+                             </div>
+                         </div>
+                         
+                         <div className="grid grid-cols-1 md:grid-cols-7 gap-4">
+                             {teacherShifts.map((shift, idx) => (
+                                 <div key={idx} className={`p-5 rounded-3xl border ${shift.staff === 'OFF' ? 'bg-gray-50/50 border-gray-100 opacity-60' : 'bg-white border-brand-50 shadow-sm hover:border-brand-200'} transition-all text-center group`}>
+                                     <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4 group-hover:text-brand-600 transition-colors">{shift.day}</p>
+                                     <div className="w-12 h-12 rounded-2xl bg-brand-50 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                                         <Icon name="ph-user-focus" className="text-brand-600" size={20} />
+                                     </div>
+                                     <p className="text-xs font-black text-slate-800 uppercase tracking-tighter truncate">{shift.staff}</p>
+                                     <p className="text-[9px] font-black text-brand-600 mt-2 uppercase tracking-widest">{shift.time}</p>
+                                 </div>
+                             ))}
+                         </div>
+                     </div>
+
+                     {/* 3. Task List */}
+                     <div className="bg-white rounded-[40px] border border-gray-100 shadow-sm overflow-hidden">
+                         <div className="p-8 border-b border-gray-50 flex justify-between items-center">
+                             <div>
+                                 <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight">Task List - Teacher Dept</h3>
+                                 <p className="text-xs font-bold text-slate-400 mt-1 uppercase tracking-widest">Operational Workflows</p>
+                             </div>
+                             <button className="bg-brand-50 text-brand-600 px-6 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-brand-100 transition-colors">
+                                 Add Task
+                             </button>
+                         </div>
+                         <div className="table-responsive">
+                            {teacherTasks.length > 0 ? (
+                                <table className="w-full text-left border-collapse">
+                                    <thead>
+                                        <tr className="bg-gray-50/50 text-gray-400 text-[10px] uppercase tracking-widest font-black">
+                                            <th className="p-8">Công việc</th>
+                                            <th className="p-8 text-center uppercase tracking-widest">Trạng thái</th>
+                                            <th className="p-8 uppercase tracking-widest">Ghi chú</th>
+                                            <th className="p-8 text-right pr-10">Thao tác</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-50">
+                                        {teacherTasks.map((t) => (
+                                            <tr key={t.id} className="transition-all group">
+                                                <td className="p-8">
+                                                    <p className="text-xs font-black text-slate-800 uppercase tracking-tight group-hover:text-brand-600 transition-colors">{t.task}</p>
+                                                </td>
+                                                <td className="p-8 text-center">
+                                                    <span className={`px-3 py-1.5 rounded-xl text-[8px] font-black uppercase tracking-widest border shadow-sm ${
+                                                        t.status === 'Done' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 
+                                                        t.status === 'In Progress' ? 'bg-brand-50 text-brand-600 border-brand-100' : 
+                                                        'bg-amber-50 text-amber-600 border-amber-100'
+                                                    }`}>
+                                                        {t.status}
+                                                    </span>
+                                                </td>
+                                                <td className="p-8">
+                                                    <p className="text-xs font-medium text-slate-400 italic">"{t.notes}"</p>
+                                                </td>
+                                                <td className="p-8 text-right pr-10">
+                                                    <button className="touch-target w-12 h-12 bg-gray-50 text-gray-400 rounded-2xl flex items-center justify-center hover:bg-brand-600 hover:text-white transition-all shadow-sm ml-auto">
+                                                        <Icon name="ph-dots-three-outline-fill" size={16} />
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            ) : (
+                                <div className="p-20 text-center text-gray-400 font-bold uppercase tracking-widest">Chưa có dữ liệu</div>
+                            )}
+                        </div>
+                     </div>
+                     {/* 4. Document List (Danh sách tài liệu) */}
+                     <div className="space-y-6">
+                         <div className="flex items-center gap-4">
+                             <div className="w-1.5 h-6 bg-potato-yellow rounded-full"></div>
+                             <h2 className="text-xl font-extrabold text-gray-800 uppercase tracking-tight">Danh sách tài liệu</h2>
+                         </div>
+                         
+                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                             <a 
+                                 href="https://potato-teacher.vercel.app/" 
+                                 target="_blank" 
+                                 rel="noopener noreferrer"
+                                 className="bg-white p-8 rounded-[40px] border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all group flex flex-col justify-between h-64 relative overflow-hidden"
+                             >
+                                 <div className="absolute top-0 right-0 w-32 h-32 bg-brand-50 rounded-bl-full -mr-10 -mt-10 transition-all group-hover:scale-110"></div>
+                                 <div className="relative z-10">
+                                     <div className="w-16 h-16 rounded-2xl bg-brand-500 text-white flex items-center justify-center shadow-lg mb-6 group-hover:rotate-6 transition-transform">
+                                         <Icon name="ph-book-open" size={32} />
+                                     </div>
+                                     <h3 className="text-2xl font-black text-slate-900 leading-tight">POTATO<br/>Play book</h3>
+                                     <p className="text-xs font-bold text-slate-400 mt-4 uppercase tracking-widest italic group-hover:text-brand-600">Click to explore →</p>
+                                 </div>
+                                 <div className="text-[10px] font-bold text-gray-300 uppercase tracking-widest mt-auto">Vercel Deployment</div>
+                             </a>
+
+                             {/* Placeholder for future documents */}
+                             <div className="bg-gray-50/50 p-8 rounded-[40px] border border-dashed border-gray-200 flex flex-col items-center justify-center text-center opacity-60">
+                                 <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center text-gray-300 mb-4">
+                                     <Icon name="ph-plus" size={24} />
+                                 </div>
+                                 <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">More documents<br/>coming soon</p>
+                             </div>
+                         </div>
+                     </div>
+                 </div>
+             );
+        };
+
+        const LeaderReportView = () => {
+             const reports = [
+                { title: "Upload Ảnh Học Sinh", value: "90%", sub: "Trừ Movers HD & lý do cá nhân (5%)", icon: "camera", color: "text-blue-600", bg: "bg-blue-50" },
+                { title: "Cập Nhật Lịch Khóa", value: "80%", sub: "Ngô Quyền đang cập nhật", icon: "calendar", color: "text-green-600", bg: "bg-green-50" },
+                { title: "Đăng Ký Ôn Thi HK2", value: "13 HS", sub: "9 Ngô Quyền, 4 Hưng Định", icon: "graduation-cap", color: "text-purple-600", bg: "bg-purple-50" },
+                { title: "Đề Ôn Thi HK2", value: "Đang Xử Lý", sub: "Dự kiến: 01-05/04", icon: "book", color: "text-amber-600", bg: "bg-amber-50" }
+            ];
+
+            const uploadBreakdown = [
+                { label: "Đã có hình", value: "90%", color: "bg-brand-500", width: "w-[90%]" },
+                { label: "Thiếu: Movers - Hưng Định", value: "5%", color: "bg-amber-500", width: "w-[5%]" },
+                { label: "Thiếu: Lý do khác", value: "5%", color: "bg-red-500", width: "w-[5%]" }
+            ];
+
+            const semesterBreakdown = [
+                { campus: "Ngô Quyền", count: 9, percentage: "69%", pic: "Ms. Ngân", color: "bg-brand-500" },
+                { campus: "Hưng Định", count: 4, percentage: "31%", pic: "Ms. Trân", color: "bg-pink-500" }
+            ];
+
+            const issues = [
+                { date: "THỨ 4 (NGÀY 1 & 22)", detail: "Ca Chiều - Chi nhánh Hưng Định" },
+                { date: "THỨ 6 (NGÀY 3, 17 & 24)", detail: "Ca Chiều - Chi nhánh Ngô Quyền" },
+                { date: "NGÀY 25", detail: "Ca Sáng - Chi nhánh Hưng Định" }
+            ];
+
+            return (
+                <div className="space-y-8 pb-12">
+                    {/* KPI Grid */}
+                    <div className="stats-container mb-8">
+                        {reports.map((report, i) => (
+                            <div key={i} className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm flex flex-col justify-between group hover:shadow-md transition-all">
+                                <div className="flex justify-between items-start">
+                                    <div className="space-y-1">
+                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{report.title}</p>
+                                        <h3 className={`text-2xl font-extrabold ${report.color} tracking-tight`}>{report.value}</h3>
+                                    </div>
+                                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${report.bg} ${report.color}`}>
+                                        <Icon name={report.icon} size={24} />
+                                    </div>
+                                </div>
+                                <p className="mt-4 text-[10px] font-medium text-gray-400 leading-tight uppercase tracking-tight">{report.sub}</p>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Analytics Section */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        {/* Phân Bổ Upload */}
+                        <div className="bg-white rounded-2xl p-8 border border-gray-100 shadow-sm">
+                            <h3 className="text-lg font-bold text-gray-800 mb-8 flex items-center gap-3">
+                                <Icon name="PieChart" className="text-brand-500" size={20} /> Phân bổ Upload ảnh
+                            </h3>
+                            <div className="flex flex-col md:flex-row items-center gap-10">
+                                <div className="relative w-48 h-48 flex items-center justify-center shrink-0">
+                                    <svg className="w-full h-full transform -rotate-90">
+                                        <circle cx="96" cy="96" r="80" stroke="#f8fafc" strokeWidth="16" fill="transparent" />
+                                        <circle cx="96" cy="96" r="80" stroke="#8b5cf6" strokeWidth="16" fill="transparent" strokeDasharray="502.65" strokeDashoffset="50.26" strokeLinecap="round" />
+                                    </svg>
+                                    <div className="absolute flex flex-col items-center">
+                                        <span className="text-4xl font-extrabold text-gray-800 tracking-tight">90%</span>
+                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Done</span>
+                                    </div>
+                                </div>
+                                <div className="flex-1 w-full space-y-5">
+                                    {uploadBreakdown.map((item, i) => (
+                                        <div key={i} className="space-y-2">
+                                            <div className="flex justify-between items-center text-xs">
+                                                <span className="font-bold text-gray-500 flex items-center gap-2 uppercase tracking-tighter">
+                                                    <div className={`w-2 h-2 rounded-full ${item.color}`} /> {item.label}
+                                                </span>
+                                                <span className="font-extrabold text-gray-800">{item.value}</span>
+                                            </div>
+                                            <div className="h-1.5 w-full bg-gray-50 rounded-full overflow-hidden">
+                                                <div className={`h-full ${item.color} rounded-full transition-all duration-1000 ${item.width}`} />
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Phân Bổ Ôn Thi */}
+                        <div className="bg-white rounded-2xl p-8 border border-gray-100 shadow-sm">
+                             <h3 className="text-lg font-bold text-gray-800 mb-8 flex items-center gap-3">
+                                <Icon name="users" className="text-brand-500" size={20} /> Phân bổ ôn thi HK2
+                            </h3>
+                            <div className="space-y-8">
+                                {semesterBreakdown.map((item, i) => (
+                                    <div key={i} className="flex items-center gap-6 group">
+                                        <div className="w-16 h-16 rounded-xl bg-gray-50 flex flex-col items-center justify-center shrink-0 border border-gray-100 group-hover:bg-brand-50 group-hover:border-brand-100 transition-all">
+                                            <span className="text-2xl font-extrabold text-gray-800">{item.count}</span>
+                                            <span className="text-[9px] font-bold text-gray-400 uppercase leading-none mt-1">Học sinh</span>
+                                        </div>
+                                        <div className="flex-1 space-y-2">
+                                            <div className="flex justify-between items-end">
+                                                <div>
+                                                    <h4 className="text-xs font-bold text-gray-800 uppercase tracking-tight">Chi nhánh {item.campus}</h4>
+                                                    <p className="text-[10px] font-medium text-gray-400 mt-0.5">PIC: <span className="text-brand-600 font-bold">{item.pic}</span></p>
+                                                </div>
+                                                <span className="text-lg font-extrabold text-gray-800 tracking-tight">{item.percentage}</span>
+                                            </div>
+                                            <div className="h-1.5 w-full bg-gray-50 rounded-full overflow-hidden">
+                                                <div className={`h-full ${item.color} rounded-full transition-all duration-1000`} style={{ width: item.percentage }} />
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Issues Alert Panel */}
+                    <div className="bg-white rounded-2xl p-8 border border-red-100 shadow-sm relative overflow-hidden bg-gradient-to-br from-white to-red-50/30">
+                        <div className="absolute top-0 right-0 p-8 opacity-5 text-8xl text-red-500 pointer-events-none">
+                             <Icon name="AlertOctagon" size={120} />
+                        </div>
+                        <div className="flex items-center gap-5 mb-8 relative z-10">
+                             <div className="w-14 h-14 bg-red-100 rounded-xl flex items-center justify-center shadow-lg shadow-red-100/50">
+                                <Icon name="AlertTriangle" className="text-red-600" size={28} />
+                             </div>
+                             <div>
+                                <h3 className="text-xl font-extrabold text-gray-800 tracking-tight uppercase">Critical Issues: Thiếu tư vấn viên trực ca</h3>
+                                <p className="text-[10px] font-bold text-red-500 mt-1 uppercase tracking-widest">Staffing shortages detected</p>
+                             </div>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative z-10">
+                            {issues.map((issue, i) => (
+                                <div key={i} className="bg-white p-5 rounded-xl border border-gray-100 hover:shadow-md transition-all">
+                                    <h4 className="text-[10px] font-bold text-red-500 uppercase tracking-wider mb-2 flex items-center gap-2">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" /> {issue.date}
+                                    </h4>
+                                    <p className="text-gray-800 text-[13px] font-bold leading-relaxed">{issue.detail}</p>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Next Actions */}
+                    <div className="rounded-2xl p-8 bg-gradient-to-br from-brand-600 to-indigo-700 text-white relative overflow-hidden shadow-lg shadow-brand-100">
+                        <div className="absolute top-0 right-0 p-8 opacity-10 text-9xl pointer-events-none">
+                            <Icon name="Rocket" size={140} />
+                        </div>
+                        <h3 className="text-xl font-extrabold mb-8 flex items-center gap-3 relative z-10 tracking-tight">
+                            <div className="p-2 bg-white/20 rounded-xl">
+                                <Icon name="Zap" size={20} />
+                            </div>
+                            CÔNG VIỆC SẮP TỚI
+                        </h3>
+                        <div className="space-y-3 relative z-10">
+                            {[
+                                { text: "Hoàn thiện album \"Mùa hè rực rỡ\" cho khối Kids (Target: 05/04)." },
+                                { text: "Tổ chức Mock Test cho học sinh đăng ký thi HK2 vào tối Thứ 7." },
+                                { text: "Hoàn thiện báo cáo chiến dịch \"Học thử 0 đồng\"." }
+                            ].map((action, i) => (
+                                <div key={i} className="flex items-center gap-4 p-4 bg-white/10 rounded-xl border border-white/10 hover:bg-white/20 transition-all cursor-default">
+                                    <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center shrink-0">
+                                        <Icon name="CheckCircle" size={16} />
+                                    </div>
+                                    <p className="text-sm font-bold leading-relaxed">{action.text}</p>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+        const ClassView = ({ initialData }) => {
+            const [activeFilter, setActiveFilter] = React.useState('All');
+            const [selectedClass, setSelectedClass] = React.useState(null);
+
+            const stats = useMemo(() => [
+                { label: 'Total', count: initialData ? initialData.length : 31, icon: 'ph-circles-four', color: 'text-blue-600', bg: 'bg-blue-50', sub: 'Tổng số lượng lớp' },
+                { label: 'Exam', count: 3, icon: 'ph-calendar-check', color: 'text-emerald-600', bg: 'bg-emerald-50', sub: 'Lớp sắp thi/tháng' },
+                { label: 'Warning', count: 5, icon: 'ph-warning-circle', color: 'text-amber-600', bg: 'bg-amber-50', sub: 'Tình trạng Warning' },
+                { label: 'Critical', count: 2, icon: 'ph-first-aid', color: 'text-red-600', bg: 'bg-red-50', sub: 'Tình trạng Critical' },
+            ], [initialData]);
+
+            const courseData = {
+                'Kid': ['Friendly Kid 1', 'Friendly Kid 2', 'Friendly Kid 3', 'Friendly Kid 4'],
+                'Junior': ['Happy Junior 1', 'Happy Junior 2', 'Happy Junior 3', 'Happy Junior 4', 'Starters', 'Happy Junior 5', 'Happy Junior 6', 'Movers', 'Happy Junior 7', 'Happy Junior 8', 'Flyers'],
+                'Teen': ['Leading Teen 1', 'Leading Teen 2', 'KET', 'Leading Teen 3', 'Leading Teen 4', 'PET'],
+                'IELTS': ['IV. IELTS 1 (Foundation)', 'IV. IELTS 2 (Foundation)', 'IV. IELTS 3 (Foundation)', 'IV. IELTS 4 (Exam)', 'IV. IELTS 5 (Exam)', 'IV. IELTS 6 (Exam)', 'IELTS - Teacher']
+            };
+
+            const teachers = ['Mr. Duy', 'Mr. Đạt', 'Mr. Khôi', 'Ms. Đoan', 'Ms. Khanh', 'Ms. Duyên'];
+            const rooms = ['Lemon', 'Pear', 'Cucumber', 'Pumpkin'];
+
+            const rawClasses = React.useMemo(() => {
+                if (initialData && initialData.length > 0) return initialData;
+                
+                return Array.from({ length: 31 }, (_, i) => {
+                    const categories = ['Kid', 'Junior', 'Teen', 'IELTS'];
+                    const category = categories[i % 4];
+                    const categoryCourses = courseData[category];
+                    const course = categoryCourses[Math.floor(Math.random() * categoryCourses.length)];
+                    const status = Math.random() > 0.3 ? 'Teaching' : 'Completed';
+                    const branch = Math.random() > 0.5 ? 'Ngô Quyền' : 'Hưng Định';
+                    const branchCode = branch === 'Ngô Quyền' ? 'NQ' : 'HĐ';
+                    const teacher = teachers[Math.floor(Math.random() * teachers.length)];
+                    const room = rooms[Math.floor(Math.random() * rooms.length)];
+
+                    return {
+                        id: `C${(i + 1).toString().padStart(3, '0')}`,
+                        course,
+                        category,
+                        status,
+                        branch,
+                        branchCode,
+                        teacher,
+                        room,
+                        fullName: `${branchCode} | ${course} | ${room} + ${teacher}`
+                    };
+                });
+            }, [initialData]);
+
+            const filteredClasses = activeFilter === 'All' 
+                ? rawClasses 
+                : rawClasses.filter(c => c.category === activeFilter);
+
+            return (
+                <div className="space-y-[30px] animate-fade-in relative">
+                    {/* Section Tổng quan */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-[20px]">
+                        {stats.map((s, idx) => (
+                            <div key={idx} className="bg-white p-6 rounded-[24px] border border-gray-100 shadow-sm hover:shadow-md transition-all group flex items-center gap-6">
+                                <div className={`w-16 h-16 rounded-2xl ${s.bg} flex items-center justify-center transition-transform group-hover:scale-110 shrink-0`}>
+                                    <Icon name={s.icon} className={s.color} size={32} />
+                                </div>
+                                <div className="min-w-0">
+                                    <h4 className="text-[11px] font-black text-gray-400 uppercase tracking-widest mb-0.5">{s.label}</h4>
+                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tight italic mb-1 line-clamp-1">{s.sub}</p>
+                                    <p className="text-2xl font-black text-slate-800 tracking-tighter leading-none">{s.count} <span className="text-xs font-bold text-slate-400 ml-1 italic">lớp</span></p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Filter Bar */}
+                    <div className="flex flex-col md:flex-row justify-between items-center bg-white p-4 rounded-3xl border border-gray-100 shadow-sm gap-4">
+                        <div className="flex bg-gray-50 p-1.5 rounded-full gap-1">
+                            {['All', 'Kid', 'Junior', 'Teen', 'IELTS'].map((tab) => (
+                                <button 
+                                    key={tab} 
+                                    onClick={() => setActiveFilter(tab)}
+                                    className={`px-6 py-2 rounded-full text-[11px] font-black uppercase tracking-widest transition-all ${activeFilter === tab ? 'bg-white text-brand-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
+                                >
+                                    {tab}
+                                </button>
+                            ))}
+                        </div>
+                        <div className="relative w-full md:w-80">
+                            <Icon name="ph-magnifying-glass" className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                            <input 
+                                type="text" 
+                                placeholder="Search classes by name or ID..." 
+                                className="w-full pl-12 pr-4 py-2.5 bg-gray-50 border-none rounded-full text-xs font-bold focus:ring-2 focus:ring-brand-100 transition-all"
+                            />
+                        </div>
+                    </div>
+
+                    {/* Grid List - 5 Columns */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-[20px]">
+                        {filteredClasses.map((cls) => (
+                            <div 
+                                key={cls.id} 
+                                onClick={() => setSelectedClass(cls)}
+                                className="bg-white rounded-[24px] border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all group overflow-hidden flex flex-col cursor-pointer"
+                            >
+                                <div className="h-[120px] bg-[#dfe3e6] relative flex items-center justify-center overflow-hidden">
+                                    <Icon name="ph-image" className="text-white/40" size={48} />
+                                    <div className="absolute top-3 left-3">
+                                        <span className="bg-white/90 text-slate-900 px-2 py-1 rounded-md text-[8px] font-black uppercase tracking-widest shadow-sm border border-white/50">
+                                            {cls.category}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div className="p-4 flex-1 flex flex-col">
+                                    <h3 className="text-[12px] font-black text-slate-800 uppercase tracking-tighter mb-4 line-clamp-2 h-8 leading-tight">{cls.course}</h3>
+                                    <div className="space-y-2.5">
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <Icon name="ph-activity" size={12} className="text-slate-400" />
+                                                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tight">Status</span>
+                                            </div>
+                                            <span className={`text-[9px] font-black px-2 py-0.5 rounded-full ${cls.status === 'Teaching' ? 'text-amber-600 bg-amber-50' : 'text-emerald-600 bg-emerald-50'}`}>
+                                                {cls.status}
+                                            </span>
+                                        </div>
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <Icon name="ph-map-pin" size={12} className="text-slate-400" />
+                                                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tight">Branch</span>
+                                            </div>
+                                            <span className="text-[10px] font-black text-slate-800">{cls.branch}</span>
+                                        </div>
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <Icon name="ph-user-focus" size={12} className="text-slate-400" />
+                                                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tight">PIC</span>
+                                            </div>
+                                            <span className="text-[10px] font-black text-slate-800">{cls.teacher}</span>
+                                        </div>
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <Icon name="ph-hash" size={12} className="text-slate-400" />
+                                                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tight">Class ID</span>
+                                            </div>
+                                            <span className="text-[10px] font-black text-slate-800">{cls.id}</span>
+                                        </div>
+                                    </div>
+                                    <div className="mt-4 pt-4 border-t border-gray-50 flex justify-end shrink-0">
+                                        <button className="text-[9px] font-black text-[#1976d2] uppercase tracking-widest hover:underline">Details</button>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Class Detail Modal */}
+                    {selectedClass && (
+                        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                            <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setSelectedClass(null)}></div>
+                            <div className="bg-white rounded-[32px] w-full max-w-4xl max-h-[90vh] overflow-hidden shadow-2xl relative animate-in fade-in zoom-in duration-200 flex flex-col">
+                                {/* Modal Header */}
+                                <div className="p-8 border-b border-gray-100 flex justify-between items-start shrink-0 bg-gray-50/50">
+                                    <div>
+                                        <div className="flex items-center gap-3 mb-2">
+                                            <span className="bg-brand-600 text-white px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest">{selectedClass.category}</span>
+                                            <span className={`text-[10px] font-black px-3 py-1 rounded-lg ${selectedClass.status === 'Teaching' ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'}`}>{selectedClass.status}</span>
+                                        </div>
+                                        <h2 className="text-2xl font-black text-slate-800 tracking-tight uppercase">{selectedClass.fullName}</h2>
+                                        <p className="text-xs font-bold text-gray-400 mt-1 uppercase tracking-widest">Class Management Dashboard • ID: {selectedClass.id}</p>
+                                    </div>
+                                    <button onClick={() => setSelectedClass(null)} className="w-10 h-10 rounded-full bg-white border border-gray-200 flex items-center justify-center text-gray-400 hover:text-red-500 transition-colors shadow-sm">
+                                        <Icon name="ph-x" size={20} />
+                                    </button>
+                                </div>
+
+                                {/* Modal Body */}
+                                <div className="p-8 overflow-y-auto no-scrollbar">
+                                    <h3 className="text-sm font-black text-slate-800 uppercase tracking-widest mb-6 flex items-center gap-3">
+                                        <Icon name="ph-table" className="text-brand-600" size={18} /> Department Information Matrix
+                                    </h3>
+                                    
+                                    <div className="overflow-hidden rounded-2xl border border-gray-100 shadow-sm">
+                                        <table className="w-full text-left border-collapse">
+                                            <thead>
+                                                <tr className="bg-gray-50 border-b border-gray-100">
+                                                    <th className="p-5 text-[10px] font-black text-gray-400 uppercase tracking-widest w-1/4">Metric / Dept</th>
+                                                    <th className="p-5 text-[10px] font-black text-blue-600 uppercase tracking-widest">Operation</th>
+                                                    <th className="p-5 text-[10px] font-black text-purple-600 uppercase tracking-widest">Academic</th>
+                                                    <th className="p-5 text-[10px] font-black text-indigo-600 uppercase tracking-widest">Teacher</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-gray-50">
+                                                {[
+                                                    { label: 'Win', icon: 'ph-trophy', color: 'text-emerald-500' },
+                                                    { label: 'Pending', icon: 'ph-clock', color: 'text-amber-500' },
+                                                    { label: 'Action', icon: 'ph-lightning', color: 'text-blue-500' }
+                                                ].map((row) => (
+                                                    <tr key={row.label} className="hover:bg-gray-50/50 transition-colors">
+                                                        <td className="p-5 flex items-center gap-3">
+                                                            <div className={`w-8 h-8 rounded-lg ${row.color.replace('text', 'bg')}/10 flex items-center justify-center`}>
+                                                                <Icon name={row.icon} className={row.color} size={16} />
+                                                            </div>
+                                                            <span className="text-xs font-black text-slate-700 uppercase tracking-tight">{row.label}</span>
+                                                        </td>
+                                                        <td className="p-5">
+                                                            <div className="flex items-center gap-2">
+                                                                <div className="w-2.5 h-2.5 rounded-full bg-emerald-500"></div>
+                                                                <span className="text-[11px] font-bold text-slate-600">Qualified</span>
+                                                            </div>
+                                                        </td>
+                                                        <td className="p-5">
+                                                            <div className="flex items-center gap-2">
+                                                                <div className="w-2.5 h-2.5 rounded-full bg-amber-400"></div>
+                                                                <span className="text-[11px] font-bold text-slate-600">Reviewing</span>
+                                                            </div>
+                                                        </td>
+                                                        <td className="p-5">
+                                                            <div className="flex items-center gap-2">
+                                                                <div className="w-2.5 h-2.5 rounded-full bg-blue-500"></div>
+                                                                <span className="text-[11px] font-bold text-slate-600">Scheduled</span>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    <div className="mt-10 grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div className="bg-brand-50/50 p-6 rounded-2xl border border-brand-100">
+                                            <h4 className="text-[10px] font-black text-brand-700 uppercase tracking-widest mb-3">Recent Class Update</h4>
+                                            <p className="text-sm font-bold text-brand-900 leading-relaxed">Optimization for {selectedClass.course} has been completed for Week 15. All materials are synchronized with the {selectedClass.branch} branch local server.</p>
+                                        </div>
+                                        <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100">
+                                            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Teacher Notes</h4>
+                                            <p className="text-sm font-bold text-slate-700 leading-relaxed">{selectedClass.teacher} mentions that student engagement was high in the {selectedClass.room} room sessions.</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Modal Footer */}
+                                <div className="p-8 border-t border-gray-100 bg-gray-50/30 flex justify-end gap-3 shrink-0">
+                                    <button onClick={() => setSelectedClass(null)} className="px-8 py-3 rounded-xl bg-white border border-gray-200 text-xs font-black text-slate-500 uppercase tracking-widest hover:bg-gray-100 transition-all">Close</button>
+                                    <button className="px-8 py-3 rounded-xl bg-brand-600 text-white text-xs font-black uppercase tracking-widest shadow-lg shadow-brand-100 hover:bg-brand-700 transition-all">Export Report</button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+
+
+        const DebtOverviewCard = ({ data }) => {
+            const total = data?.total || 100000000;
+            const paid = data?.paid || 75000000;
+            const pending = data?.pending || 25000000;
+            const paidPct = Math.round((paid / total) * 100) || 0;
+            const pendingPct = 100 - paidPct;
+
+            const formatMoney = (val) => {
+                if (val >= 1000000) return (val / 1000000).toFixed(1) + 'M';
+                return val.toLocaleString();
+            };
+
+            return (
+                <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm group hover:shadow-md transition-all h-full flex flex-col items-center overflow-hidden">
+                    <div className="w-full flex justify-between items-center mb-10 shrink-0">
+                        <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight flex items-center gap-3">
+                            <Icon name="ph-chart-pie-slice" className="text-brand-600" size={24} /> Bảng công nợ
+                        </h3>
+                        <button className="text-[10px] font-bold text-brand-600 hover:underline px-4 py-2 bg-brand-50 rounded-xl whitespace-nowrap">Chi tiết</button>
+                    </div>
+                    
+                    <div className="flex-1 flex flex-col items-center justify-center w-full min-h-0">
+                        <div className="relative w-48 h-48 lg:w-56 lg:h-56 flex items-center justify-center shrink-0 mb-10">
+                            <svg className="w-full h-full transform -rotate-90" viewBox="0 0 224 224">
+                                <circle cx="112" cy="112" r="100" stroke="#f8fafc" strokeWidth="20" fill="transparent" />
+                                <circle cx="112" cy="112" r="100" stroke="#7c3aed" strokeWidth="20" fill="transparent" strokeDasharray={`${(paidPct * 628.3) / 100} 628.3`} strokeLinecap="round" />
+                                <circle cx="112" cy="112" r="100" stroke="#ec4899" strokeWidth="20" fill="transparent" strokeDasharray={`${(pendingPct * 628.3) / 100} 628.3`} strokeDashoffset={`${-(paidPct * 628.3) / 100}`} strokeLinecap="round" />
+                            </svg>
+                            <div className="absolute flex flex-col items-center">
+                                <span className="text-3xl font-black text-slate-800 tracking-tighter leading-none">{formatMoney(total)}</span>
+                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Total</span>
+                            </div>
+                        </div>
+
+                        <div className="w-full space-y-5 px-2">
+                            <div className="space-y-2">
+                                <div className="flex justify-between items-center gap-2">
+                                    <span className="font-bold text-slate-500 flex items-center gap-3 uppercase tracking-tighter text-[11px]">
+                                        <div className="w-3 h-3 rounded-full bg-brand-600 shrink-0" /> Paid Amount
+                                    </span>
+                                    <span className="font-black text-slate-800 text-base">{paidPct}%</span>
+                                </div>
+                                <div className="h-2 w-full bg-gray-50 rounded-full overflow-hidden">
+                                    <div className="h-full bg-brand-600 rounded-full shadow-lg shadow-brand-200 transition-all duration-1000" style={{ width: `${paidPct}%` }} />
+                                </div>
+                            </div>
+                            <div className="space-y-2">
+                                <div className="flex justify-between items-center gap-2">
+                                    <span className="font-bold text-slate-500 flex items-center gap-3 uppercase tracking-tighter text-[11px]">
+                                        <div className="w-3 h-3 rounded-full bg-pink-500 shrink-0" /> Pending Amount
+                                    </span>
+                                    <span className="font-black text-slate-800 text-base">{pendingPct}%</span>
+                                </div>
+                                <div className="h-2 w-full bg-gray-50 rounded-full overflow-hidden">
+                                    <div className="h-full bg-pink-500 rounded-full shadow-lg shadow-pink-200 transition-all duration-1000" style={{ width: `${pendingPct}%` }} />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const TaskOverviewCard = () => {
+            const tasks = [
+                { id: 1, title: 'Hoàn thiện album "Mùa hè"', priority: 'High', status: 'In Progress', color: 'text-orange-500 bg-orange-50 border-orange-100' },
+                { id: 2, title: 'Mock Test HK2 - Ngô Quyền', priority: 'Medium', status: 'Scheduled', color: 'text-blue-500 bg-blue-50 border-blue-100' },
+                { id: 3, title: 'Review Placement Test', priority: 'Low', status: 'Done', color: 'text-green-500 bg-green-50 border-green-100' },
+                { id: 4, title: 'Cập nhật lộ trình KET/PET', priority: 'High', status: 'Pending', color: 'text-red-500 bg-red-50 border-red-100' },
+                { id: 5, title: 'Họp chuyên môn tháng 4', priority: 'Medium', status: 'Planned', color: 'text-purple-500 bg-purple-50 border-purple-100' },
+                { id: 6, title: 'Thiết kế Poster hè rực rỡ cho khối Kids', priority: 'High', status: 'In Progress', color: 'text-orange-500 bg-orange-50 border-orange-100' }
+            ];
+
+            return (
+                <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm h-full flex flex-col overflow-hidden">
+                    <div className="flex justify-between items-center mb-6 shrink-0">
+                        <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight flex items-center gap-3">
+                            <Icon name="ph-list-checks" className="text-brand-600" size={24} /> Tasks List
+                        </h3>
+                        <span className="px-3 py-1 bg-gray-50 text-gray-500 rounded-lg text-[10px] font-black uppercase tracking-widest whitespace-nowrap">{tasks.length} Active</span>
+                    </div>
+                    
+                    {/* Fixed Height for approximately 4 items */}
+                    <div className="flex-1 overflow-y-auto no-scrollbar pr-2 min-h-0 space-y-4 max-h-[350px]">
+                        {tasks.map(task => (
+                            <div key={task.id} className="p-4 bg-gray-50/30 rounded-2xl border border-transparent hover:border-gray-100 hover:bg-white transition-all group cursor-default">
+                                <div className="mb-3">
+                                    <p className="text-xs font-black text-slate-800 leading-tight group-hover:text-brand-600 transition-colors uppercase tracking-tight break-words">
+                                        {task.title}
+                                    </p>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <span className={`text-[8px] font-black uppercase px-2.5 py-1 rounded-lg ${task.priority === 'High' ? 'text-red-600 bg-red-50 border border-red-100' : task.priority === 'Medium' ? 'text-amber-600 bg-amber-50 border border-amber-100' : 'text-blue-600 bg-blue-50 border border-blue-100'}`}>
+                                        Pri: {task.priority}
+                                    </span>
+                                    <span className={`text-[8px] font-black uppercase px-2.5 py-1 rounded-lg border shadow-sm ${task.color}`}>
+                                        {task.status}
+                                    </span>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            );
+        };
+
+        const Sidebar = ({ activeTab, setActiveTab, isOpen, toggleOpen, isMobile, setMobileOpen, mobileActive }) => {
+            const [expandedMenus, setExpandedMenus] = useState(['teacher']);
+
+            const menuItems = [
+                { id: 'dashboard', label: 'Dashboard', icon: 'layout-dashboard' },
+                { id: 'class', label: 'Class', icon: 'ph-circles-four' },
+                { id: 'teacher', label: 'Teacher', icon: 'book-open' },
+                { id: 'academic', label: 'Academic', icon: 'users' },
+                { id: 'operation', label: 'Operation', icon: 'settings' }
+            ];
+
+            const toggleExpanded = (id) => {
+                setExpandedMenus(prev => 
+                    prev.includes(id) ? prev.filter(m => m !== id) : [...prev, id]
+                );
+            };
+
+            const sidebarContent = (
+                <aside className={`sidebar ${mobileActive ? 'active' : ''} ${!isOpen ? 'collapsed lg:translate-x-0' : 'translate-x-0'} h-screen bg-white flex flex-col transition-all duration-300 ease-in-out fixed lg:relative z-[60] overflow-hidden border-r border-gray-100 shrink-0`}>
+                    {/* Logo Section */}
+                    <div className="logo-container p-6 relative">
+                        <div className="flex items-center gap-3 w-full justify-center lg:justify-start">
+                            <img src="logo_potato.jpg" alt="Potato Logo" className="logo rounded-lg shrink-0 max-h-[50px] transition-all" />
+                            {isOpen && <h1 className="menu-text text-xl font-extrabold text-brand-700 tracking-tight whitespace-nowrap">POTATO</h1>}
+                        </div>
+
+                        {isMobile && mobileActive && (
+                            <button onClick={() => setMobileOpen(false)} className="ml-auto lg:hidden p-2 text-gray-400">
+                                <Icon name="x" />
+                            </button>
+                        )}
+                    </div>
+
+                    {/* Navigation */}
+                    <nav className="sidebar-nav flex-1 px-4 space-y-1 overflow-y-auto no-scrollbar pb-4">
+                        {menuItems.map((item) => {
+                            const isExpanded = expandedMenus.includes(item.id);
+                            const hasChildren = item.children && item.children.length > 0;
+                            const isActive = activeTab === item.id || (hasChildren && item.children.some(child => child.id === activeTab));
+
+                            return (
+                                <div key={item.id} className="space-y-1">
+                                    <button
+                                        onClick={() => { 
+                                            if (hasChildren) {
+                                                toggleExpanded(item.id);
+                                            } else {
+                                                setActiveTab(item.id); 
+                                                if(isMobile) setMobileOpen(false); 
+                                            }
+                                        }}
+                                        className={`w-full flex items-center menu-item gap-3 px-4 py-3 rounded-xl transition-all duration-200 group ${
+                                            isActive 
+                                            ? 'bg-brand-50 text-brand-700 font-semibold' 
+                                            : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900 font-medium'
+                                        }`}
+                                    >
+                                        <Icon name={item.icon} size={20} className={isActive ? "text-brand-600" : "text-gray-400 group-hover:text-gray-600"} />
+                                        {isOpen && <span className="menu-text font-bold text-sm tracking-tight">{item.label}</span>}
+                                        {isOpen && hasChildren && <Icon name={isExpanded ? "chevron-down" : "chevron-right"} size={14} className={`ml-auto menu-text ${isActive ? 'text-brand-500' : 'text-gray-300'}`} />}
+                                    </button>
+                                    
+                                    {hasChildren && isExpanded && isOpen && (
+                                        <div className="pl-12 space-y-1 animate-fade-in">
+                                            {item.children.map((child) => (
+                                                <button
+                                                    key={child.id}
+                                                    onClick={() => { setActiveTab(child.id); if(isMobile) setMobileOpen(false); }}
+                                                    className={`w-full text-left py-2 px-3 rounded-lg text-xs transition-all ${
+                                                        activeTab === child.id 
+                                                        ? 'text-brand-600 font-semibold' 
+                                                        : 'text-gray-400 hover:text-gray-700 font-medium'
+                                                    }`}
+                                                >
+                                                    {child.label}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        })}
+                    </nav>
+
+                    {/* Footer / Toggle */}
+                    <div className="sidebar-footer">
+                        <button id="sidebar-toggle" onClick={(e) => { e.preventDefault(); toggleOpen(); }} className="sidebar-toggle-btn">
+                            <span className="arrow-icon transition-transform duration-300">❮</span>
+                             {isOpen && <span className="menu-text font-bold text-sm">Thu gọn</span>}
+                        </button>
+                    </div>
+                </aside>
+            );
+
+            return (
+                <>
+                    {isMobile && isOpen && (
+                        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[55] animate-fade-in lg:hidden" onClick={toggleOpen}></div>
+                    )}
+                    {sidebarContent}
+                </>
+            );
+        };
+
+        const SHIFT_DATA = {
+            "Operation": {
+                14: [
+                    { day: "Thứ 2", staff: "NQ | Mr. Trí", time: "18:00 - 20:00", role: "Operation" },
+                    { day: "Thứ 2", staff: "NQ | Ms. Khanh", time: "18:00 - 20:00", role: "Operation" },
+                    { day: "Thứ 2", staff: "NQ | Ms. Ngân", time: "16:00 - 21:00", role: "Manager" },
+                    { day: "Thứ 3", staff: "HĐ | Ms. Trân", time: "16:00 - 20:00", role: "Staff" },
+                    { day: "Thứ 4", staff: "NQ | Ms. Ngân", time: "16:00 - 21:00", role: "Manager" },
+                    { day: "Thứ 5", staff: "HĐ | Ms. Trân", time: "16:00 - 20:00", role: "Staff" },
+                    { day: "Thứ 6", staff: "NQ | Ms. Ngân", time: "16:00 - 21:00", role: "Manager" },
+                    { day: "Thứ 7", staff: "HĐ | Ms. Trân", time: "16:00 - 20:00", role: "Staff" },
+                    { day: "Chủ Nhật", staff: "OFF", time: "-", role: "-" }
+                ],
+                15: [
+                    { day: "Thứ 2", staff: "WFH | Mr. Steven", time: "19:25 - 21:25", role: "Operation" },
+                    { day: "Thứ 3", staff: "WFH | Mr. Steven", time: "18:45 - 20:45", role: "Operation" },
+                    { day: "Thứ 4", staff: "HĐ | Mr. Đạt", time: "16:00 - 20:00", role: "Operation" },
+                    { day: "Thứ 5", staff: "NQ | Mr. Đạt", time: "17:00 - 21:00", role: "Operation" },
+                    { day: "Thứ 6", staff: "WFH | Mr. Steven", time: "19:00 - 21:00", role: "Operation" },
+                    { day: "Thứ 6", staff: "HĐ | Ms. Duyên", time: "16:00 - 20:00", role: "Operation" },
+                    { day: "Thứ 7", staff: "NQ | Mr. Đạt", time: "09:30 - 11:30", role: "Operation" },
+                    { day: "Chủ Nhật", staff: "HĐ | Ms. Duyên", time: "07:30 - 09:30", role: "Operation" },
+                    { day: "Chủ Nhật", staff: "HĐ | Ms. Đoan", time: "09:30 - 11:30", role: "Operation" }
+                ],
+                16: [
+                    { day: "Thứ 2", staff: "NQ | Mr. Trí", time: "18:00 - 20:00", role: "Operation" },
+                    { day: "Thứ 2", staff: "NQ | Ms. Khanh", time: "18:00 - 20:00", role: "Operation" },
+                    { day: "Thứ 2", staff: "NQ | Ms. Ngân", time: "16:00 - 21:00", role: "Manager" },
+                    { day: "Thứ 3", staff: "HĐ | Ms. Trân", time: "16:00 - 20:00", role: "Staff" },
+                    { day: "Thứ 4", staff: "NQ | Ms. Ngân", time: "16:00 - 21:00", role: "Manager" },
+                    { day: "Thứ 5", staff: "HĐ | Ms. Trân", time: "16:00 - 20:00", role: "Staff" },
+                    { day: "Thứ 6", staff: "NQ | Ms. Ngân", time: "16:00 - 21:00", role: "Manager" },
+                    { day: "Thứ 7", staff: "HĐ | Ms. Trân", time: "16:00 - 20:00", role: "Staff" },
+                    { day: "Chủ Nhật", staff: "OFF", time: "-", role: "-" }
+                ]
+            },
+            "Teacher": {
+                14: [
+                    { day: "Thứ 2", staff: "Mr. Khôi", time: "17:30 - 21:00", role: "Senior" },
+                    { day: "Thứ 3", staff: "Ms. Sue", time: "17:30 - 21:00", role: "Teacher" },
+                    { day: "Thứ 4", staff: "Mr. Khôi", time: "17:30 - 21:00", role: "Senior" },
+                    { day: "Thứ 5", staff: "Ms. Lib", time: "17:30 - 21:00", role: "Teacher" },
+                    { day: "Thứ 6", staff: "Mr. Khôi", time: "17:30 - 21:00", role: "Senior" },
+                    { day: "Thứ 7", staff: "Ms. Sue", time: "08:00 - 20:00", role: "Teacher" },
+                    { day: "Chủ Nhật", staff: "Ms. Lib", time: "08:00 - 12:00", role: "Teacher" }
+                ],
+                15: [
+                    { day: "Thứ 3", staff: "HĐ | Ms. Trân", time: "16:00 - 20:00", role: "Teacher" },
+                    { day: "Thứ 4", staff: "NQ | Ms. Anh", time: "16:00 - 21:00", role: "Teacher" },
+                    { day: "Thứ 5", staff: "HĐ | Ms. Trân", time: "16:00 - 20:00", role: "Teacher" },
+                    { day: "Thứ 7", staff: "HĐ | Ms. Anh", time: "07:30 - 11:30", role: "Teacher" },
+                    { day: "Thứ 7", staff: "HĐ | Ms. Anh", time: "14:30 - 19:30", role: "Teacher" },
+                    { day: "Chủ Nhật", staff: "HĐ | Ms. Trân", time: "14:30 - 19:30", role: "Teacher" }
+                ]
+            },
+            "Academic": {
+                14: [
+                    { day: "Thứ 2", staff: "Ms. Hoa", time: "09:00 - 18:00", role: "Academic" },
+                    { day: "Thứ 3", staff: "Ms. Hoa", time: "09:00 - 18:00", role: "Academic" },
+                    { day: "Thứ 4", staff: "Ms. Hoa", time: "09:00 - 18:00", role: "Academic" },
+                    { day: "Thứ 5", staff: "Ms. Hoa", time: "09:00 - 18:00", role: "Academic" },
+                    { day: "Thứ 6", staff: "Ms. Hoa", time: "09:00 - 18:00", role: "Academic" },
+                    { day: "Thứ 7", staff: "OFF", time: "-", role: "-" },
+                    { day: "Chủ Nhật", staff: "OFF", time: "-", role: "-" }
+                ],
+                15: [
+                    { day: "Thứ 3", staff: "NQ | Ms. Ngân", time: "16:00 - 18:30", role: "Academic" },
+                    { day: "Thứ 6", staff: "NQ | Ms. Đào", time: "16:00 - 21:00", role: "Academic" },
+                    { day: "Thứ 7", staff: "NQ | Ms. Ngân", time: "07:30 - 09:30", role: "Academic" },
+                    { day: "Thứ 7", staff: "NQ | Ms. Ngân", time: "15:30 - 20:00", role: "Academic" },
+                    { day: "Chủ Nhật", staff: "NQ | Ms. Ngân", time: "07:30 - 11:30", role: "Academic" },
+                    { day: "Chủ Nhật", staff: "NQ | Ms. Ngân", time: "15:30 - 20:00", role: "Academic" }
+                ]
+            }
+        };
+
+        const ShiftScheduler = ({ currentWeek, shiftDept, setShiftDept, setActiveWeek, allShifts }) => {
+            let shifts = [];
+            const dataToUse = allShifts || SHIFT_DATA;
+            if (shiftDept === 'All') {
+                Object.keys(dataToUse).forEach(dept => {
+                    const weekData = dataToUse[dept][currentWeek];
+                    if (weekData) {
+                        weekData.forEach(s => {
+                            shifts.push({ ...s, department: dept });
+                        });
+                    }
+                });
+            } else {
+                shifts = (dataToUse[shiftDept] && dataToUse[shiftDept][currentWeek]) || [];
+                shifts = shifts.map(s => ({ ...s, department: shiftDept }));
+            }
+
+            const HOURS = Array.from({ length: 25 }, (_, i) => i);
+            
+            const calculatePosition = (timeStr) => {
+                 if (!timeStr || timeStr === '-') return { top: 0, height: 0 };
+                 try {
+                     const [start, end] = timeStr.split(' - ');
+                     const [sH, sM] = start.split(':').map(Number);
+                     const [eH, eM] = end.split(':').map(Number);
+                     
+                     const startTotal = sH * 60 + sM;
+                     const endTotal = eH * 60 + eM;
+                     const scaleStart = 0; 
+                     const scaleEnd = 24 * 60;   
+                     const totalRange = scaleEnd - scaleStart;
+                     
+                     const top = ((startTotal - scaleStart) / totalRange) * 100;
+                     const height = ((endTotal - startTotal) / totalRange) * 100;
+                     
+                     return { top: Math.max(0, top), height: Math.max(0, height) };
+                 } catch (e) {
+                     return { top: 0, height: 0 };
+                 }
+            };
+
+            const days = ["Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7", "Chủ Nhật"];
+
+            return (
+                <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 animate-fade-in relative overflow-hidden group">
+                    <div className="flex flex-col gap-8 mb-10 relative z-10">
+                        {/* Header with Title and Week Nav */}
+                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                            <div className="flex items-center gap-5">
+                                <div className="w-14 h-14 rounded-2xl bg-brand-50 flex items-center justify-center text-brand-600 shadow-inner group-hover:scale-110 transition-transform duration-500">
+                                    <Icon name="calendar" size={28} />
+                                </div>
+                                <div>
+                                    <h3 className="text-3xl font-black text-gray-900 tracking-tighter leading-none">Schedule</h3>
+                                    <p className="text-xs font-bold text-gray-400 uppercase tracking-[0.3em] mt-2 mb-1">This week</p>
+                                    <p className="text-[10px] font-medium text-gray-400 italic">
+                                        {{
+                                            14: "April 06 - April 12",
+                                            15: "April 13 - April 19",
+                                            16: "April 20 - April 26"
+                                        }[currentWeek] || "Updating dates..."}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="flex items-center gap-4 bg-gray-50/50 p-2 rounded-2xl border border-gray-100">
+                                <button onClick={() => setActiveWeek(prev => Math.max(1, prev - 1))} className="p-2.5 hover:bg-white rounded-xl transition-all text-gray-400 hover:text-brand-600 hover:shadow-sm">
+                                    <Icon name="chevron-left" size={18} />
+                                </button>
+                                <span className="text-xs font-black text-gray-700 w-24 text-center uppercase tracking-widest">Week {currentWeek}</span>
+                                <button onClick={() => setActiveWeek(prev => prev + 1)} className="p-2.5 hover:bg-white rounded-xl transition-all text-gray-400 hover:text-brand-600 hover:shadow-sm">
+                                    <Icon name="chevron-right" size={18} />
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Dept Filter Section */}
+                        <div className="flex flex-wrap items-center gap-2">
+                            {['All', 'Operation', 'Teacher', 'Academic'].map(dept => (
+                                <button 
+                                    key={dept}
+                                    onClick={() => setShiftDept(dept)}
+                                    className={`px-6 py-2.5 rounded-xl text-[10px] font-black transition-all uppercase tracking-widest border ${shiftDept === dept ? 'bg-brand-600 border-brand-600 text-white shadow-xl shadow-brand-100' : 'bg-white border-gray-100 text-gray-400 hover:border-brand-200 hover:text-gray-600'}`}
+                                >
+                                    {dept === 'All' ? 'View All' : dept}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Time Grid View with Scroll */}
+                    <div className="calendar-grid shadow-inner flex flex-col max-h-[600px] overflow-y-auto no-scrollbar border border-gray-100 rounded-2xl bg-gray-50/10">
+                        {/* Day Headers - Sticky */}
+                        <div className="flex border-b border-gray-100 bg-white sticky top-0 z-30 shrink-0">
+                            <div className="w-[80px] border-r border-gray-100 flex items-center justify-center bg-gray-50/50 shrink-0">
+                                <Icon name="clock" size={14} className="text-gray-400" />
+                            </div>
+                            <div className="flex-1 grid grid-cols-7 divide-x divide-gray-100">
+                                {days.map((day, idx) => (
+                                    <div key={idx} className={`py-4 text-center ${day === 'Chủ Nhật' ? 'bg-red-50/30' : ''}`}>
+                                        <p className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">{day}</p>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Calendar Body Container */}
+                        <div className="flex flex-1 relative min-h-[1200px]"> 
+                            {/* Time axis markers */}
+                            <div className="w-[80px] bg-gray-50/20 border-r border-gray-100 relative shrink-0">
+                                {HOURS.map(hour => (
+                                    <div key={hour} className="absolute w-full flex items-start justify-center" style={{ top: `${(hour / 24) * 100}%` }}>
+                                        <span className={`text-[9px] font-black tracking-tighter ${hour % 2 === 0 ? 'text-gray-400' : 'text-gray-300'}`}>
+                                            {hour < 10 ? `0${hour}:00` : `${hour}:00`}
+                                        </span>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* Columns for Shifts */}
+                            <div className="flex-1 grid grid-cols-7 divide-x divide-gray-100 relative">
+                                {/* Horizontal Grid Lines for Hours */}
+                                {HOURS.map((hour) => (
+                                    <div key={hour} className="absolute w-full border-t border-gray-100/40 pointer-events-none" style={{ top: `${(hour / 24) * 100}%` }}></div>
+                                ))}
+
+                                {days.map((dayName, dayIdx) => {
+                                    const dayShifts = shifts.filter(s => s.day === dayName && s.staff !== 'OFF');
+                                    return (
+                                        <div key={dayIdx} className={`relative h-full transition-colors ${dayName === 'Chủ Nhật' ? 'bg-red-50/5' : ''}`}>
+                                            {dayShifts.map((s, sIdx) => {
+                                                const { top, height } = calculatePosition(s.time);
+                                                const deptClass = s.department === 'Operation' ? 'operation' : s.department === 'Teacher' ? 'teacher' : 'academic';
+                                                
+                                                return (
+                                                    <div 
+                                                        key={sIdx}
+                                                        className={`event-card ${deptClass} flex flex-col justify-between group/item`}
+                                                        style={{ top: `${top}%`, height: `${height}%` }}
+                                                    >
+                                                        <div className="space-y-0.5">
+                                                            <h4 className="font-bold leading-tight uppercase tracking-tight text-[10px]">{s.staff}</h4>
+                                                            <p className="text-[8px] font-semibold opacity-90">{s.time}</p>
+                                                        </div>
+                                                        <div className="mt-auto">
+                                                            <span className="px-1.5 py-0.5 rounded bg-white/30 text-[7px] font-bold uppercase tracking-widest">
+                                                                {s.role || s.department}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="mt-8 flex flex-wrap items-center justify-between gap-6 px-4">
+                        <div className="flex items-center gap-6 text-[9px] font-black uppercase tracking-[0.2em] text-gray-400">
+                             <div className="flex items-center gap-2">
+                                 <div className="w-3 h-3 rounded bg-brand-500 shadow-sm shadow-brand-200"></div>
+                                 <span>Operation</span>
+                             </div>
+                             <div className="flex items-center gap-2">
+                                 <div className="w-3 h-3 rounded bg-pink-500 shadow-sm shadow-pink-200"></div>
+                                 <span>Teacher</span>
+                             </div>
+                             <div className="flex items-center gap-2">
+                                 <div className="w-3 h-3 rounded bg-amber-500 shadow-sm shadow-amber-200"></div>
+                                 <span>Academic</span>
+                             </div>
+                        </div>
+                        <p className="text-[10px] font-bold text-gray-400 italic flex items-center gap-1.5">
+                             <Icon name="info" size={12} className="text-brand-500" /> Use the scrollbar to view full 24h schedule
+                        </p>
+                    </div>
+                </div>
+            );
+        };
+
+        const MainApp = () => {
+            const [activeTab, setActiveTab] = useState('dashboard');
+            const [activeWeek, setActiveWeek] = useState(15);
+            const [shiftDept, setShiftDept] = useState('Operation');
+            
+            // --- APPSHEET DATA STATE ---
+            const [appData, setAppData] = useState({});
+            const [isLoading, setIsLoading] = useState(true);
+
+            useEffect(() => {
+                const loadAppData = async () => {
+                    setIsLoading(true);
+                    try {
+                        const data = await AppSheetService.fetchAll();
+                        setAppData(data);
+                    } catch (err) {
+                        console.error("Failed to load AppSheet data", err);
+                    } finally {
+                        setIsLoading(false);
+                    }
+                };
+                loadAppData();
+            }, []);
+
+            // Dynamic Data Mappings
+            const classes = useMemo(() => {
+                const rows = appData['Danh_Sach_Lop'];
+                return Array.isArray(rows) && rows.length > 0 ? DataMapper.mapClasses(rows) : null;
+            }, [appData]);
+
+            const shiftsByWeek = useMemo(() => {
+                const rows = appData['Lich_Truc'];
+                if (!Array.isArray(rows) || rows.length === 0) return SHIFT_DATA;
+                
+                const mapped = DataMapper.mapShifts(rows);
+                if (!Array.isArray(mapped)) return SHIFT_DATA;
+
+                return {
+                    "Operation": { [activeWeek]: mapped.filter(s => s.department?.toLowerCase().includes('oper')) },
+                    "Teacher": { [activeWeek]: mapped.filter(s => s.department?.toLowerCase().includes('teach')) },
+                    "Academic": { [activeWeek]: mapped.filter(s => s.department?.toLowerCase().includes('acad')) }
+                };
+            }, [appData, activeWeek]);
+
+            const debtData = useMemo(() => {
+                const rows = appData['Cong_No'];
+                return Array.isArray(rows) ? DataMapper.mapDebt(rows) : null;
+            }, [appData]);
+
+            const studentData = useMemo(() => {
+                const rows = appData['Hoc_Vien'];
+                return Array.isArray(rows) ? DataMapper.mapStudents(rows) : null;
+            }, [appData]);
+
+            const totalStudents = useMemo(() => {
+                if (!studentData) return 0;
+                return studentData.reduce((sum, b) => sum + b.total, 0);
+            }, [studentData]);
+
+            // Persist Sidebar State
+            const savedState = localStorage.getItem('sidebarState');
+            const [isSidebarOpen, setSidebarOpen] = useState(true); // Mặc định luôn mở
+            const [activeOverview, setActiveOverview] = useState(null); // 'students', 'class', 'employee'
+            
+            const [isMobile, setIsMobile] = useState(window.innerWidth <= 1024);
+            const [mobileActive, setMobileActive] = useState(false);
+
+            const toggleSidebar = () => {
+                const newState = !isSidebarOpen;
+                setSidebarOpen(newState);
+                localStorage.setItem('sidebarState', newState ? 'expanded' : 'collapsed');
+                
+                // Kích hoạt sự kiện resize sau khi hiệu ứng hoàn tất
+                setTimeout(() => {
+                    window.dispatchEvent(new Event('resize'));
+                }, 310);
+            };
+
+            useEffect(() => {
+                const handleResize = () => {
+                    const mobile = window.innerWidth <= 1024;
+                    setIsMobile(mobile);
+                    if (mobile) {
+                        setSidebarOpen(false);
+                        setMobileActive(false);
+                    }
+                };
+                window.addEventListener('resize', handleResize);
+                return () => window.removeEventListener('resize', handleResize);
+            }, []);
+
+            const renderContent = () => {
+                if (activeWeek < 14) {
+                    return (
+                        <div className="flex flex-col items-center justify-center p-32 space-y-6 animate-fade-in bg-white rounded-2xl border border-gray-100 shadow-sm">
+                            <div className="w-24 h-24 bg-brand-50 rounded-full flex items-center justify-center">
+                                <Icon name="database" className="text-brand-500 opacity-40" size={48} />
+                            </div>
+                            <div className="text-center">
+                                <p className="font-extrabold text-gray-900 text-2xl tracking-tight">Dữ liệu chưa sẵn sàng</p>
+                                <p className="text-gray-500 mt-2">Hệ thống chưa có dữ liệu báo cáo cho Tuần {activeWeek}.</p>
+                            </div>
+                            <button onClick={() => setActiveWeek(14)} className="px-8 py-3 bg-brand-600 text-white rounded-xl font-bold hover:bg-brand-700 transition-all shadow-lg shadow-brand-100">Quay lại Tuần 14</button>
+                        </div>
+                    );
+                }
+
+                switch(activeTab) {
+                    case 'dashboard':
+                        return (
+                            <div className="space-y-[30px] animate-fade-in relative">
+                                {/* Section Tổng quan */}
+                                <div className="space-y-6">
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-1.5 h-6 bg-brand-600 rounded-full"></div>
+                                        <h2 className="text-xl font-extrabold text-gray-800 uppercase tracking-tight">Overview</h2>
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-[30px]">
+                                        <StatCardV3 
+                                            value={totalStudents || "0"} 
+                                            label="Students" 
+                                            icon="users" 
+                                            iconbg="bg-potato-blue" 
+                                            isActive={activeOverview === 'students'}
+                                            onClick={() => setActiveOverview(activeOverview === 'students' ? null : 'students')}
+                                        />
+                                        <StatCardV3 
+                                            value={classes?.metrics?.total || "0"} 
+                                            label="Class" 
+                                            icon="book-open" 
+                                            iconbg="bg-potato-yellow" 
+                                            isActive={activeOverview === 'class'}
+                                            onClick={() => setActiveOverview(activeOverview === 'class' ? null : 'class')}
+                                        />
+                                        <StatCardV3 
+                                            value={Array.isArray(appData['Lich_Truc']) ? [...new Set(appData['Lich_Truc'].map(r => r.Staff || r["Nhân viên"]))].length : "21"} 
+                                            label="Employee" 
+                                            icon="user-check" 
+                                            iconbg="bg-potato-pink" 
+                                            isActive={activeOverview === 'employee'}
+                                            onClick={() => setActiveOverview(activeOverview === 'employee' ? null : 'employee')}
+                                        />
+                                    </div>
+
+                                    {/* Sub-Views for Overview */}
+                                    {activeOverview === 'students' && (
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-[30px] animate-fade-in">
+                                            {studentData?.map((info, idx) => (
+                                                <div key={idx} className="bg-white p-8 rounded-[32px] border border-gray-100 shadow-sm text-left">
+                                                    <h4 className="text-sm font-black text-gray-800 uppercase tracking-tight mb-8 flex justify-between items-center">
+                                                        <span>{info.branch}</span>
+                                                        <span className="text-[10px] bg-brand-50 text-brand-600 px-3 py-1 rounded-full">{info.total} HV</span>
+                                                    </h4>
+                                                    <div className="space-y-4">
+                                                        {info.statuses.map((s, i) => (
+                                                            <div key={i} className="flex items-center justify-between group border-b border-slate-50 last:border-0 pb-3">
+                                                                <div className="flex items-center gap-3">
+                                                                    <div className={`w-2 h-2 rounded-full ${s.color}`}></div>
+                                                                    <span className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">{s.label}</span>
+                                                                </div>
+                                                                <span className="text-[11px] font-black text-slate-800">{s.count}</span>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+
+                                    {activeOverview === 'class' && classes?.metrics && (
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-[30px] animate-fade-in text-left">
+                                            {Object.values(classes.metrics.branches).map((info, idx) => (
+                                                <div key={idx} className="bg-white p-8 rounded-[32px] border border-gray-100 shadow-sm">
+                                                    <h4 className="text-sm font-black text-gray-800 uppercase tracking-tight mb-8 flex justify-between items-center">
+                                                        <span>{info.label}</span>
+                                                        <span className="text-[10px] bg-yellow-50 text-yellow-600 px-3 py-1 rounded-full">{info.count} Lớp</span>
+                                                    </h4>
+                                                    <div className="space-y-6">
+                                                        {info.courseList.map((c, i) => (
+                                                            <div key={i} className="space-y-2">
+                                                                <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-slate-500">
+                                                                    <span>{c.label}</span>
+                                                                    <span className="text-slate-900">{c.count} Lớp</span>
+                                                                </div>
+                                                                <div className="h-1.5 w-full bg-slate-50 rounded-full overflow-hidden">
+                                                                    <div className={`h-full ${c.color} rounded-full`} style={{ width: `${(c.count / info.count) * 100}%` }}></div>
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+
+                                    {activeOverview === 'employee' && (
+                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-[30px] animate-fade-in">
+                                            {[
+                                                { dept: 'Operation', count: 5, icon: 'ph-gear', color: 'bg-blue-50 text-blue-600' },
+                                                { dept: 'Academic', count: 4, icon: 'ph-book-open', color: 'bg-green-50 text-green-600' },
+                                                { dept: 'Teacher', count: 12, icon: 'ph-student', color: 'bg-pink-50 text-pink-600' }
+                                            ].map((d, idx) => (
+                                                <div key={idx} className="bg-white p-8 rounded-[32px] border border-gray-100 shadow-sm flex flex-col items-center text-center group hover:border-brand-100 transition-all">
+                                                    <div className={`w-16 h-16 rounded-2xl ${d.color} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}>
+                                                        <Icon name={d.icon} size={32} />
+                                                    </div>
+                                                    <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-2">{d.dept}</h4>
+                                                    <p className="text-4xl font-black text-slate-800 tracking-tighter">{d.count}</p>
+                                                    <p className="text-[10px] font-bold text-gray-400 mt-2 uppercase tracking-tight">Thành viên</p>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Main Sequential Layout (1 Column Full Width) */}
+                                <div className="space-y-[30px] min-w-0">
+                                    <ShiftScheduler 
+                                        currentWeek={activeWeek} 
+                                        shiftDept={shiftDept} 
+                                        setShiftDept={setShiftDept} 
+                                        setActiveWeek={setActiveWeek} 
+                                        allShifts={shiftsByWeek}
+                                    />
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-[30px]">
+                                        <DebtOverviewCard data={debtData} />
+                                        <TaskOverviewCard />
+                                    </div>
+
+                                    {/* Personal Recognition Section (Vinh danh cá nhân) */}
+                                    <div className="space-y-[30px]">
+                                        <div className="flex justify-between items-end px-4">
+                                            <div>
+                                                <h3 className="text-xl font-black text-soft-blue underline decoration-potato-pink decoration-4 underline-offset-8 uppercase italic">Vinh danh cá nhân</h3>
+                                                <p className="text-[10px] font-bold text-slate-400 mt-2 pl-1 uppercase tracking-widest italic">Honoring excellence at Potato English</p>
+                                            </div>
+                                            <div className="flex gap-2">
+                                                <button className="p-2 bg-potato-blue/5 border border-slate-100 rounded-xl shadow-sm text-slate-400 hover:text-potato-magenta transition-colors"><Icon name="ph-caret-left" className="text-lg" /></button>
+                                                <button className="p-2 bg-potato-blue/5 border border-slate-100 rounded-xl shadow-sm text-slate-400 hover:text-potato-magenta transition-colors"><Icon name="ph-caret-right" className="text-lg" /></button>
+                                            </div>
+                                        </div>
+                                        <div className="flex gap-[30px] overflow-x-auto no-scrollbar pb-8 px-4">
+                                            <div className="w-[320px] shrink-0 bg-white p-6 rounded-[32px] soft-card-premium border-none relative overflow-hidden group">
+                                                <div className="absolute top-0 right-0 w-24 h-24 bg-brand-50 rounded-bl-[100px] -mr-8 -mt-8 transition-all group-hover:scale-110"></div>
+                                                <div className="flex items-center gap-4 mb-6 relative">
+                                                    <div className="w-16 h-16 rounded-2xl overflow-hidden border-2 border-brand-100">
+                                                        <img src="https://i.pravatar.cc/150?u=teacher1" className="w-full h-full object-cover" />
+                                                    </div>
+                                                    <div>
+                                                        <h4 className="text-xs font-black text-slate-800 uppercase">Ms. Thủy Tiên</h4>
+                                                        <p className="text-[9px] font-bold text-brand-600 uppercase tracking-widest mt-0.5">Teacher of the Month</p>
+                                                    </div>
+                                                </div>
+                                                <p className="text-xs font-medium text-slate-500 leading-relaxed italic">"Dedicated to bringing joy and creative learning to the Kids blocks every single day."</p>
+                                                <div className="mt-6 flex items-center justify-between">
+                                                    <div className="flex gap-1">
+                                                        {[1,2,3,4,5].map(i => <Icon key={i} name="ph-star-fill" className="text-yellow-400 text-[10px]" />)}
+                                                    </div>
+                                                    <span className="text-[9px] font-black text-slate-300 uppercase tracking-widest">April 2026</span>
+                                                </div>
+                                            </div>
+
+                                            <div className="w-[320px] shrink-0 bg-white p-6 rounded-[32px] soft-card-premium border-none relative overflow-hidden group">
+                                                <div className="absolute top-0 right-0 w-24 h-24 bg-pink-50 rounded-bl-[100px] -mr-8 -mt-8 transition-all group-hover:scale-110"></div>
+                                                <div className="flex items-center gap-4 mb-6 relative">
+                                                    <div className="w-16 h-16 rounded-2xl overflow-hidden border-2 border-pink-100">
+                                                        <img src="https://i.pravatar.cc/150?u=student1" className="w-full h-full object-cover" />
+                                                    </div>
+                                                    <div>
+                                                        <h4 className="text-xs font-black text-slate-800 uppercase">Lê Gia Bảo</h4>
+                                                        <p className="text-[9px] font-bold text-pink-600 uppercase tracking-widest mt-0.5">Top Merit Student</p>
+                                                    </div>
+                                                </div>
+                                                <p className="text-xs font-medium text-slate-500 leading-relaxed italic">"Achieved the highest score in the recent Mock PET test with incredible focus."</p>
+                                                <div className="mt-6 flex items-center justify-between">
+                                                    <div className="flex gap-1">
+                                                        {[1,2,3,4,5].map(i => <Icon key={i} name="ph-star-fill" className="text-yellow-400 text-[10px]" />)}
+                                                    </div>
+                                                    <span className="text-[9px] font-black text-slate-300 uppercase tracking-widest">April 2026</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    </div>
+                                </div>
+                            );
+                    case 'class':
+                        return <ClassView initialData={classes} />;
+                    case 'teacher':
+                        return <TeacherView />;
+                    case 'academic':
+                        return <AcademicView />;
+                    case 'operation':
+                        return <LeaderReportView />;
+                    case 'playbook-teen':
+                        return (
+                             <div className="flex flex-col items-center justify-center p-20 space-y-8 bg-white rounded-2xl border border-gray-100 shadow-sm">
+                                <div className="relative">
+                                    <div className="w-32 h-32 bg-brand-50 rounded-3xl flex items-center justify-center group overflow-hidden">
+                                        <div className="absolute inset-0 bg-gradient-to-br from-brand-100 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                        <Icon name="book-open" className="text-brand-600 animate-pulse relative z-10" size={64} />
+                                    </div>
+                                    <div className="absolute -top-2 -right-2 w-10 h-10 bg-red-500 text-white rounded-full flex items-center justify-center text-sm font-black shadow-lg border-4 border-white animate-bounce">
+                                        !
+                                    </div>
+                                </div>
+                                <div className="text-center space-y-3">
+                                    <h2 className="font-extrabold text-gray-900 text-3xl tracking-tight uppercase">Đang cập nhật</h2>
+                                    <p className="text-gray-500 max-w-md mx-auto leading-relaxed">
+                                        Chức năng <span className="text-brand-600 font-bold">POTATO Play book</span> đang được chúng tôi hoàn thiện. Vui lòng quay lại sau!
+                                    </p>
+                                </div>
+                                <div className="flex gap-4">
+                                    <button onClick={() => setActiveTab('dashboard')} className="px-8 py-3 bg-brand-600 text-white rounded-xl font-bold hover:bg-brand-700 transition-all shadow-lg shadow-brand-100">Quay lại Home</button>
+                                    <button onClick={() => setActiveTab('teacher')} className="px-8 py-3 bg-white border border-gray-200 text-gray-700 rounded-xl font-bold hover:bg-gray-50 transition-all shadow-sm">Teacher Dashboard</button>
+                                </div>
+                            </div>
+                        );
+                    default:
+                        return (
+                            <div className="flex flex-col items-center justify-center p-20 text-slate-300 space-y-4 animate-fade-in">
+                                <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center text-slate-300 border border-slate-100 shadow-inner">
+                                    <Icon name="ph-sparkle" className="text-3xl opacity-20" />
+                                </div>
+                                <div className="text-center">
+                                    <p className="font-black text-slate-800 text-xl tracking-tight uppercase italic">{activeTab.toUpperCase()}</p>
+                                    <p className="font-bold text-slate-400 mt-1">Đang trong quá trình hoàn thiện thiết kế...</p>
+                                </div>
+                                <button onClick={() => setActiveTab('dashboard')} className="px-6 py-3 bg-white border border-slate-100 text-slate-600 rounded-2xl text-xs font-black uppercase tracking-widest shadow-sm hover:bg-slate-50 transition-all">Quay lại Dashboard</button>
+                            </div>
+                        );
+                }
+            };
+
+            return (
+                <div className="flex h-screen overflow-hidden bg-bgLight">
+                    {isLoading && (
+                        <div className="fixed inset-0 z-[200] bg-white/80 backdrop-blur-md flex flex-col items-center justify-center space-y-4">
+                            <div className="w-16 h-16 border-4 border-brand-100 border-t-brand-600 rounded-full animate-spin"></div>
+                            <p className="text-sm font-black text-brand-700 uppercase tracking-widest animate-pulse">Aggregating AppSheet Data...</p>
+                        </div>
+                    )}
+                    <Sidebar 
+                        activeTab={activeTab} 
+                        setActiveTab={setActiveTab} 
+                        isOpen={isSidebarOpen} 
+                        toggleOpen={toggleSidebar} 
+                        isMobile={isMobile}
+                        mobileActive={mobileActive}
+                        setMobileOpen={setMobileActive}
+                    />
+                    <div className={`flex-1 flex flex-col min-w-0 overflow-hidden relative main-wrapper ${!isSidebarOpen ? 'expanded' : ''}`}>
+                        <header className="h-24 bg-bgLight flex items-center justify-between pl-0 pr-[30px] shrink-0 sticky top-0 z-40">
+                            <div className="flex items-center gap-4">
+                                <button 
+                                    id="menu-btn"
+                                    onClick={() => setMobileActive(!mobileActive)}
+                                    className="p-2 bg-white rounded-xl border border-gray-100 shadow-sm text-gray-500 hover:text-brand-600 lg:hidden flex items-center justify-center transition-all group"
+                                >
+                                    <Icon name={mobileActive ? "x" : "menu"} size={22} className="group-hover:scale-110 transition-transform" />
+                                </button>
+                                <div className="relative w-64 xl:w-96 hidden md:block">
+                                <Icon name="search" className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                                <input 
+                                    type="text" 
+                                    placeholder="Search anything here" 
+                                    className="w-full pl-10 pr-4 py-3 bg-white border border-gray-100 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-brand-100 focus:border-brand-300 transition-all shadow-sm"
+                                />
+                                </div>
+                            </div>
+                            
+                            <div className="flex items-center gap-6">
+                                <button className="relative text-gray-500 hover:text-gray-800 transition-colors">
+                                    <Icon name="bell" size={20} />
+                                    <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full border-2 border-bgLight"></span>
+                                </button>
+                                <button className="text-gray-500 hover:text-gray-800 transition-colors hidden sm:block">
+                                    <Icon name="message-square" size={20} />
+                                </button>
+                                <div className="flex items-center gap-3 border-l border-gray-200 pl-6 cursor-pointer group">
+                                    <img src="https://i.pravatar.cc/150?img=11" alt="Profile" className="w-10 h-10 rounded-full border-2 border-white shadow-sm object-cover group-hover:scale-105 transition-transform" />
+                                    <div className="text-sm hidden sm:block">
+                                        <p className="font-bold text-gray-800">Admin Potato</p>
+                                        <p className="text-gray-500 text-xs">Center Manager</p>
+                                    </div>
+                                    <Icon name="chevron-down" size={16} className="text-gray-400" />
+                                </div>
+                            </div>
+                        </header>
+
+                        <main className="flex-1 overflow-y-auto no-scrollbar pl-0 pr-[30px] pb-[30px]">
+                            <div className="max-w-full pt-6">
+                                <div className="dashboard-header text-left">
+                                    <h1 className="welcome-text">
+                                        {activeTab === 'class' ? 'Welcome POTATO Class' : 'Welcome POTATO Dashboard'}
+                                    </h1>
+                                </div>
+                                {renderContent()}
+                            </div>
+                        </main>
+                    </div>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<MainApp />);
+    

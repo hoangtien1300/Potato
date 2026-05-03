@@ -609,7 +609,7 @@
                             teacherAction: r["Teacher Action"] || "N/A",
                         },
                         
-                        // 3. ACADEMIC (Detailed) - Note: GS cell has double space in "Academic  Action"
+                        academicName: r["Academic"] || "N/A",
                         academic: {
                             learningProgress: r["Learning Progress"] || "N/A",
                             material: r["Material"] || "N/A",
@@ -1186,7 +1186,7 @@
                  return activeAcademic.map(emp => {
                      const staffId = emp['ID Emp'] || '';
                      const activeClasses = classData.filter(c => 
-                        (c.academic && (c.academic.includes(emp['Eng Name']) || c.academic.includes(emp['Full Name'])))
+                        (c.academicName && (c.academicName.includes(emp['Eng Name']) || c.academicName.includes(emp['Full Name'])))
                      );
                      
                      return {
