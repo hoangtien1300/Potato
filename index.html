@@ -88,11 +88,7 @@
 
         /* Sidebar & Logo Upgrades v6.2 */
         .sidebar {
-            width: 15%;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .sidebar.collapsed {
-            width: 5%;
         }
         .sidebar .logo-container {
             width: 100%;
@@ -2040,7 +2036,7 @@
             };
 
             const sidebarContent = (
-                <aside className={`sidebar ${mobileActive ? 'active' : ''} ${!isOpen ? 'collapsed lg:translate-x-0' : 'translate-x-0'} h-screen bg-white flex flex-col transition-all duration-300 ease-in-out fixed lg:relative z-[60] overflow-hidden border-r border-gray-100 shrink-0`}>
+                <aside className={`sidebar ${mobileActive ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'} ${!isOpen ? 'collapsed w-[80px]' : 'w-[280px] lg:w-[240px]'} h-screen bg-white flex flex-col transition-all duration-300 ease-in-out fixed lg:relative z-[60] overflow-hidden border-r border-gray-100 shrink-0`}>
                     {/* Logo Section */}
                     <div className="logo-container p-6 relative">
                         <div className="flex items-center gap-3 w-full justify-center lg:justify-start">
@@ -2805,7 +2801,7 @@
 
             // Persist Sidebar State
             const savedState = localStorage.getItem('sidebarState');
-            const [isSidebarOpen, setSidebarOpen] = useState(savedState !== 'collapsed');
+            const [isSidebarOpen, setSidebarOpen] = useState(savedState === 'expanded');
             const [showUnifiedOverview, setShowUnifiedOverview] = useState(false);
             
             const [isMobile, setIsMobile] = useState(window.innerWidth <= 1024);
