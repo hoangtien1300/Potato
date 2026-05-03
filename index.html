@@ -630,6 +630,7 @@
                             pending: r["Pending"] || "0",
                             monthly: r["Monthly"] || "N/A",
                             test: r["Test"] || "N/A",
+                            report: r["Report"] || "N/A",
                             operationWin: r["Operation Win"] || "N/A",
                             operationPending: r["Operation Pending"] || "N/A",
                             operationAction: r["Operation Action"] || "N/A",
@@ -1423,7 +1424,7 @@
                             <table className="w-full text-left border-collapse">
                                 <thead className="bg-slate-50 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">
                                     <tr>
-                                        <th className="p-6 sticky left-0 bg-slate-50 z-20">Personnel</th>
+                                        <th className="p-6 sticky left-0 bg-slate-50 z-20">Operation Person Info</th>
                                         <th className="p-6">Operation Level</th>
                                         <th className="p-6">Operation Band</th>
                                         <th className="p-6 text-center">Active Classes</th>
@@ -1449,8 +1450,8 @@
                                                                 )}
                                                             </div>
                                                             <div>
-                                                                <p className="text-sm font-black text-slate-800 tracking-tight group-hover:text-brand-600 transition-colors">{t.engName}</p>
-                                                                <p className="text-[10px] font-medium text-slate-400 mt-0.5">{t.fullName}</p>
+                                                                <p className="text-sm font-black text-slate-800 tracking-tight group-hover:text-brand-600 transition-colors">{t.fullName}</p>
+                                                                <p className="text-[10px] font-medium text-slate-400 mt-0.5">{t.engName}</p>
                                                             </div>
                                                         </div>
                                                     </td>
@@ -1480,12 +1481,11 @@
                                                                         <thead className="bg-slate-50 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">
                                                                             <tr>
                                                                                 <th className="p-4 sticky left-0 bg-slate-50 z-10">Class</th>
-                                                                                <th className="p-4">Fees</th>
                                                                                 <th className="p-4">Total</th>
                                                                                 <th className="p-4">Paid</th>
                                                                                 <th className="p-4">Pending</th>
                                                                                 <th className="p-4">Monthly</th>
-                                                                                <th className="p-4">Test</th>
+                                                                                <th className="p-4">Report</th>
                                                                                 <th className="p-4 max-w-[150px]">Operation Achievement</th>
                                                                                 <th className="p-4 max-w-[150px]">Operation Red Flag</th>
                                                                                 <th className="p-4 max-w-[150px]">Operation Action</th>
@@ -1503,7 +1503,7 @@
                                                                                     <td className="p-4 text-[11px] font-bold text-emerald-600">{c.operation?.paid || '0'}</td>
                                                                                     <td className="p-4 text-[11px] font-bold text-red-600">{c.operation?.pending || '0'}</td>
                                                                                     <td className="p-4 text-[11px] font-bold text-slate-600">{cleanText(c.operation?.monthly)}</td>
-                                                                                    <td className="p-4 text-[11px] font-bold text-slate-600">{cleanText(c.operation?.test)}</td>
+                                                                                    <td className="p-4 text-[11px] font-bold text-slate-600">{cleanText(c.operation?.report)}</td>
                                                                                     <td className="p-4 text-[11px] font-medium text-slate-600 max-w-[150px] truncate" title={c.operation?.operationWin}>{cleanText(c.operation?.operationWin)}</td>
                                                                                     <td className="p-4 text-[11px] font-medium text-red-600 max-w-[150px] truncate" title={c.operation?.operationPending}>{cleanText(c.operation?.operationPending)}</td>
                                                                                     <td className="p-4 text-[11px] font-medium text-amber-600 max-w-[150px] truncate" title={c.operation?.operationAction}>{cleanText(c.operation?.operationAction)}</td>
