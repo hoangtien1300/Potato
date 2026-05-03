@@ -1966,8 +1966,8 @@
                                                         <span className="text-xs font-black text-slate-800 uppercase tracking-tight">{c.className}</span>
                                                     </td>
                                                     <td className="p-4 text-center">
-                                                        <span className={`text-[9px] font-black uppercase px-2.5 py-1 rounded-lg border ${getStatusColor(c.status)}`}>
-                                                            {c.status}
+                                                        <span className={`text-[9px] font-black uppercase px-2.5 py-1 rounded-lg border ${getStatusColor(c.status)} whitespace-nowrap`}>
+                                                            {c.status.replace(/^\d+\.\s*/, '')}
                                                         </span>
                                                     </td>
                                                     <td className="p-4 text-center">
@@ -2461,8 +2461,9 @@
                                             </div>
                                             <div className="flex flex-col gap-1 max-h-[90px] overflow-y-auto no-scrollbar">
                                                 {dayShifts.map((s, sIdx) => {
-                                                    const deptClass = s.department === 'Operation' ? 'bg-brand-50 text-brand-700 border-l-2 border-brand-500' : 
-                                                                    s.department === 'Teacher' ? 'bg-pink-50 text-pink-700 border-l-2 border-pink-500' : 
+                                                    const deptStr = (s.department || "").toLowerCase();
+                                                    const deptClass = deptStr.includes('oper') ? 'bg-brand-50 text-brand-700 border-l-2 border-brand-500' : 
+                                                                    deptStr.includes('teach') ? 'bg-pink-50 text-pink-700 border-l-2 border-pink-500' : 
                                                                     'bg-amber-50 text-amber-700 border-l-2 border-amber-500';
                                                     return (
                                                         <div key={sIdx} className={`p-1 rounded text-[8px] flex flex-col gap-0.5 ${deptClass}`}>
@@ -2521,7 +2522,8 @@
                                         return (
                                             <div key={dayIdx} className={`relative h-full flex-1 transition-colors ${day.originalName === 'Chủ Nhật' ? 'bg-red-50/5' : ''}`}>
                                                 {processedShifts.map((s, sIdx) => {
-                                                    const deptClass = s.department === 'Operation' ? 'operation' : s.department === 'Teacher' ? 'teacher' : 'academic';
+                                                    const deptStr = (s.department || "").toLowerCase();
+                                                    const deptClass = deptStr.includes('oper') ? 'operation' : deptStr.includes('teach') ? 'teacher' : 'academic';
                                                     
                                                     return (
                                                         <div 
