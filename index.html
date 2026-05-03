@@ -1195,7 +1195,7 @@
                          engName: emp['Eng Name'] || 'N/A',
                          photo: emp['Photo'] || '',
                          level: cleanText(emp['Academic Level']),
-                         band: emp['Academic Band'] || 'N/A',
+                         band: cleanText(emp['Academic Band']),
                          activeClassesCount: activeClasses.length,
                          classes: activeClasses
                      };
@@ -1306,9 +1306,9 @@
                                                                                 <th className="p-4">Roadmap</th>
                                                                                 <th className="p-4">Exam</th>
                                                                                 <th className="p-4">Exam Date</th>
-                                                                                <th className="p-4 max-w-[150px]">Achievement</th>
-                                                                                <th className="p-4 max-w-[150px]">Red Flag</th>
-                                                                                <th className="p-4 max-w-[150px]">Action</th>
+                                                                                <th className="p-4 max-w-[150px]">Academic Achievement</th>
+                                                                                <th className="p-4 max-w-[150px]">Academic Red Flag</th>
+                                                                                <th className="p-4 max-w-[150px]">Academic Action</th>
                                                                             </tr>
                                                                         </thead>
                                                                         <tbody className="divide-y divide-gray-50">
