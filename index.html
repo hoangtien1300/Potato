@@ -1583,16 +1583,13 @@
             };
 
             return (
-                <div className="space-y-6 animate-fade-in">
-                    <div className="flex flex-col md:flex-row justify-between items-center bg-white p-6 rounded-[32px] border border-gray-100 shadow-sm gap-6">
-                        <div className="flex items-center gap-6">
-                            <div className="w-14 h-14 bg-brand-50 rounded-2xl flex items-center justify-center text-brand-600">
-                                <Icon name="ph-presentation-chart" size={28} />
+                <div className="space-y-4 animate-fade-in">
+                    <div className="flex flex-col md:flex-row justify-between items-center bg-white p-3 rounded-2xl border border-gray-100 shadow-sm gap-4 sticky top-0 z-40">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-brand-50 rounded-xl flex items-center justify-center text-brand-600">
+                                <Icon name="ph-presentation-chart" size={20} />
                             </div>
-                            <div>
-                                <h2 className="text-xl font-black text-slate-800 uppercase tracking-tight">POTATO Class</h2>
-                                <p className="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-widest">High-density operational matrix</p>
-                            </div>
+                            <span className="text-sm font-black text-slate-800 uppercase tracking-tight">Class Board</span>
                         </div>
 
                         <div className="flex flex-wrap items-center gap-4">
@@ -1620,8 +1617,8 @@
                         </div>
                     </div>
 
-                    <div className="bg-white rounded-[32px] border border-gray-100 shadow-sm overflow-hidden flex flex-col">
-                        <div className="overflow-x-auto overflow-y-auto max-h-[calc(100vh-280px)] no-scrollbar shadow-inner relative">
+                    <div className="bg-white rounded-[24px] border border-gray-100 shadow-sm overflow-hidden flex flex-col">
+                        <div className="overflow-x-auto overflow-y-auto max-h-[calc(100vh-180px)] no-scrollbar shadow-inner relative">
                             <table className="w-full border-collapse text-left">
                                 <thead className="bg-[#f8f9fa] border-b border-slate-100 sticky top-0 z-30">
                                     <tr className="text-slate-400 text-[10px] font-black uppercase tracking-widest border-b border-slate-100 sticky top-0 z-30 bg-[#f8f9fa]">
