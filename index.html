@@ -622,7 +622,7 @@
                             academicAction: r["Academic  Action"] || r["Academic Action"] || "N/A",
                         },
                         
-                        // 4. OPERATION (Detailed)
+                        operationName: r["Operation"] || "N/A",
                         operation: {
                             fees: r["Fees"] || "N/A",
                             total: r["Total"] || "0",
@@ -1341,6 +1341,186 @@
                                     ) : (
                                         <tr>
                                             <td colSpan="4" className="p-20 text-center text-gray-400 font-bold uppercase tracking-widest">Không có dữ liệu Academic</td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                         </div>
+                     </div>
+                 </div>
+             );
+        };
+
+        const OperationView = ({ classData, employeeData }) => {
+             const [expandedOperationId, setExpandedOperationId] = useState(null);
+             
+             const cleanText = (text) => {
+                 if (!text || text === 'N/A') return '-';
+                 return text.toString().replace(/^\d+\.\s*/, '');
+             };
+
+             const operationStats = useMemo(() => {
+                 if (!employeeData || !classData) return [];
+                 
+                 const activeOperation = employeeData.filter(emp => {
+                     const hasOpLevel = (emp['Operation Level'] || '').trim() !== '';
+                     const isWorking = (emp['Status'] || '').toLowerCase().includes('working');
+                     return hasOpLevel && isWorking;
+                 });
+                 
+                 return activeOperation.map(emp => {
+                     const staffId = emp['ID Emp'] || '';
+                     const activeClasses = classData.filter(c => 
+                        (c.operationName && (c.operationName.includes(emp['Eng Name']) || c.operationName.includes(emp['Full Name'])))
+                     );
+                     
+                     return {
+                         id: staffId,
+                         fullName: emp['Full Name'] || 'N/A',
+                         engName: emp['Eng Name'] || 'N/A',
+                         photo: emp['Photo'] || '',
+                         level: cleanText(emp['Operation Level']),
+                         band: cleanText(emp['Operation Band']),
+                         activeClassesCount: activeClasses.length,
+                         classes: activeClasses
+                     };
+                 }).sort((a, b) => b.activeClassesCount - a.activeClassesCount);
+             }, [employeeData, classData]);
+             
+             const stats = [
+                 { label: 'Consultant', count: operationStats.filter(s => s.level.includes('Consultant')).length, color: 'bg-brand-500' },
+                 { label: 'Manager', count: operationStats.filter(s => s.level.includes('Manager')).length, color: 'bg-indigo-500' },
+                 { label: 'Total Staff', count: operationStats.length, color: 'bg-potato-yellow' },
+                 { label: 'Active Support', count: operationStats.filter(s => s.activeClassesCount > 0).length, color: 'bg-emerald-500' }
+             ];
+
+             return (
+                 <div className="space-y-10 pb-20 animate-fade-in">
+                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                         {stats.map((s, idx) => (
+                             <div key={idx} className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm group hover:shadow-md transition-all">
+                                 <div className="flex justify-between items-center">
+                                     <div>
+                                         <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{s.label}</p>
+                                         <p className="text-3xl font-black text-slate-800 mt-2 tracking-tighter">{s.count}</p>
+                                     </div>
+                                     <div className={`w-12 h-12 rounded-2xl ${s.color} bg-opacity-10 flex items-center justify-center`}>
+                                         <Icon name="ph-briefcase" className={s.color.replace('bg-', 'text-')} size={24} />
+                                     </div>
+                                 </div>
+                             </div>
+                         ))}
+                     </div>
+
+                     <div className="bg-white rounded-[40px] border border-gray-100 shadow-sm overflow-hidden">
+                         <div className="p-8 border-b border-gray-50 flex justify-between items-center bg-gradient-to-r from-white to-slate-50/50">
+                             <div>
+                                 <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight">Operation Statistics</h3>
+                                 <p className="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-widest">Center Operations & Consultant Performance</p>
+                             </div>
+                         </div>
+                         <div className="overflow-x-auto">
+                            <table className="w-full text-left border-collapse">
+                                <thead className="bg-slate-50 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">
+                                    <tr>
+                                        <th className="p-6 sticky left-0 bg-slate-50 z-20">Personnel</th>
+                                        <th className="p-6">Operation Level</th>
+                                        <th className="p-6">Operation Band</th>
+                                        <th className="p-6 text-center">Active Classes</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-50">
+                                    {operationStats.length > 0 ? (
+                                        operationStats.map((t, idx) => (
+                                            <React.Fragment key={t.id}>
+                                                <tr 
+                                                    onClick={() => setExpandedOperationId(expandedOperationId === t.id ? null : t.id)}
+                                                    className={`hover:bg-slate-50/80 transition-all cursor-pointer group ${expandedOperationId === t.id ? 'bg-brand-50/30' : ''}`}
+                                                >
+                                                    <td className={`p-6 sticky left-0 z-20 transition-colors ${expandedOperationId === t.id ? 'bg-brand-50/30' : 'bg-white group-hover:bg-slate-50/80'}`}>
+                                                        <div className="flex items-center gap-4">
+                                                            <div className="w-10 h-10 rounded-2xl bg-slate-100 flex-shrink-0 overflow-hidden border-2 border-white shadow-sm group-hover:border-brand-200 transition-all">
+                                                                {t.photo ? (
+                                                                    <img src={t.photo} alt="" className="w-full h-full object-cover" />
+                                                                ) : (
+                                                                    <div className="w-full h-full flex items-center justify-center text-slate-400 text-xs font-black">
+                                                                        {t.engName.charAt(0)}
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                            <div>
+                                                                <p className="text-sm font-black text-slate-800 tracking-tight group-hover:text-brand-600 transition-colors">{t.engName}</p>
+                                                                <p className="text-[10px] font-medium text-slate-400 mt-0.5">{t.fullName}</p>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td className="p-6">
+                                                        <span className="px-3 py-1 bg-brand-50 text-brand-600 rounded-full text-[10px] font-black uppercase tracking-widest border border-brand-100/50">
+                                                            {t.level}
+                                                        </span>
+                                                    </td>
+                                                    <td className="p-6">
+                                                        <span className="px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-[10px] font-black uppercase tracking-widest border border-slate-200/50">
+                                                            {t.band}
+                                                        </span>
+                                                    </td>
+                                                    <td className="p-6 text-center">
+                                                        <span className={`inline-flex items-center justify-center w-8 h-8 rounded-xl font-black text-xs ${t.activeClassesCount > 0 ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-slate-50 text-slate-300 border border-slate-100'}`}>
+                                                            {t.activeClassesCount}
+                                                        </span>
+                                                        <Icon name={expandedOperationId === t.id ? "caret-up" : "caret-down"} className="inline-block ml-3 text-gray-400 group-hover:text-brand-500 transition-colors" size={16} />
+                                                    </td>
+                                                </tr>
+                                                {expandedOperationId === t.id && t.classes.length > 0 && (
+                                                    <tr className="bg-slate-50/30">
+                                                        <td colSpan="4" className="p-6">
+                                                            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden animate-fade-in">
+                                                                <div className="overflow-x-auto">
+                                                                    <table className="w-full text-left min-w-[1200px]">
+                                                                        <thead className="bg-slate-50 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">
+                                                                            <tr>
+                                                                                <th className="p-4 sticky left-0 bg-slate-50 z-10">Class</th>
+                                                                                <th className="p-4">Fees</th>
+                                                                                <th className="p-4">Total</th>
+                                                                                <th className="p-4">Paid</th>
+                                                                                <th className="p-4">Pending</th>
+                                                                                <th className="p-4">Monthly</th>
+                                                                                <th className="p-4">Test</th>
+                                                                                <th className="p-4 max-w-[150px]">Operation Achievement</th>
+                                                                                <th className="p-4 max-w-[150px]">Operation Red Flag</th>
+                                                                                <th className="p-4 max-w-[150px]">Operation Action</th>
+                                                                            </tr>
+                                                                        </thead>
+                                                                        <tbody className="divide-y divide-gray-50">
+                                                                            {t.classes.map((c, cIdx) => (
+                                                                                <tr key={cIdx} className="hover:bg-slate-50 transition-colors">
+                                                                                    <td className="p-4 sticky left-0 bg-white z-10 shadow-[2px_0_5px_rgba(0,0,0,0.05)]">
+                                                                                        <p className="text-xs font-black text-slate-800 tracking-tight">{c.className}</p>
+                                                                                        <p className="text-[10px] font-medium text-slate-400 mt-0.5">{c.idClass}</p>
+                                                                                    </td>
+                                                                                    <td className="p-4 text-[11px] font-bold text-slate-600">{cleanText(c.operation?.fees)}</td>
+                                                                                    <td className="p-4 text-[11px] font-bold text-slate-600">{c.operation?.total || '0'}</td>
+                                                                                    <td className="p-4 text-[11px] font-bold text-emerald-600">{c.operation?.paid || '0'}</td>
+                                                                                    <td className="p-4 text-[11px] font-bold text-red-600">{c.operation?.pending || '0'}</td>
+                                                                                    <td className="p-4 text-[11px] font-bold text-slate-600">{cleanText(c.operation?.monthly)}</td>
+                                                                                    <td className="p-4 text-[11px] font-bold text-slate-600">{cleanText(c.operation?.test)}</td>
+                                                                                    <td className="p-4 text-[11px] font-medium text-slate-600 max-w-[150px] truncate" title={c.operation?.operationWin}>{cleanText(c.operation?.operationWin)}</td>
+                                                                                    <td className="p-4 text-[11px] font-medium text-red-600 max-w-[150px] truncate" title={c.operation?.operationPending}>{cleanText(c.operation?.operationPending)}</td>
+                                                                                    <td className="p-4 text-[11px] font-medium text-amber-600 max-w-[150px] truncate" title={c.operation?.operationAction}>{cleanText(c.operation?.operationAction)}</td>
+                                                                                </tr>
+                                                                            ))}
+                                                                        </tbody>
+                                                                    </table>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                )}
+                                            </React.Fragment>
+                                        ))
+                                    ) : (
+                                        <tr>
+                                            <td colSpan="4" className="p-20 text-center text-gray-400 font-bold uppercase tracking-widest">Không có dữ liệu Operation</td>
                                         </tr>
                                     )}
                                 </tbody>
@@ -2931,7 +3111,7 @@
                     case 'academic':
                         return <AcademicView classData={classDashboard} employeeData={appData['Employee']} />;
                     case 'operation':
-                        return <LeaderReportView />;
+                        return <OperationView classData={classDashboard} employeeData={appData['Employee']} />;
                     case 'playbook-teen':
                         return (
                              <div className="flex flex-col items-center justify-center p-20 space-y-8 bg-white rounded-2xl border border-gray-100 shadow-sm">
