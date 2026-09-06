@@ -114,32 +114,13 @@
         <p class="text-sm text-slate-500 mt-1">Dán hoặc nhập mã <strong>ID Score</strong> từ Google Sheet để nạp bảng điểm tự động</p>
       </div>
 
-      <!-- Demo Chips -->
-      <div class="bg-slate-50 rounded-xl p-3.5 mb-6 border border-slate-200/80">
-        <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider block mb-2">⚡ Bấm thử mã có thật trong Google Sheet:</span>
-        <div class="flex flex-wrap gap-2">
-          <button type="button" onclick="fillAndSubmit('12D2B9DF')" class="text-xs font-mono bg-white border border-potato-tan/40 text-potato-tanDark hover:bg-potato-tan hover:text-white px-2.5 py-1 rounded-lg transition font-semibold">
-            🎯 12D2B9DF (Lê Minh Duy)
-          </button>
-          <button type="button" onclick="fillAndSubmit('3DF6EC4F')" class="text-xs font-mono bg-white border border-slate-300 text-slate-700 hover:bg-slate-200 px-2.5 py-1 rounded-lg transition font-medium">
-            🎯 3DF6EC4F (Gia Bình)
-          </button>
-          <button type="button" onclick="fillAndSubmit('A5895F5C')" class="text-xs font-mono bg-white border border-slate-300 text-slate-700 hover:bg-slate-200 px-2.5 py-1 rounded-lg transition font-medium">
-            🎯 A5895F5C (Thái Hân)
-          </button>
-          <button type="button" onclick="fillAndSubmit('49D80836')" class="text-xs font-mono bg-white border border-slate-300 text-slate-700 hover:bg-slate-200 px-2.5 py-1 rounded-lg transition font-medium">
-            🎯 49D80836 (Kim Ngân)
-          </button>
-        </div>
-      </div>
-
       <form id="scoreLoginForm" onsubmit="handleLogin(event)" class="space-y-4">
         <div>
           <label for="idScoreInput" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
             Mã ID Score (Bắt buộc) <span class="text-red-500">*</span>
           </label>
           <div class="relative">
-            <input type="text" id="idScoreInput" required placeholder="Dán mã ID Score vào đây (ví dụ: 12D2B9DF)" 
+            <input type="text" id="idScoreInput" required placeholder="Nhập hoặc dán mã ID Score (ví dụ: 12D2B9DF)" 
               class="w-full pl-10 pr-4 py-3 text-base font-mono uppercase bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-potato-tan focus:border-potato-tan transition outline-none shadow-sm">
             <span class="absolute left-3.5 top-3.5 text-slate-400">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"/></svg>
@@ -147,29 +128,8 @@
           </div>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div>
-            <label for="testSelectLogin" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
-              Chọn kỳ kiểm tra
-            </label>
-            <select id="testSelectLogin" class="w-full px-3 py-2.5 text-sm bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-potato-tan focus:border-potato-tan transition outline-none">
-              <option value="1" selected>Skill Test 1</option>
-              <option value="2">Skill Test 2</option>
-              <option value="3">Skill Test 3</option>
-              <option value="4">Skill Test 4</option>
-              <option value="5">Skill Test 5</option>
-            </select>
-          </div>
-          <div>
-            <label for="userRoleSelect" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
-              Vai trò xem
-            </label>
-            <select id="userRoleSelect" class="w-full px-3 py-2.5 text-sm bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-potato-tan focus:border-potato-tan transition outline-none">
-              <option value="teacher">Giáo viên / Nhân sự</option>
-              <option value="parent">Phụ huynh học viên</option>
-            </select>
-          </div>
-        </div>
+        <!-- Mặc định xem Test 1 khi tra cứu -->
+        <input type="hidden" id="testSelectLogin" value="1">
 
         <!-- Trạng thái Loading / Báo lỗi -->
         <div id="statusBox" class="hidden p-3 rounded-xl text-xs font-medium"></div>
