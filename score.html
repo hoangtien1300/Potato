@@ -226,7 +226,7 @@
               <span id="fieldStudentName" class="font-bold text-potato-navy text-sm print:text-xs">Mr. LÊ MINH DUY (07042014)</span>
             </div>
             <div>
-              <span class="text-[10px] print:text-[8.5px] font-medium text-slate-500 block">Lớp / Class ID:</span>
+              <span class="text-[10px] print:text-[8.5px] font-medium text-slate-500 block">Lớp / Class:</span>
               <span id="fieldClassId" class="font-bold text-slate-800">NQT4SSA260712</span>
             </div>
             <div>
@@ -402,20 +402,6 @@
 
         </div>
 
-        <!-- KHỐI CHỮ KÝ XÁC NHẬN -->
-        <div class="grid grid-cols-2 gap-6 text-center pt-2 print:pt-1">
-          <div>
-            <span class="text-xs print:text-[9px] font-semibold text-slate-500 uppercase tracking-wider block mb-7 print:mb-5">Phụ Huynh Học Viên</span>
-            <div class="w-32 print:w-28 border-b border-dashed border-slate-400 mx-auto"></div>
-            <span class="text-[10px] print:text-[8px] text-slate-400 mt-1 block">(Ký và ghi rõ họ tên)</span>
-          </div>
-          <div>
-            <span class="text-xs print:text-[9px] font-semibold text-slate-500 uppercase tracking-wider block mb-7 print:mb-5">Giáo Viên Phụ Trách</span>
-            <div class="w-32 print:w-28 border-b border-slate-400 mx-auto"></div>
-            <span id="signatureTeacher" class="text-xs print:text-[9px] font-semibold text-slate-700 mt-1 block">PHAN TRẦN KHÔI</span>
-          </div>
-        </div>
-
       </div>
     </section>
 
@@ -436,9 +422,11 @@
   <!-- ================= JAVASCRIPT: LIVE DATA FETCH & REAL-TIME SEARCH ================= -->
   <script>
     const GOOGLE_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/1Z86AEyIs7yxSNzavuyRTCWz-PnD6xm8y06A-qPsGQR0/export?format=csv&gid=0';
+    const GOOGLE_SHEET_CLASS_CSV_URL = 'https://docs.google.com/spreadsheets/d/1Z86AEyIs7yxSNzavuyRTCWz-PnD6xm8y06A-qPsGQR0/export?format=csv&gid=539173860';
 
     // In-memory cache of parsed Google Sheet data
     let sheetRowsCache = null;
+    let classMapCache = {};
     let currentStudentObj = null;
     let currentSelectedTest = 1;
 
@@ -450,9 +438,23 @@
 
     async function loadSheetDataInBackground() {
       try {
-        const response = await fetch(GOOGLE_SHEET_CSV_URL);
-        if (response.ok) {
-          const csvText = await response.text();
+        const [importRes, classRes] = await Promise.all([
+          fetch(GOOGLE_SHEET_CSV_URL),
+          fetch(GOOGLE_SHEET_CLASS_CSV_URL).catch(() => null)
+        ]);
+
+        if (classRes && classRes.ok) {
+          const classCsv = await classRes.text();
+          Papa.parse(classCsv, {
+            skipEmptyLines: true,
+            complete: function(results) {
+              parseClassMap(results.data);
+            }
+          });
+        }
+
+        if (importRes && importRes.ok) {
+          const csvText = await importRes.text();
           Papa.parse(csvText, {
             skipEmptyLines: true,
             complete: function(results) {
@@ -466,6 +468,21 @@
       } catch (err) {
         console.warn('Background preload failed, will fetch on demand:', err);
       }
+    }
+
+    function parseClassMap(rows) {
+      if (!rows || rows.length < 3) return;
+      for (let i = 2; i < rows.length; i++) {
+        const row = rows[i];
+        if (row && row[0]) {
+          const cid = row[0].trim().toUpperCase();
+          classMapCache[cid] = {
+            className: (row[13] || '').trim(),
+            teacher: (row[14] || '').trim()
+          };
+        }
+      }
+      console.log(`✅ Loaded ${Object.keys(classMapCache).length} classes into map cache`);
     }
 
     function fillAndSubmit(code) {
@@ -578,13 +595,21 @@
         };
       };
 
+      const rawClassId = row[1] ? row[1].trim() : 'N/A';
+      const rawTeacher = row[5] ? row[5].trim() : 'Giáo viên phụ trách';
+      const classInfo = classMapCache[rawClassId.toUpperCase()] || {};
+      const finalClass = classInfo.className || rawClassId;
+      const finalTeacher = classInfo.teacher || rawTeacher;
+
       return {
         idScore: row[0] ? row[0].trim() : queryId,
-        classId: row[1] ? row[1].trim() : 'N/A',
+        classId: finalClass,
+        rawClassId: rawClassId,
         type: row[2] ? row[2].trim() : '',
         status: row[3] ? row[3].trim() : '',
         studentName: row[4] ? row[4].trim() : 'Học viên',
-        teacher: row[5] ? row[5].trim() : 'Giáo viên phụ trách',
+        teacher: finalTeacher,
+        rawTeacher: rawTeacher,
         tests: {
           1: getTestInfo(1),
           2: getTestInfo(2),
@@ -614,7 +639,6 @@
       document.getElementById('fieldStudentName').innerText = student.studentName;
       document.getElementById('fieldClassId').innerText = student.classId;
       document.getElementById('fieldTeacher').innerText = student.teacher;
-      document.getElementById('signatureTeacher').innerText = student.teacher.split('-')[0].trim();
       
       document.getElementById('fieldTestDate').innerText = test.date || new Date().toLocaleDateString('vi-VN');
       document.getElementById('fieldTestType').innerText = test.name;

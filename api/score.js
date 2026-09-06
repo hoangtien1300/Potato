@@ -4,8 +4,10 @@
  */
 
 const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/1Z86AEyIs7yxSNzavuyRTCWz-PnD6xm8y06A-qPsGQR0/export?format=csv&gid=0';
+const CLASS_CSV_URL = 'https://docs.google.com/spreadsheets/d/1Z86AEyIs7yxSNzavuyRTCWz-PnD6xm8y06A-qPsGQR0/export?format=csv&gid=539173860';
 
 let cachedCsv = null;
+let cachedClassCsv = null;
 let lastCacheTime = 0;
 const CACHE_TTL_MS = 60 * 1000; // 60 seconds in-memory cache
 
@@ -53,17 +55,42 @@ export default async function handler(req, res) {
   try {
     const now = Date.now();
     let csvData = cachedCsv;
+    let classCsvData = cachedClassCsv;
 
-    if (!csvData || now - lastCacheTime > CACHE_TTL_MS) {
-      const response = await fetch(SHEET_CSV_URL, {
-        headers: { 'User-Agent': 'Potato-Score-API/1.0' }
-      });
-      if (!response.ok) {
-        throw new Error(`Failed to fetch Google Sheet: ${response.statusText}`);
+    if (!csvData || !classCsvData || now - lastCacheTime > CACHE_TTL_MS) {
+      const [importRes, classRes] = await Promise.all([
+        fetch(SHEET_CSV_URL, { headers: { 'User-Agent': 'Potato-Score-API/1.0' } }),
+        fetch(CLASS_CSV_URL, { headers: { 'User-Agent': 'Potato-Score-API/1.0' } }).catch(() => null)
+      ]);
+
+      if (!importRes.ok) {
+        throw new Error(`Failed to fetch Google Sheet Import: ${importRes.statusText}`);
       }
-      csvData = await response.text();
+      csvData = await importRes.text();
       cachedCsv = csvData;
+
+      if (classRes && classRes.ok) {
+        classCsvData = await classRes.text();
+        cachedClassCsv = classCsvData;
+      }
       lastCacheTime = now;
+    }
+
+    // Build classMap from Class sheet
+    const classMap = {};
+    if (classCsvData) {
+      const classLines = classCsvData.split(/\r?\n/);
+      for (let j = 2; j < classLines.length; j++) {
+        const cl = classLines[j].trim();
+        if (!cl) continue;
+        const ccols = parseCsvLine(cl);
+        if (ccols[0]) {
+          classMap[ccols[0].trim().toUpperCase()] = {
+            className: ccols[13] ? ccols[13].trim() : '',
+            teacher: ccols[14] ? ccols[14].trim() : ''
+          };
+        }
+      }
     }
 
     const lines = csvData.split(/\r?\n/);
@@ -90,12 +117,11 @@ export default async function handler(req, res) {
       });
     }
 
-    // Mapping based on Google Sheet structure:
-    // Test 1: Date=Col 6, L=11, R=12, W=13, S=14, Total=15, Grade=16, SLink=17
-    // Test 2: Date=Col 7, L=18, R=19, W=20, S=21, Total=22, Grade=23, SLink=24
-    // Test 3: Date=Col 8, L=25, R=26, W=27, S=28, Total=29, Grade=30, SLink=31
-    // Test 4: Date=Col 9, L=32, R=33, W=34, S=35, Total=36, Grade=37, SLink=38
-    // Test 5: Date=Col 10, L=39, R=40, W=41, S=42, Total=43, Grade=44, SLink=45
+    const rawClassId = (foundRow[1] || '').trim();
+    const rawTeacher = (foundRow[5] || '').trim();
+    const classInfo = classMap[rawClassId.toUpperCase()] || {};
+    const finalClass = classInfo.className || rawClassId;
+    const finalTeacher = classInfo.teacher || rawTeacher;
 
     const getTestScores = (tIndex) => {
       const dateCol = 5 + tIndex; // 6 for Test 1, 7 for Test 2, etc.
@@ -116,11 +142,13 @@ export default async function handler(req, res) {
     const studentData = {
       found: true,
       idScore: foundRow[0] || queryId,
-      classId: foundRow[1] || '',
+      classId: finalClass,
+      rawClassId: rawClassId,
       type: foundRow[2] || '',
       status: foundRow[3] || '',
       studentName: foundRow[4] || 'Học viên',
-      teacher: foundRow[5] || '',
+      teacher: finalTeacher,
+      rawTeacher: rawTeacher,
       selectedTest: getTestScores(testNum),
       allTests: {
         test1: getTestScores(1),
