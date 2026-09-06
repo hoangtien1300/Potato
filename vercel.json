@@ -1,0 +1,14 @@
+{
+  "version": 2,
+  "cleanUrls": true,
+  "routes": [
+    {
+      "src": "/score",
+      "dest": "/score.html"
+    },
+    {
+      "src": "/report",
+      "dest": "/student_score_report.html"
+    }
+  ]
+}
