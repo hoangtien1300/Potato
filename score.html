@@ -86,16 +86,6 @@
           <span class="text-[11px] font-medium text-potato-tan tracking-wider uppercase">Student Progress Report System</span>
         </div>
       </div>
-      
-      <div class="flex items-center space-x-2 sm:space-x-3">
-        <span id="dataLiveBadge" class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200">
-          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5 animate-pulse"></span>
-          Google Sheet Live Data
-        </span>
-        <button id="btnSwitchView" onclick="toggleView()" class="text-xs sm:text-sm font-medium px-3 py-1.5 rounded-lg border border-potato-border text-slate-700 hover:bg-slate-50 transition">
-          🔄 Đổi Màn Hình
-        </button>
-      </div>
     </div>
   </header>
 
@@ -149,7 +139,7 @@
 
 
     <!-- ================= VIEW 2: BIỂU MẪU BẢNG ĐIỂM (STUDENT PROGRESS REPORT) ================= -->
-    <section id="reportSection" class="transition-all">
+    <section id="reportSection" class="hidden transition-all">
       
       <!-- Toolbar thao tác (no-print) -->
       <div class="no-print flex flex-wrap items-center justify-between gap-3 mb-6 bg-white p-4 rounded-xl border border-potato-border shadow-sm">
@@ -669,16 +659,6 @@
       document.getElementById('reportSection').classList.add('hidden');
       document.getElementById('statusBox').classList.add('hidden');
       window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    function toggleView() {
-      const isLoginHidden = document.getElementById('loginSection').classList.contains('hidden');
-      if (isLoginHidden) {
-        backToLogin();
-      } else {
-        const code = document.getElementById('idScoreInput').value.trim().toUpperCase() || '12D2B9DF';
-        handleLookup(code, parseInt(document.getElementById('testSelectLogin').value, 10) || 1);
-      }
     }
 
     function showStatus(msg, type) {
