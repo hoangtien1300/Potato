@@ -49,10 +49,10 @@
       color: #1E293B;
     }
     
-    /* In ấn chuẩn khổ A4 - CHÍNH XÁC 1 TRANG DUY NHẤT */
+    /* In ấn chuẩn khổ A4 dọc (Portrait) - BỐ TRÍ VỪA VẶN TRỌN VẸN 1 TRANG */
     @page {
       size: A4 portrait;
-      margin: 6mm 8mm;
+      margin: 8mm 10mm;
     }
 
     @media print {
@@ -83,7 +83,7 @@
         box-shadow: none !important;
         border: 1.5px solid #00284D !important;
         margin: 0 auto !important;
-        padding: 10px 14px !important;
+        padding: 16px 20px !important;
         width: 100% !important;
         max-width: 100% !important;
         box-sizing: border-box !important;
@@ -195,211 +195,209 @@
       </div>
 
       <!-- TỜ PHIẾU ĐIỂM BÁO CÁO (PRINT CONTAINER) -->
-      <div class="print-container bg-white rounded-2xl shadow-sm border border-slate-300 p-5 sm:p-8 max-w-4xl mx-auto">
+      <div class="print-container bg-white rounded-2xl shadow-sm border border-slate-300 p-6 sm:p-8 max-w-4xl mx-auto">
         
         <!-- HEADER PHIẾU BÁO CÁO -->
-        <div class="border-b-2 border-potato-navy/20 pb-3 mb-3 print:pb-2 print:mb-2">
-          <div class="flex items-center justify-between gap-3">
-            <div class="flex items-center space-x-3">
-              <img src="https://potatoenglish.edu.vn/wp-content/uploads/2025/12/logo.jpg" alt="Logo" class="h-14 w-14 print:h-10 print:w-10 object-contain rounded-xl border border-slate-200 p-1">
+        <div class="border-b-2 border-potato-navy/20 pb-3 mb-3 print:pb-2.5 print:mb-2.5">
+          <div class="flex items-center justify-between gap-4">
+            <div class="flex items-center space-x-3.5">
+              <img src="https://potatoenglish.edu.vn/wp-content/uploads/2025/12/logo.jpg" alt="Logo" class="h-14 w-14 print:h-12 print:w-12 object-contain rounded-xl border border-slate-200 p-1 shadow-sm">
               <div>
-                <h1 class="font-display font-extrabold text-xl print:text-base text-potato-navy tracking-tight leading-tight">POTATO ENGLISH</h1>
-                <p class="text-[11px] print:text-[8.5px] text-potato-tan font-bold tracking-wider uppercase">Never Stop Learning</p>
-                <p class="text-[10px] print:text-[8px] text-slate-500 mt-0.5">CS1: 37 Ngô Quyền, Phú Cường • CS2: 9 KP Hưng Phước, Hưng Định</p>
+                <h1 class="font-display font-extrabold text-2xl print:text-xl text-potato-navy tracking-tight leading-tight">POTATO ENGLISH</h1>
+                <p class="text-xs print:text-[10px] text-potato-tan font-bold tracking-wider uppercase">Never Stop Learning</p>
+                <p class="text-[11px] print:text-[9px] text-slate-500 mt-0.5">CS1: 37 Ngô Quyền, Phú Cường • CS2: 9 KP Hưng Phước, Hưng Định</p>
               </div>
             </div>
             
             <div class="text-right">
-              <div class="inline-block px-2.5 py-0.5 bg-potato-navy text-white text-[10px] print:text-[8.5px] font-bold rounded uppercase tracking-wider mb-0.5">
+              <div class="inline-block px-3 py-1 bg-potato-navy text-white text-xs print:text-[10px] font-bold rounded uppercase tracking-wider mb-1">
                 BẢNG ĐÁNH GIÁ KẾT QUẢ HỌC TẬP
               </div>
-              <p class="font-display font-bold text-base print:text-xs text-slate-800 uppercase tracking-tight leading-tight">STUDENT PROGRESS REPORT</p>
+              <p class="font-display font-bold text-lg print:text-sm text-slate-800 uppercase tracking-tight leading-tight">STUDENT PROGRESS REPORT</p>
             </div>
           </div>
         </div>
 
         <!-- THÔNG TIN HỌC VIÊN & LỚP HỌC (GRID) -->
-        <div class="bg-slate-50/80 rounded-xl p-3 print:p-2 border border-slate-200 mb-3 print:mb-2">
-          <div class="grid grid-cols-2 sm:grid-cols-3 print:grid-cols-3 gap-y-1.5 gap-x-4 text-xs print:text-[10px]">
+        <div class="bg-slate-50/80 rounded-xl p-3.5 print:p-3 border border-slate-200 mb-3.5 print:mb-3">
+          <div class="grid grid-cols-2 sm:grid-cols-3 print:grid-cols-3 gap-y-2 gap-x-4 text-xs print:text-[11px]">
             <div>
-              <span class="text-[10px] print:text-[8.5px] font-medium text-slate-500 block">Tên Học Sinh / Student Name:</span>
-              <span id="fieldStudentName" class="font-bold text-potato-navy text-sm print:text-xs">Mr. LÊ MINH DUY (07042014)</span>
+              <span class="text-[11px] print:text-[9.5px] font-medium text-slate-500 block mb-0.5">Tên Học Sinh / Student Name:</span>
+              <span id="fieldStudentName" class="font-bold text-potato-navy text-base print:text-sm">Mr. LÊ MINH DUY</span>
             </div>
             <div>
-              <span class="text-[10px] print:text-[8.5px] font-medium text-slate-500 block">Lớp / Class:</span>
-              <span id="fieldClassId" class="font-bold text-slate-800">NQT4SSA260712</span>
+              <span class="text-[11px] print:text-[9.5px] font-medium text-slate-500 block mb-0.5">Lớp / Class:</span>
+              <span id="fieldClassId" class="font-bold text-slate-800 text-sm print:text-xs">II. Junior 8+ (Flyers)</span>
             </div>
             <div>
-              <span class="text-[10px] print:text-[8.5px] font-medium text-slate-500 block">Giáo Viên / Teacher:</span>
-              <span id="fieldTeacher" class="font-bold text-slate-800">PHAN TRẦN KHÔI - 0922263337</span>
+              <span class="text-[11px] print:text-[9.5px] font-medium text-slate-500 block mb-0.5">Giáo Viên / Teacher:</span>
+              <span id="fieldTeacher" class="font-bold text-slate-800 text-sm print:text-xs">Mr. Khôi</span>
             </div>
             <div>
-              <span class="text-[10px] print:text-[8.5px] font-medium text-slate-500 block">Ngày Kiểm Tra / Date:</span>
-              <span id="fieldTestDate" class="font-medium text-slate-800">15/08/2026</span>
+              <span class="text-[11px] print:text-[9.5px] font-medium text-slate-500 block mb-0.5">Ngày Kiểm Tra / Date:</span>
+              <span id="fieldTestDate" class="font-medium text-slate-800 text-sm print:text-xs">15/08/2026</span>
             </div>
             <div>
-              <span class="text-[10px] print:text-[8.5px] font-medium text-slate-500 block">Kỳ Kiểm Tra / Test:</span>
-              <span id="fieldTestType" class="font-bold text-potato-blue">Skill Test 1</span>
+              <span class="text-[11px] print:text-[9.5px] font-medium text-slate-500 block mb-0.5">Kỳ Kiểm Tra / Test:</span>
+              <span id="fieldTestType" class="font-bold text-potato-blue text-sm print:text-xs">Skill Test 1</span>
             </div>
             <div>
-              <span class="text-[10px] print:text-[8.5px] font-medium text-slate-500 block">Mã Điểm Số / ID Score:</span>
-              <span id="fieldIdScore" class="font-mono font-bold text-potato-tanDark">12D2B9DF</span>
+              <span class="text-[11px] print:text-[9.5px] font-medium text-slate-500 block mb-0.5">Mã Điểm Số / ID Score:</span>
+              <span id="fieldIdScore" class="font-mono font-bold text-potato-tanDark text-sm print:text-xs">12D2B9DF</span>
             </div>
           </div>
         </div>
 
         <!-- BẢNG ĐIỂM KỸ NĂNG (SCORES) -->
-        <div class="mb-3 print:mb-2">
-          <h3 class="text-xs print:text-[10px] font-bold text-potato-navy uppercase tracking-wider mb-1 flex items-center">
+        <div class="mb-3.5 print:mb-3">
+          <h3 class="text-xs print:text-[11px] font-bold text-potato-navy uppercase tracking-wider mb-1.5 flex items-center">
             <span class="w-1.5 h-1.5 rounded-full bg-potato-tan mr-1.5"></span>
             Kết Quả Điểm Số / Test Scores
           </h3>
           
           <div class="overflow-x-auto">
-            <table class="w-full text-xs print:text-[10px] border-collapse border border-slate-300 rounded-lg">
+            <table class="w-full text-xs print:text-[11px] border-collapse border border-slate-300 rounded-lg">
               <thead>
-                <tr class="bg-potato-navy text-white uppercase text-center text-[11px] print:text-[9px]">
-                  <th class="border border-slate-300 py-1.5 px-2">Listening / Nghe</th>
-                  <th class="border border-slate-300 py-1.5 px-2">Reading / Đọc</th>
-                  <th class="border border-slate-300 py-1.5 px-2">Writing / Viết</th>
-                  <th class="border border-slate-300 py-1.5 px-2">Speaking / Nói</th>
-                  <th class="border border-slate-300 py-1.5 px-2 bg-potato-tan text-white font-bold">Tổng Điểm / Total</th>
-                  <th class="border border-slate-300 py-1.5 px-2 bg-potato-tanDark text-white font-bold">Xếp Loại / Grade</th>
+                <tr class="bg-potato-navy text-white uppercase text-center text-xs print:text-[10px]">
+                  <th class="border border-slate-300 py-1.5 px-3">Listening / Nghe</th>
+                  <th class="border border-slate-300 py-1.5 px-3">Reading / Đọc</th>
+                  <th class="border border-slate-300 py-1.5 px-3">Writing / Viết</th>
+                  <th class="border border-slate-300 py-1.5 px-3">Speaking / Nói</th>
+                  <th class="border border-slate-300 py-1.5 px-3 bg-potato-tan text-white font-bold">Tổng Điểm / Total</th>
+                  <th class="border border-slate-300 py-1.5 px-3 bg-potato-tanDark text-white font-bold">Xếp Loại / Grade</th>
                 </tr>
               </thead>
               <tbody class="text-center font-medium divide-y divide-slate-200">
                 <tr class="hover:bg-slate-50/50">
-                  <td class="border border-slate-300 py-1.5 px-2 font-semibold text-slate-700" id="valListening">7 / 10</td>
-                  <td class="border border-slate-300 py-1.5 px-2 font-semibold text-slate-700" id="valReading">36 / 60</td>
-                  <td class="border border-slate-300 py-1.5 px-2 font-semibold text-slate-700" id="valWriting">6 / 10</td>
-                  <td class="border border-slate-300 py-1.5 px-2 font-semibold text-slate-700" id="valSpeaking">--</td>
-                  <td class="border border-slate-300 py-1.5 px-2 font-bold text-sm print:text-xs text-potato-navy bg-amber-50/30" id="valTotal">49 / 80</td>
-                  <td class="border border-slate-300 py-1.5 px-2 font-bold text-sm print:text-xs text-emerald-600 bg-amber-50/50" id="valGrade">61.25%</td>
+                  <td class="border border-slate-300 py-2 px-3 font-semibold text-slate-700" id="valListening">7 / 10</td>
+                  <td class="border border-slate-300 py-2 px-3 font-semibold text-slate-700" id="valReading">36 / 60</td>
+                  <td class="border border-slate-300 py-2 px-3 font-semibold text-slate-700" id="valWriting">6 / 10</td>
+                  <td class="border border-slate-300 py-2 px-3 font-semibold text-slate-700" id="valSpeaking">--</td>
+                  <td class="border border-slate-300 py-2 px-3 font-bold text-base print:text-sm text-potato-navy bg-amber-50/30" id="valTotal">49 / 80</td>
+                  <td class="border border-slate-300 py-2 px-3 font-bold text-base print:text-sm text-emerald-600 bg-amber-50/50" id="valGrade">61.25%</td>
                 </tr>
               </tbody>
             </table>
           </div>
         </div>
 
-        <!-- PART 1 & PART 2 LAYOUT: 2 CỘT CÂN BẰNG HOÀN HẢO -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 print:grid-cols-2 gap-3 print:gap-2.5 mb-3 print:mb-2">
+        <!-- PART 1: ĐÁNH GIÁ Ý THỨC HỌC TẬP -->
+        <div class="mb-3.5 print:mb-3">
+          <h3 class="text-xs print:text-[11px] font-bold text-potato-navy uppercase tracking-wider mb-1.5 flex items-center">
+            <span class="w-1.5 h-1.5 rounded-full bg-potato-blue mr-1.5"></span>
+            Part 1: Assessment of Attitude Towards Learning English (Ý Thức Học Tập)
+          </h3>
           
-          <!-- CỘT TRÁI: PART 1 (Ý THỨC HỌC TẬP - 5 TIÊU CHÍ) -->
-          <div>
-            <h3 class="text-xs print:text-[10px] font-bold text-potato-navy uppercase tracking-wider mb-1 flex items-center">
-              <span class="w-1.5 h-1.5 rounded-full bg-potato-blue mr-1.5"></span>
-              Part 1: Attitude Towards Learning English (Ý Thức)
-            </h3>
-            
-            <table class="w-full text-xs print:text-[8.5px] border-collapse border border-slate-300">
-              <thead>
-                <tr class="bg-slate-100 text-slate-700 text-left text-[10px] print:text-[8px]">
-                  <th class="border border-slate-300 py-1 px-2 w-7/12">Tiêu Chí / Evaluation</th>
-                  <th class="border border-slate-300 py-1 px-2 w-5/12 text-center">Mức Độ / Level</th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-slate-200 text-slate-700">
-                <tr>
-                  <td class="border border-slate-300 py-1 px-2">
-                    <div class="font-semibold text-slate-800">Pays attention in class</div>
-                    <div class="text-[9px] print:text-[7.5px] text-slate-500">Chú ý khi giáo viên giảng bài</div>
-                  </td>
-                  <td class="border border-slate-300 py-1 px-2 text-center font-bold text-emerald-700 bg-emerald-50/30" id="att1">
-                    Always / Luôn luôn
-                  </td>
-                </tr>
-                <tr>
-                  <td class="border border-slate-300 py-1 px-2">
-                    <div class="font-semibold text-slate-800">Active participation</div>
-                    <div class="text-[9px] print:text-[7.5px] text-slate-500">Tích cực tham gia hoạt động lớp</div>
-                  </td>
-                  <td class="border border-slate-300 py-1 px-2 text-center font-bold text-blue-700 bg-blue-50/30" id="att2">
-                    Usually / Đều đặn
-                  </td>
-                </tr>
-                <tr>
-                  <td class="border border-slate-300 py-1 px-2">
-                    <div class="font-semibold text-slate-800">Full attendance & on time</div>
-                    <div class="text-[9px] print:text-[7.5px] text-slate-500">Đi học đúng giờ, chuyên cần</div>
-                  </td>
-                  <td class="border border-slate-300 py-1 px-2 text-center font-bold text-emerald-700 bg-emerald-50/30" id="att3">
-                    Always / Luôn luôn
-                  </td>
-                </tr>
-                <tr>
-                  <td class="border border-slate-300 py-1 px-2">
-                    <div class="font-semibold text-slate-800">Level of confidence</div>
-                    <div class="text-[9px] print:text-[7.5px] text-slate-500">Tự tin trong giao tiếp</div>
-                  </td>
-                  <td class="border border-slate-300 py-1 px-2 text-center font-bold text-amber-700 bg-amber-50/30" id="att4">
-                    Confident / Tự tin
-                  </td>
-                </tr>
-                <tr>
-                  <td class="border border-slate-300 py-1 px-2">
-                    <div class="font-semibold text-slate-800">Classroom Discipline</div>
-                    <div class="text-[9px] print:text-[7.5px] text-slate-500">Ý thức kỷ luật giờ học</div>
-                  </td>
-                  <td class="border border-slate-300 py-1 px-2 text-center font-bold text-emerald-700 bg-emerald-50/30" id="att5">
-                    Usually well behaved / Tốt
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+          <table class="w-full text-xs print:text-[10px] border-collapse border border-slate-300">
+            <thead>
+              <tr class="bg-slate-100 text-slate-700 text-left text-xs print:text-[9.5px]">
+                <th class="border border-slate-300 py-1.5 px-3 w-7/12">Tiêu Chí Đánh Giá / Evaluation Criteria</th>
+                <th class="border border-slate-300 py-1.5 px-3 w-5/12 text-center">Mức Độ Đạt Được / Assessment Level</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-200 text-slate-700">
+              <tr>
+                <td class="border border-slate-300 py-1.5 px-3">
+                  <div class="font-semibold text-slate-800">Pays attention when lesson is being presented</div>
+                  <div class="text-[11px] print:text-[9px] text-slate-500">Chú ý khi giáo viên giảng bài</div>
+                </td>
+                <td class="border border-slate-300 py-1.5 px-3 text-center font-bold text-emerald-700 bg-emerald-50/30" id="att1">
+                  Always / Luôn luôn
+                </td>
+              </tr>
+              <tr>
+                <td class="border border-slate-300 py-1.5 px-3">
+                  <div class="font-semibold text-slate-800">Volunteers and Actively participates in classroom activities</div>
+                  <div class="text-[11px] print:text-[9px] text-slate-500">Xung phong phát biểu & tích cực tham gia các hoạt động lớp</div>
+                </td>
+                <td class="border border-slate-300 py-1.5 px-3 text-center font-bold text-blue-700 bg-blue-50/30" id="att2">
+                  Usually / Đều đặn
+                </td>
+              </tr>
+              <tr>
+                <td class="border border-slate-300 py-1.5 px-3">
+                  <div class="font-semibold text-slate-800">Comes to class on time, full attendance</div>
+                  <div class="text-[11px] print:text-[9px] text-slate-500">Đến lớp đúng giờ, đi học chuyên cần đầy đủ</div>
+                </td>
+                <td class="border border-slate-300 py-1.5 px-3 text-center font-bold text-emerald-700 bg-emerald-50/30" id="att3">
+                  Always / Luôn luôn
+                </td>
+              </tr>
+              <tr>
+                <td class="border border-slate-300 py-1.5 px-3">
+                  <div class="font-semibold text-slate-800">Level of confidence</div>
+                  <div class="text-[11px] print:text-[9px] text-slate-500">Mức độ tự tin trong giao tiếp</div>
+                </td>
+                <td class="border border-slate-300 py-1.5 px-3 text-center font-bold text-amber-700 bg-amber-50/30" id="att4">
+                  Confident / Tự tin
+                </td>
+              </tr>
+              <tr>
+                <td class="border border-slate-300 py-1.5 px-3">
+                  <div class="font-semibold text-slate-800">Classroom Discipline</div>
+                  <div class="text-[11px] print:text-[9px] text-slate-500">Ý thức kỷ luật trong giờ học</div>
+                </td>
+                <td class="border border-slate-300 py-1.5 px-3 text-center font-bold text-emerald-700 bg-emerald-50/30" id="att5">
+                  Usually well behaved / Tốt
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
 
-          <!-- CỘT PHẢI: PART 2 (NĂNG LỰC) + LỜI NHẬN XÉT -->
-          <div class="flex flex-col justify-between">
-            <div>
-              <h3 class="text-xs print:text-[10px] font-bold text-potato-navy uppercase tracking-wider mb-1 flex items-center">
-                <span class="w-1.5 h-1.5 rounded-full bg-emerald-600 mr-1.5"></span>
-                Part 2: Class Performance (Năng Lực)
-              </h3>
-              
-              <table class="w-full text-xs print:text-[8.5px] border-collapse border border-slate-300 mb-2 print:mb-1.5">
-                <tbody class="divide-y divide-slate-200 text-slate-700">
-                  <tr>
-                    <td class="border border-slate-300 py-1 px-2 w-7/12">
-                      <div class="font-semibold text-slate-800">Speaking & Pronunciation</div>
-                      <div class="text-[9px] print:text-[7.5px] text-slate-500">Kỹ năng Nói & Phát âm</div>
-                    </td>
-                    <td class="border border-slate-300 py-1 px-2 w-5/12 text-center font-semibold text-slate-800" id="perf1">
-                      Competent / Khá tốt
-                    </td>
-                  </tr>
-                  <tr>
-                    <td class="border border-slate-300 py-1 px-2">
-                      <div class="font-semibold text-slate-800">Reading & Vocabulary</div>
-                      <div class="text-[9px] print:text-[7.5px] text-slate-500">Kỹ năng Đọc & Từ vựng</div>
-                    </td>
-                    <td class="border border-slate-300 py-1 px-2 text-center font-semibold text-slate-800" id="perf2">
-                      Competent / Khá tốt
-                    </td>
-                  </tr>
-                  <tr>
-                    <td class="border border-slate-300 py-1 px-2">
-                      <div class="font-semibold text-slate-800">Listening Comprehension</div>
-                      <div class="text-[9px] print:text-[7.5px] text-slate-500">Kỹ năng Nghe phản xạ</div>
-                    </td>
-                    <td class="border border-slate-300 py-1 px-2 text-center font-semibold text-slate-800" id="perf3">
-                      Competent / Khá tốt
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+        <!-- PART 2: ĐÁNH GIÁ NĂNG LỰC TRÊN LỚP -->
+        <div class="mb-3.5 print:mb-3">
+          <h3 class="text-xs print:text-[11px] font-bold text-potato-navy uppercase tracking-wider mb-1.5 flex items-center">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-600 mr-1.5"></span>
+            Part 2: Assessment of Class Performance (Khả Năng Học Tập Trên Lớp)
+          </h3>
+          
+          <table class="w-full text-xs print:text-[10px] border-collapse border border-slate-300">
+            <tbody class="divide-y divide-slate-200 text-slate-700">
+              <tr>
+                <td class="border border-slate-300 py-1.5 px-3 w-7/12">
+                  <div class="font-semibold text-slate-800">Speaking & Pronunciation</div>
+                  <div class="text-[11px] print:text-[9px] text-slate-500">Kỹ năng Nói & Ngữ điệu phát âm</div>
+                </td>
+                <td class="border border-slate-300 py-1.5 px-3 w-5/12 text-center font-semibold text-slate-800" id="perf1">
+                  Competent / Khá tốt
+                </td>
+              </tr>
+              <tr>
+                <td class="border border-slate-300 py-1.5 px-3">
+                  <div class="font-semibold text-slate-800">Reading & Vocabulary</div>
+                  <div class="text-[11px] print:text-[9px] text-slate-500">Kỹ năng Đọc hiểu & Vốn từ vựng</div>
+                </td>
+                <td class="border border-slate-300 py-1.5 px-3 text-center font-semibold text-slate-800" id="perf2">
+                  Competent / Khá tốt
+                </td>
+              </tr>
+              <tr>
+                <td class="border border-slate-300 py-1.5 px-3">
+                  <div class="font-semibold text-slate-800">Listening Comprehension</div>
+                  <div class="text-[11px] print:text-[9px] text-slate-500">Khả năng Nghe hiểu phản xạ</div>
+                </td>
+                <td class="border border-slate-300 py-1.5 px-3 text-center font-semibold text-slate-800" id="perf3">
+                  Competent / Tự tin nắm bắt ý chính
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
 
-            <!-- LỜI NHẬN XÉT CỦA GIÁO VIÊN -->
-            <div class="border border-slate-300 rounded-lg p-2 print:p-1.5 bg-amber-50/20">
-              <span class="text-[10px] print:text-[8.5px] font-bold text-potato-navy uppercase tracking-wider block mb-0.5">
-                💬 Lời Nhận Xét Của Giáo Viên / Teacher's Feedback:
-              </span>
-              <p id="teacherFeedback" class="text-xs print:text-[9px] text-slate-700 leading-snug italic">
-                "Học viên luôn duy trì tinh thần học tập tích cực, tự tin tương tác cùng thầy cô và bạn bè. Chúc mừng con đã hoàn thành bài kiểm tra!"
-              </p>
-            </div>
-          </div>
+        <!-- LỜI NHẬN XÉT CỦA GIÁO VIÊN -->
+        <div class="border border-slate-300 rounded-xl p-3 print:p-2.5 bg-amber-50/25 mb-3 print:mb-2">
+          <span class="text-xs print:text-[10px] font-bold text-potato-navy uppercase tracking-wider block mb-1">
+            💬 Lời Nhận Xét Của Giáo Viên / Teacher's Feedback:
+          </span>
+          <p id="teacherFeedback" class="text-xs sm:text-sm print:text-[10.5px] text-slate-700 leading-relaxed italic">
+            "Học viên luôn duy trì tinh thần học tập tích cực, tự tin tương tác cùng thầy cô và bạn bè. Chúc mừng con đã hoàn thành bài kiểm tra!"
+          </p>
+        </div>
 
+        <!-- BRAND FOOTER NOTE -->
+        <div class="text-center text-[10px] print:text-[8.5px] text-slate-400 pt-2 border-t border-slate-200">
+          Potato English • Hệ thống quản lý & báo cáo kết quả học tập • CS1: 37 Ngô Quyền, Phú Cường • CS2: 9 KP Hưng Phước, Hưng Định
         </div>
 
       </div>
@@ -578,6 +576,11 @@
       return null;
     }
 
+    function cleanNameString(str) {
+      if (!str) return '';
+      return str.replace(/\s*\([\d\s\/\.\-]+\)\s*/g, '').trim();
+    }
+
     function parseRowData(row, queryId, testNum) {
       const getTestInfo = (t) => {
         const dateCol = 5 + t;
@@ -600,6 +603,8 @@
       const classInfo = classMapCache[rawClassId.toUpperCase()] || {};
       const finalClass = classInfo.className || rawClassId;
       const finalTeacher = classInfo.teacher || rawTeacher;
+      const rawStudentName = row[4] ? row[4].trim() : 'Học viên';
+      const cleanStudentName = cleanNameString(rawStudentName);
 
       return {
         idScore: row[0] ? row[0].trim() : queryId,
@@ -607,7 +612,8 @@
         rawClassId: rawClassId,
         type: row[2] ? row[2].trim() : '',
         status: row[3] ? row[3].trim() : '',
-        studentName: row[4] ? row[4].trim() : 'Học viên',
+        studentName: cleanStudentName,
+        rawStudentName: rawStudentName,
         teacher: finalTeacher,
         rawTeacher: rawTeacher,
         tests: {
@@ -626,7 +632,7 @@
         perf1: (row[61] || '').trim() || 'Competent / Khá tốt',
         perf2: (row[62] || '').trim() || 'Competent / Khá tốt',
         perf3: (row[63] || '').trim() || 'Competent / Khá tốt',
-        teacherComment: (row[67] || '').trim() || (row[66] || '').trim() || ''
+        teacherComment: cleanNameString((row[67] || '').trim() || (row[66] || '').trim() || '')
       };
     }
 
@@ -636,7 +642,7 @@
 
       document.getElementById('currentBadgeId').innerText = student.idScore;
       document.getElementById('fieldIdScore').innerText = student.idScore;
-      document.getElementById('fieldStudentName').innerText = student.studentName;
+      document.getElementById('fieldStudentName').innerText = cleanNameString(student.studentName);
       document.getElementById('fieldClassId').innerText = student.classId;
       document.getElementById('fieldTeacher').innerText = student.teacher;
       
@@ -661,8 +667,9 @@
       document.getElementById('perf2').innerText = student.perf2;
       document.getElementById('perf3').innerText = student.perf3;
 
-      const feedback = student.teacherComment || 
-        `Bé ${student.studentName} có thái độ học tập rất nghiêm túc và chủ động. Con hoàn thành tốt các nội dung trong kỳ thi ${test.name}. Thầy cô chúc mừng kết quả tiến bộ của con!`;
+      const friendlyName = cleanNameString(student.studentName).replace(/^(Mr\.|Ms\.|Mrs\.)\s*/i, '').trim();
+      const feedback = student.teacherComment ? cleanNameString(student.teacherComment) : 
+        `Bé ${friendlyName} có thái độ học tập rất nghiêm túc và chủ động. Con hoàn thành tốt các nội dung trong kỳ thi ${test.name}. Thầy cô chúc mừng kết quả tiến bộ của con!`;
       document.getElementById('teacherFeedback').innerText = `"${feedback}"`;
 
       // Hide login, show report
@@ -675,7 +682,7 @@
       const student = {
         idScore: data.idScore,
         classId: data.classId,
-        studentName: data.studentName,
+        studentName: cleanNameString(data.studentName),
         teacher: data.teacher,
         tests: {
           1: data.allTests.test1,
@@ -693,7 +700,7 @@
         perf1: data.performance.perf1,
         perf2: data.performance.perf2,
         perf3: data.performance.perf3,
-        teacherComment: data.comments.teacherComment
+        teacherComment: cleanNameString(data.comments.teacherComment)
       };
       renderStudent(student);
     }

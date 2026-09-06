@@ -123,6 +123,10 @@ export default async function handler(req, res) {
     const finalClass = classInfo.className || rawClassId;
     const finalTeacher = classInfo.teacher || rawTeacher;
 
+    const rawStudentName = (foundRow[4] || 'Học viên').trim();
+    // Loại bỏ ngày tháng năm sinh dạng (DDMMYYYY), ví dụ: (09092015), (28112015)
+    const cleanStudentName = rawStudentName.replace(/\s*\([\d\s\/\.\-]+\)\s*/g, '').trim();
+
     const getTestScores = (tIndex) => {
       const dateCol = 5 + tIndex; // 6 for Test 1, 7 for Test 2, etc.
       const baseCol = 11 + (tIndex - 1) * 7;
@@ -146,7 +150,8 @@ export default async function handler(req, res) {
       rawClassId: rawClassId,
       type: foundRow[2] || '',
       status: foundRow[3] || '',
-      studentName: foundRow[4] || 'Học viên',
+      studentName: cleanStudentName,
+      rawStudentName: rawStudentName,
       teacher: finalTeacher,
       rawTeacher: rawTeacher,
       selectedTest: getTestScores(testNum),
@@ -170,8 +175,8 @@ export default async function handler(req, res) {
         perf3: foundRow[63] || 'Competent / Khá tốt'  // BL: Listening Comprehension
       },
       comments: {
-        teacherComment: foundRow[67] || '',
-        suggestion: foundRow[66] || '',
+        teacherComment: (foundRow[67] || '').replace(/\s*\([\d\s\/\.\-]+\)\s*/g, '').trim(),
+        suggestion: (foundRow[66] || '').replace(/\s*\([\d\s\/\.\-]+\)\s*/g, '').trim(),
         parentFeedback: foundRow[68] || ''
       }
     };
