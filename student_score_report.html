@@ -6,6 +6,8 @@
   <title>Potato English - Hệ Thống Bảng Điểm Học Viên & Báo Cáo Tiến Trình</title>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- PapaParse for high-speed Google Sheet CSV parsing -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
   <!-- Google Fonts: Inter & Outfit -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -61,13 +63,13 @@
         box-shadow: none !important;
         border: 1px solid #CBD5E1 !important;
         margin: 0 !important;
-        padding: 20px !important;
+        padding: 15px !important;
         width: 100% !important;
         max-width: 100% !important;
       }
       @page {
         size: A4 portrait;
-        margin: 10mm;
+        margin: 8mm;
       }
     }
   </style>
@@ -86,12 +88,12 @@
       </div>
       
       <div class="flex items-center space-x-2 sm:space-x-3">
-        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-200">
-          <span class="w-1.5 h-1.5 rounded-full bg-amber-500 mr-1.5 animate-pulse"></span>
-          Prototype UI Mode
+        <span id="dataLiveBadge" class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5 animate-pulse"></span>
+          Google Sheet Live Data
         </span>
         <button id="btnSwitchView" onclick="toggleView()" class="text-xs sm:text-sm font-medium px-3 py-1.5 rounded-lg border border-potato-border text-slate-700 hover:bg-slate-50 transition">
-          🔄 Chuyển Màn Hình
+          🔄 Đổi Màn Hình
         </button>
       </div>
     </div>
@@ -108,22 +110,25 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
           </svg>
         </div>
-        <h2 class="font-display text-2xl font-bold text-potato-navy">Đăng Nhập Tra Cứu Bảng Điểm</h2>
-        <p class="text-sm text-slate-500 mt-1">Nhập mã định danh học viên (ID Score) để xem hoặc cập nhật phiếu đánh giá</p>
+        <h2 class="font-display text-2xl font-bold text-potato-navy">Tra Cứu Bảng Điểm Học Viên</h2>
+        <p class="text-sm text-slate-500 mt-1">Dán hoặc nhập mã <strong>ID Score</strong> từ Google Sheet để nạp bảng điểm tự động</p>
       </div>
 
       <!-- Demo Chips -->
       <div class="bg-slate-50 rounded-xl p-3.5 mb-6 border border-slate-200/80">
-        <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider block mb-2">⚡ Chọn nhanh mã học viên mẫu (Demo data):</span>
+        <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider block mb-2">⚡ Bấm thử mã có thật trong Google Sheet:</span>
         <div class="flex flex-wrap gap-2">
-          <button type="button" onclick="fillDemo('12D2B9DF')" class="text-xs font-mono bg-white border border-potato-tan/40 text-potato-tanDark hover:bg-potato-tan hover:text-white px-2.5 py-1 rounded-lg transition font-semibold">
+          <button type="button" onclick="fillAndSubmit('12D2B9DF')" class="text-xs font-mono bg-white border border-potato-tan/40 text-potato-tanDark hover:bg-potato-tan hover:text-white px-2.5 py-1 rounded-lg transition font-semibold">
             🎯 12D2B9DF (Lê Minh Duy)
           </button>
-          <button type="button" onclick="fillDemo('CE398F88')" class="text-xs font-mono bg-white border border-slate-300 text-slate-700 hover:bg-slate-200 px-2.5 py-1 rounded-lg transition font-medium">
-            🎯 CE398F88
+          <button type="button" onclick="fillAndSubmit('3DF6EC4F')" class="text-xs font-mono bg-white border border-slate-300 text-slate-700 hover:bg-slate-200 px-2.5 py-1 rounded-lg transition font-medium">
+            🎯 3DF6EC4F (Gia Bình)
           </button>
-          <button type="button" onclick="fillDemo('PT992026')" class="text-xs font-mono bg-white border border-slate-300 text-slate-700 hover:bg-slate-200 px-2.5 py-1 rounded-lg transition font-medium">
-            🎯 PT992026
+          <button type="button" onclick="fillAndSubmit('A5895F5C')" class="text-xs font-mono bg-white border border-slate-300 text-slate-700 hover:bg-slate-200 px-2.5 py-1 rounded-lg transition font-medium">
+            🎯 A5895F5C (Thái Hân)
+          </button>
+          <button type="button" onclick="fillAndSubmit('49D80836')" class="text-xs font-mono bg-white border border-slate-300 text-slate-700 hover:bg-slate-200 px-2.5 py-1 rounded-lg transition font-medium">
+            🎯 49D80836 (Kim Ngân)
           </button>
         </div>
       </div>
@@ -134,9 +139,9 @@
             Mã ID Score (Bắt buộc) <span class="text-red-500">*</span>
           </label>
           <div class="relative">
-            <input type="text" id="idScoreInput" required placeholder="Ví dụ: 12D2B9DF" 
-              class="w-full pl-10 pr-4 py-2.5 text-base font-mono uppercase bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-potato-tan focus:border-potato-tan transition outline-none">
-            <span class="absolute left-3.5 top-3 text-slate-400">
+            <input type="text" id="idScoreInput" required placeholder="Dán mã ID Score vào đây (ví dụ: 12D2B9DF)" 
+              class="w-full pl-10 pr-4 py-3 text-base font-mono uppercase bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-potato-tan focus:border-potato-tan transition outline-none shadow-sm">
+            <span class="absolute left-3.5 top-3.5 text-slate-400">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"/></svg>
             </span>
           </div>
@@ -144,39 +149,41 @@
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label for="userRoleSelect" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
-              Vai trò sử dụng
-            </label>
-            <select id="userRoleSelect" class="w-full px-3 py-2.5 text-sm bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-potato-tan focus:border-potato-tan transition outline-none">
-              <option value="teacher">Giáo viên / Nhân sự</option>
-              <option value="parent">Phụ huynh học viên</option>
-              <option value="admin">Ban Điều Hành (Admin)</option>
-            </select>
-          </div>
-          <div>
             <label for="testSelectLogin" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
-              Kỳ kiểm tra
+              Chọn kỳ kiểm tra
             </label>
             <select id="testSelectLogin" class="w-full px-3 py-2.5 text-sm bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-potato-tan focus:border-potato-tan transition outline-none">
-              <option value="1">Skill Test 1</option>
+              <option value="1" selected>Skill Test 1</option>
               <option value="2">Skill Test 2</option>
               <option value="3">Skill Test 3</option>
               <option value="4">Skill Test 4</option>
               <option value="5">Skill Test 5</option>
             </select>
           </div>
+          <div>
+            <label for="userRoleSelect" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+              Vai trò xem
+            </label>
+            <select id="userRoleSelect" class="w-full px-3 py-2.5 text-sm bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-potato-tan focus:border-potato-tan transition outline-none">
+              <option value="teacher">Giáo viên / Nhân sự</option>
+              <option value="parent">Phụ huynh học viên</option>
+            </select>
+          </div>
         </div>
 
+        <!-- Trạng thái Loading / Báo lỗi -->
+        <div id="statusBox" class="hidden p-3 rounded-xl text-xs font-medium"></div>
+
         <div class="pt-2">
-          <button type="submit" class="w-full py-3 px-4 bg-gradient-to-r from-potato-tan to-potato-tanDark text-white font-semibold rounded-xl shadow hover:shadow-md transition flex items-center justify-center space-x-2">
-            <span>📥 ĐIỀN THÔNG TIN & MỞ BẢNG ĐIỂM</span>
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+          <button type="submit" id="btnSubmitForm" class="w-full py-3.5 px-4 bg-gradient-to-r from-potato-tan to-potato-tanDark text-white font-bold rounded-xl shadow hover:shadow-md transition flex items-center justify-center space-x-2">
+            <span id="btnSubmitText">📥 LẤY DỮ LIỆU & MỞ BẢNG ĐIỂM</span>
+            <svg id="btnSubmitIcon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
           </button>
         </div>
       </form>
 
       <div class="mt-6 pt-5 border-t border-slate-200 text-center text-xs text-slate-400">
-        Potato English AI Assistant • Giao diện mẫu theo chuẩn Google Sheet
+        🔗 Đang kết nối trực tiếp với: <a href="https://docs.google.com/spreadsheets/d/1Z86AEyIs7yxSNzavuyRTCWz-PnD6xm8y06A-qPsGQR0/edit#gid=0" target="_blank" class="text-potato-blue underline">Google Sheet Bảng Điểm Potato English</a>
       </div>
     </section>
 
@@ -189,22 +196,30 @@
         <div class="flex items-center space-x-2">
           <button onclick="backToLogin()" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg transition flex items-center space-x-1.5">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
-            <span>Đổi Học Viên (ID Score)</span>
+            <span>Đổi ID Score Khác</span>
           </button>
           <span class="text-xs text-slate-400 hidden sm:inline">|</span>
           <span class="text-xs text-slate-600 font-medium hidden sm:inline">
-            Đang hiển thị mã: <strong id="currentBadgeId" class="text-potato-navy font-mono">12D2B9DF</strong>
+            Mã ID: <strong id="currentBadgeId" class="text-potato-navy font-mono text-sm bg-slate-100 px-2 py-0.5 rounded">12D2B9DF</strong>
           </span>
         </div>
 
         <div class="flex items-center space-x-2">
+          <!-- Chọn nhanh Test 1-5 ngay trong trang xem -->
+          <div class="flex items-center space-x-1 bg-slate-100 p-1 rounded-lg text-xs">
+            <span class="text-slate-500 font-medium px-1">Xem:</span>
+            <select id="reportTestSelector" onchange="switchTest(this.value)" class="bg-white border border-slate-300 rounded text-xs font-semibold py-1 px-2 focus:outline-none">
+              <option value="1">Skill Test 1</option>
+              <option value="2">Skill Test 2</option>
+              <option value="3">Skill Test 3</option>
+              <option value="4">Skill Test 4</option>
+              <option value="5">Skill Test 5</option>
+            </select>
+          </div>
+
           <button onclick="window.print()" class="px-4 py-2 bg-potato-blue hover:bg-blue-700 text-white text-xs font-semibold rounded-lg shadow transition flex items-center space-x-1.5">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
-            <span>In Phiếu Điểm (A4 / PDF)</span>
-          </button>
-          <button onclick="saveMockData()" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg shadow transition flex items-center space-x-1">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg>
-            <span>Lưu Tạm</span>
+            <span>In Phiếu Điểm (A4)</span>
           </button>
         </div>
       </div>
@@ -254,7 +269,7 @@
             </div>
             <div>
               <span class="text-xs font-medium text-slate-500 block">Kỳ Kiểm Tra / Test:</span>
-              <span id="fieldTestType" class="font-semibold text-potato-blue">Skill Test 1</span>
+              <span id="fieldTestType" class="font-bold text-potato-blue">Skill Test 1</span>
             </div>
             <div>
               <span class="text-xs font-medium text-slate-500 block">Mã Điểm Số / ID Score:</span>
@@ -287,7 +302,7 @@
                   <td class="border border-slate-300 py-3 px-3 font-semibold text-slate-700" id="valListening">7 / 10</td>
                   <td class="border border-slate-300 py-3 px-3 font-semibold text-slate-700" id="valReading">36 / 60</td>
                   <td class="border border-slate-300 py-3 px-3 font-semibold text-slate-700" id="valWriting">6 / 10</td>
-                  <td class="border border-slate-300 py-3 px-3 font-semibold text-slate-700" id="valSpeaking">Đang đánh giá</td>
+                  <td class="border border-slate-300 py-3 px-3 font-semibold text-slate-700" id="valSpeaking">--</td>
                   <td class="border border-slate-300 py-3 px-3 font-bold text-base text-potato-navy bg-amber-50/30" id="valTotal">49 / 80</td>
                   <td class="border border-slate-300 py-3 px-3 font-bold text-base text-emerald-600 bg-amber-50/50" id="valGrade">61.25%</td>
                 </tr>
@@ -406,7 +421,7 @@
             💬 Lời Nhận Xét Của Giáo Viên / Teacher's Feedback:
           </span>
           <p id="teacherFeedback" class="text-sm text-slate-700 leading-relaxed italic">
-            "Bé Minh Duy có tinh thần học tập rất tích cực, con luôn chủ động giơ tay phát biểu trong các hoạt động nhóm và tương tác vui vẻ cùng bạn bè. Phần đọc và ngữ pháp con nắm vững chắc. Thầy khuyên con hãy tiếp tục luyện nói thêm 15 phút mỗi ngày ở nhà để ngữ điệu thêm mượt mà và tự nhiên hơn nữa nhé! Chúc mừng con đã hoàn thành tốt bài kiểm tra!"
+            "Học viên luôn duy trì tinh thần học tập tích cực, tự tin tương tác cùng thầy cô và bạn bè. Chúc mừng con đã hoàn thành bài kiểm tra!"
           </p>
         </div>
 
@@ -420,7 +435,7 @@
           <div>
             <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider block mb-12">Giáo Viên Phụ Trách</span>
             <div class="w-36 border-b border-slate-400 mx-auto"></div>
-            <span class="text-xs font-semibold text-slate-700 mt-1 block">Thầy PHAN TRẦN KHÔI</span>
+            <span id="signatureTeacher" class="text-xs font-semibold text-slate-700 mt-1 block">PHAN TRẦN KHÔI</span>
           </div>
         </div>
 
@@ -441,130 +456,258 @@
     </div>
   </footer>
 
-  <!-- ================= JAVASCRIPT XỬ LÝ DỮ LIỆU TẠM & GIAO DIỆN ================= -->
+  <!-- ================= JAVASCRIPT: LIVE DATA FETCH & REAL-TIME SEARCH ================= -->
   <script>
-    // Dữ liệu mẫu giả lập theo Sheet Import
-    const MOCK_DATA = {
-      "12D2B9DF": {
-        name: "Mr. LÊ MINH DUY (07042014)",
-        classId: "NQT4SSA260712",
-        teacher: "PHAN TRẦN KHÔI - 0922263337",
-        date: "15/08/2026",
-        test: "Skill Test 1",
-        listening: "7 / 10",
-        reading: "36 / 60",
-        writing: "6 / 10",
-        speaking: "7.5 / 10",
-        total: "56.5 / 90",
-        grade: "62.8%",
-        att1: "Always / Luôn luôn",
-        att2: "Usually / Đều đặn",
-        att3: "Always / Luôn luôn",
-        att4: "Confident / Tự tin",
-        att5: "Usually well behaved / Tốt",
-        perf1: "Competent / Khá tốt",
-        perf2: "Competent / Khá tốt",
-        perf3: "Competent / Tự tin nắm bắt ý chính",
-        feedback: "Bé Minh Duy có tinh thần học tập rất tích cực, con luôn chủ động giơ tay phát biểu trong các hoạt động nhóm và tương tác vui vẻ cùng bạn bè. Phần đọc và từ vựng con nắm rất chắc. Thầy chúc mừng con đã hoàn thành tốt bài kiểm tra số 1!"
-      },
-      "CE398F88": {
-        name: "Ms. NGUYỄN NGỌC BẢO AN (12092015)",
-        classId: "HD2SSB150826",
-        teacher: "CÔ NGUYỄN THỊ MAI - 0918112233",
-        date: "20/08/2026",
-        test: "Skill Test 2",
-        listening: "9 / 10",
-        reading: "52 / 60",
-        writing: "8.5 / 10",
-        speaking: "9 / 10",
-        total: "78.5 / 90",
-        grade: "87.2%",
-        att1: "Always / Luôn luôn",
-        att2: "Always / Luôn luôn",
-        att3: "Always / Luôn luôn",
-        att4: "Very Confident / Rất tự tin",
-        att5: "Excellent / Xuất sắc",
-        perf1: "Fluent & Natural / Rất lưu loát",
-        perf2: "Extensive / Vốn từ phong phú",
-        perf3: "Fast response / Phản xạ rất nhanh",
-        feedback: "Bảo An là một cô bé rất chăm chỉ và thông minh. Con phát âm Phonics rất chuẩn xác và có vốn từ vựng phong phú. Con luôn giúp đỡ các bạn trong lớp và hoàn thành xuất sắc các dự án thuyết trình!"
-      }
-    };
+    const GOOGLE_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/1Z86AEyIs7yxSNzavuyRTCWz-PnD6xm8y06A-qPsGQR0/export?format=csv&gid=0';
 
-    function fillDemo(code) {
+    // In-memory cache of parsed Google Sheet data
+    let sheetRowsCache = null;
+    let currentStudentObj = null;
+    let currentSelectedTest = 1;
+
+    // Prefetch sheet data in background upon page load
+    window.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('reportSection').classList.add('hidden');
+      loadSheetDataInBackground();
+    });
+
+    async function loadSheetDataInBackground() {
+      try {
+        const response = await fetch(GOOGLE_SHEET_CSV_URL);
+        if (response.ok) {
+          const csvText = await response.text();
+          Papa.parse(csvText, {
+            skipEmptyLines: true,
+            complete: function(results) {
+              if (results.data && results.data.length > 2) {
+                sheetRowsCache = results.data;
+                console.log(`✅ Loaded ${sheetRowsCache.length - 2} student records from Google Sheet`);
+              }
+            }
+          });
+        }
+      } catch (err) {
+        console.warn('Background preload failed, will fetch on demand:', err);
+      }
+    }
+
+    function fillAndSubmit(code) {
       document.getElementById('idScoreInput').value = code;
+      handleLookup(code, parseInt(document.getElementById('testSelectLogin').value, 10) || 1);
     }
 
     function handleLogin(e) {
       e.preventDefault();
       const code = document.getElementById('idScoreInput').value.trim().toUpperCase();
+      const test = parseInt(document.getElementById('testSelectLogin').value, 10) || 1;
       if (!code) {
-        alert('Vui lòng nhập mã ID Score!');
+        showStatus('Vui lòng nhập hoặc dán mã ID Score!', 'error');
         return;
       }
-      loadStudentData(code);
+      handleLookup(code, test);
     }
 
-    function loadStudentData(code) {
-      const data = MOCK_DATA[code] || {
-        name: "Học Viên Mẫu (Mã: " + code + ")",
-        classId: "POTATO-CLASS-2026",
-        teacher: "Giáo Viên Phụ Trách",
-        date: new Date().toLocaleDateString('vi-VN'),
-        test: "Skill Test",
-        listening: "8 / 10",
-        reading: "45 / 60",
-        writing: "7 / 10",
-        speaking: "8 / 10",
-        total: "68 / 90",
-        grade: "75.5%",
-        att1: "Always / Luôn luôn",
-        att2: "Usually / Đều đặn",
-        att3: "Always / Luôn luôn",
-        att4: "Confident / Tự tin",
-        att5: "Usually well behaved / Tốt",
-        perf1: "Good / Tốt",
-        perf2: "Good / Tốt",
-        perf3: "Good / Tốt",
-        feedback: "Dữ liệu được tạo tạm thời cho mã " + code + ". Khi kết nối Google Sheet qua API, toàn bộ dữ liệu thật sẽ được nạp tự động từ sheet Import."
+    async function handleLookup(code, testNum = 1) {
+      currentSelectedTest = testNum;
+      setLoading(true);
+      showStatus('🔄 Đang tìm kiếm học viên trong Google Sheet...', 'info');
+
+      try {
+        // 1. First, check in-memory cache if available
+        if (sheetRowsCache) {
+          const student = findStudentInRows(sheetRowsCache, code, testNum);
+          if (student) {
+            renderStudent(student);
+            setLoading(false);
+            return;
+          }
+        }
+
+        // 2. Otherwise try local /api/score
+        try {
+          const apiRes = await fetch(`/api/score?id=${encodeURIComponent(code)}&test=${testNum}`);
+          if (apiRes.ok) {
+            const data = await apiRes.json();
+            if (data.found) {
+              renderStudentFromApi(data);
+              setLoading(false);
+              return;
+            }
+          }
+        } catch (apiErr) {
+          console.log('/api/score unavailable, falling back to direct Google Sheet fetch');
+        }
+
+        // 3. Fallback: Direct CSV fetch from Google Sheet
+        const response = await fetch(GOOGLE_SHEET_CSV_URL);
+        if (!response.ok) {
+          throw new Error('Không thể tải file Google Sheet. Vui lòng kiểm tra kết nối mạng!');
+        }
+
+        const csvText = await response.text();
+        Papa.parse(csvText, {
+          skipEmptyLines: true,
+          complete: function(results) {
+            sheetRowsCache = results.data;
+            const student = findStudentInRows(sheetRowsCache, code, testNum);
+            setLoading(false);
+
+            if (student) {
+              renderStudent(student);
+            } else {
+              showStatus(`❌ Không tìm thấy học viên với mã ID Score: "${code}" trong Google Sheet!`, 'error');
+            }
+          },
+          error: function(err) {
+            setLoading(false);
+            showStatus('Lỗi phân tích dữ liệu Google Sheet: ' + err.message, 'error');
+          }
+        });
+
+      } catch (err) {
+        setLoading(false);
+        showStatus('Lỗi kết nối: ' + err.message, 'error');
+      }
+    }
+
+    function findStudentInRows(rows, queryId, testNum) {
+      if (!rows || rows.length < 3) return null;
+
+      for (let i = 2; i < rows.length; i++) {
+        const row = rows[i];
+        if (!row || !row[0]) continue;
+        const rowId = row[0].toString().trim().toUpperCase();
+        if (rowId === queryId) {
+          return parseRowData(row, queryId, testNum);
+        }
+      }
+      return null;
+    }
+
+    function parseRowData(row, queryId, testNum) {
+      const getTestInfo = (t) => {
+        const dateCol = 5 + t;
+        const baseCol = 11 + (t - 1) * 7;
+        return {
+          name: `Skill Test ${t}`,
+          date: (row[dateCol] || '').trim(),
+          listening: (row[baseCol] || '').trim() || '--',
+          reading: (row[baseCol + 1] || '').trim() || '--',
+          writing: (row[baseCol + 2] || '').trim() || '--',
+          speaking: (row[baseCol + 3] || '').trim() || '--',
+          total: (row[baseCol + 4] || '').trim() || '--',
+          grade: (row[baseCol + 5] || '').trim() || '--',
+          speakingLink: (row[baseCol + 6] || '').trim()
+        };
       };
 
-      document.getElementById('currentBadgeId').innerText = code;
-      document.getElementById('fieldIdScore').innerText = code;
-      document.getElementById('fieldStudentName').innerText = data.name;
-      document.getElementById('fieldClassId').innerText = data.classId;
-      document.getElementById('fieldTeacher').innerText = data.teacher;
-      document.getElementById('fieldTestDate').innerText = data.date;
-      document.getElementById('fieldTestType').innerText = data.test;
+      return {
+        idScore: row[0] ? row[0].trim() : queryId,
+        classId: row[1] ? row[1].trim() : 'N/A',
+        type: row[2] ? row[2].trim() : '',
+        status: row[3] ? row[3].trim() : '',
+        studentName: row[4] ? row[4].trim() : 'Học viên',
+        teacher: row[5] ? row[5].trim() : 'Giáo viên phụ trách',
+        tests: {
+          1: getTestInfo(1),
+          2: getTestInfo(2),
+          3: getTestInfo(3),
+          4: getTestInfo(4),
+          5: getTestInfo(5)
+        },
+        currentTestIndex: testNum,
+        att1: (row[53] || '').trim() || 'Always / Luôn luôn',
+        att2: (row[54] || '').trim() || 'Usually / Đều đặn',
+        att3: (row[55] || '').trim() || 'Always / Luôn luôn',
+        att4: (row[56] || '').trim() || 'Confident / Tự tin',
+        att5: (row[59] || '').trim() || 'Usually well behaved / Tốt',
+        perf1: (row[61] || '').trim() || 'Competent / Khá tốt',
+        perf2: (row[62] || '').trim() || 'Competent / Khá tốt',
+        perf3: (row[63] || '').trim() || 'Competent / Khá tốt',
+        teacherComment: (row[67] || '').trim() || (row[66] || '').trim() || ''
+      };
+    }
 
-      document.getElementById('valListening').innerText = data.listening;
-      document.getElementById('valReading').innerText = data.reading;
-      document.getElementById('valWriting').innerText = data.writing;
-      document.getElementById('valSpeaking').innerText = data.speaking;
-      document.getElementById('valTotal').innerText = data.total;
-      document.getElementById('valGrade').innerText = data.grade;
+    function renderStudent(student) {
+      currentStudentObj = student;
+      const test = student.tests[currentSelectedTest] || student.tests[1];
 
-      document.getElementById('att1').innerText = data.att1;
-      document.getElementById('att2').innerText = data.att2;
-      document.getElementById('att3').innerText = data.att3;
-      document.getElementById('att4').innerText = data.att4;
-      document.getElementById('att5').innerText = data.att5;
+      document.getElementById('currentBadgeId').innerText = student.idScore;
+      document.getElementById('fieldIdScore').innerText = student.idScore;
+      document.getElementById('fieldStudentName').innerText = student.studentName;
+      document.getElementById('fieldClassId').innerText = student.classId;
+      document.getElementById('fieldTeacher').innerText = student.teacher;
+      document.getElementById('signatureTeacher').innerText = student.teacher.split('-')[0].trim();
+      
+      document.getElementById('fieldTestDate').innerText = test.date || new Date().toLocaleDateString('vi-VN');
+      document.getElementById('fieldTestType').innerText = test.name;
+      document.getElementById('reportTestSelector').value = currentSelectedTest;
 
-      document.getElementById('perf1').innerText = data.perf1;
-      document.getElementById('perf2').innerText = data.perf2;
-      document.getElementById('perf3').innerText = data.perf3;
+      document.getElementById('valListening').innerText = test.listening;
+      document.getElementById('valReading').innerText = test.reading;
+      document.getElementById('valWriting').innerText = test.writing;
+      document.getElementById('valSpeaking').innerText = test.speaking;
+      document.getElementById('valTotal').innerText = test.total;
+      document.getElementById('valGrade').innerText = test.grade;
 
-      document.getElementById('teacherFeedback').innerText = '"' + data.feedback + '"';
+      document.getElementById('att1').innerText = student.att1;
+      document.getElementById('att2').innerText = student.att2;
+      document.getElementById('att3').innerText = student.att3;
+      document.getElementById('att4').innerText = student.att4;
+      document.getElementById('att5').innerText = student.att5;
 
-      // Chuyển sang màn hình xem Report
+      document.getElementById('perf1').innerText = student.perf1;
+      document.getElementById('perf2').innerText = student.perf2;
+      document.getElementById('perf3').innerText = student.perf3;
+
+      const feedback = student.teacherComment || 
+        `Bé ${student.studentName} có thái độ học tập rất nghiêm túc và chủ động. Con hoàn thành tốt các nội dung trong kỳ thi ${test.name}. Thầy cô chúc mừng kết quả tiến bộ của con!`;
+      document.getElementById('teacherFeedback').innerText = `"${feedback}"`;
+
+      // Hide login, show report
       document.getElementById('loginSection').classList.add('hidden');
       document.getElementById('reportSection').classList.remove('hidden');
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
+    function renderStudentFromApi(data) {
+      const student = {
+        idScore: data.idScore,
+        classId: data.classId,
+        studentName: data.studentName,
+        teacher: data.teacher,
+        tests: {
+          1: data.allTests.test1,
+          2: data.allTests.test2,
+          3: data.allTests.test3,
+          4: data.allTests.test4,
+          5: data.allTests.test5
+        },
+        currentTestIndex: currentSelectedTest,
+        att1: data.attitudes.att1,
+        att2: data.attitudes.att2,
+        att3: data.attitudes.att3,
+        att4: data.attitudes.att4,
+        att5: data.attitudes.att5,
+        perf1: data.performance.perf1,
+        perf2: data.performance.perf2,
+        perf3: data.performance.perf3,
+        teacherComment: data.comments.teacherComment
+      };
+      renderStudent(student);
+    }
+
+    function switchTest(testNum) {
+      currentSelectedTest = parseInt(testNum, 10);
+      if (currentStudentObj) {
+        renderStudent(currentStudentObj);
+      }
+    }
+
     function backToLogin() {
       document.getElementById('loginSection').classList.remove('hidden');
       document.getElementById('reportSection').classList.add('hidden');
+      document.getElementById('statusBox').classList.add('hidden');
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
@@ -574,18 +717,34 @@
         backToLogin();
       } else {
         const code = document.getElementById('idScoreInput').value.trim().toUpperCase() || '12D2B9DF';
-        loadStudentData(code);
+        handleLookup(code, parseInt(document.getElementById('testSelectLogin').value, 10) || 1);
       }
     }
 
-    function saveMockData() {
-      alert('✅ Đã lưu tạm thông tin phiếu đánh giá! (Khi tích hợp API, tính năng này sẽ ghi ngược dữ liệu về Google Sheet).');
+    function showStatus(msg, type) {
+      const box = document.getElementById('statusBox');
+      box.classList.remove('hidden', 'bg-red-50', 'text-red-700', 'bg-blue-50', 'text-blue-700', 'border-red-200', 'border-blue-200');
+      if (type === 'error') {
+        box.classList.add('bg-red-50', 'text-red-700', 'border', 'border-red-200');
+      } else {
+        box.classList.add('bg-blue-50', 'text-blue-700', 'border', 'border-blue-200');
+      }
+      box.innerHTML = msg;
     }
 
-    // Mặc định ban đầu hiển thị màn hình đăng nhập
-    document.addEventListener('DOMContentLoaded', () => {
-      document.getElementById('reportSection').classList.add('hidden');
-    });
+    function setLoading(isLoading) {
+      const btn = document.getElementById('btnSubmitForm');
+      const text = document.getElementById('btnSubmitText');
+      if (isLoading) {
+        btn.disabled = true;
+        btn.classList.add('opacity-75', 'cursor-not-allowed');
+        text.innerText = 'ĐANG TẢI TỪ GOOGLE SHEET...';
+      } else {
+        btn.disabled = false;
+        btn.classList.remove('opacity-75', 'cursor-not-allowed');
+        text.innerText = '📥 LẤY DỮ LIỆU & MỞ BẢNG ĐIỂM';
+      }
+    }
   </script>
 </body>
 </html>
