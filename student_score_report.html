@@ -251,30 +251,26 @@
               <span id="fieldIdScore" class="font-mono font-bold text-potato-tanDark text-sm print:text-xs">12D2B9DF</span>
             </div>
           </div>
-
-          <!-- DÒNG VIDEO INTERVIEW -->
-          <div class="mt-2.5 pt-2 border-t border-slate-200/80 flex flex-wrap items-center justify-between gap-2 text-xs print:text-[10.5px]">
-            <div class="flex items-center space-x-2 overflow-hidden flex-grow max-w-full">
-              <span class="text-[11px] print:text-[9.5px] font-bold text-slate-600 whitespace-nowrap">Video interview:</span>
-              <a id="fieldVideoLink" href="#" target="_blank" rel="noopener noreferrer" class="inline-flex items-center space-x-1.5 text-red-600 hover:text-red-700 font-semibold underline truncate max-w-xs sm:max-w-md">
-                <svg class="w-3.5 h-3.5 text-red-600 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/></svg>
-                <span id="fieldVideoLinkText" class="truncate font-mono">https://youtu.be/...</span>
-              </a>
-              <span id="fieldVideoLinkEmpty" class="text-slate-400 italic hidden">Chưa có video phỏng vấn</span>
-            </div>
-            <a id="btnWatchVideo" href="#" target="_blank" rel="noopener noreferrer" class="no-print inline-flex items-center space-x-1 px-2.5 py-1 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-md shadow-xs transition text-[11px] whitespace-nowrap">
-              <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/></svg>
-              <span>Xem Video</span>
-            </a>
-          </div>
         </div>
 
         <!-- BẢNG ĐIỂM KỸ NĂNG (SCORES) -->
         <div class="mb-3.5 print:mb-3">
-          <h3 class="text-xs print:text-[11px] font-bold text-potato-navy uppercase tracking-wider mb-1.5 flex items-center">
-            <span class="w-1.5 h-1.5 rounded-full bg-potato-tan mr-1.5"></span>
-            Kết Quả Điểm Số / Test Scores
-          </h3>
+          <div class="flex items-center justify-between mb-1.5 flex-wrap gap-2">
+            <h3 class="text-xs print:text-[11px] font-bold text-potato-navy uppercase tracking-wider flex items-center">
+              <span class="w-1.5 h-1.5 rounded-full bg-potato-tan mr-1.5"></span>
+              Kết Quả Điểm Số / Test Scores
+            </h3>
+
+            <!-- Nút xem Video Interview cùng dòng với kết quả, nằm bên phải sau cùng -->
+            <div id="videoInterviewContainer" class="flex items-center space-x-1.5">
+              <span class="text-[11px] print:text-[9.5px] font-semibold text-slate-500">Video interview:</span>
+              <a id="btnWatchVideo" href="#" target="_blank" rel="noopener noreferrer" class="inline-flex items-center space-x-1 px-2.5 py-0.5 bg-red-600 hover:bg-red-700 text-white font-semibold rounded shadow-xs transition text-[11px] print:text-[9.5px]">
+                <svg class="w-3.5 h-3.5 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/></svg>
+                <span>Xem video</span>
+              </a>
+              <span id="fieldVideoLinkEmpty" class="text-slate-400 italic text-[11px] print:text-[9.5px] hidden">Chưa có video</span>
+            </div>
+          </div>
           
           <div class="overflow-x-auto">
             <table class="w-full text-xs print:text-[11px] border-collapse border border-slate-300 rounded-lg">
@@ -686,10 +682,8 @@
       document.getElementById('valTotal').innerText = test.total;
       document.getElementById('valGrade').innerText = test.grade;
 
-      // Video Interview link
+      // Video Interview button (cùng dòng với kết quả, nằm bên phải)
       const videoUrl = (test.speakingLink || '').trim();
-      const videoLinkEl = document.getElementById('fieldVideoLink');
-      const videoTextEl = document.getElementById('fieldVideoLinkText');
       const videoEmptyEl = document.getElementById('fieldVideoLinkEmpty');
       const btnWatchVideo = document.getElementById('btnWatchVideo');
       const toolbarVideoBtn = document.getElementById('toolbarVideoBtn');
@@ -697,16 +691,11 @@
       const speakingVideoLink = document.getElementById('speakingVideoLink');
 
       if (videoUrl && videoUrl.startsWith('http')) {
-        if (videoLinkEl) {
-          videoLinkEl.href = videoUrl;
-          videoLinkEl.classList.remove('hidden');
-        }
-        if (videoTextEl) videoTextEl.innerText = videoUrl;
-        if (videoEmptyEl) videoEmptyEl.classList.add('hidden');
         if (btnWatchVideo) {
           btnWatchVideo.href = videoUrl;
           btnWatchVideo.classList.remove('hidden');
         }
+        if (videoEmptyEl) videoEmptyEl.classList.add('hidden');
         if (toolbarVideoBtn) {
           toolbarVideoBtn.href = videoUrl;
           toolbarVideoBtn.classList.remove('hidden');
@@ -716,9 +705,8 @@
           speakingBadge.classList.remove('hidden');
         }
       } else {
-        if (videoLinkEl) videoLinkEl.classList.add('hidden');
-        if (videoEmptyEl) videoEmptyEl.classList.remove('hidden');
         if (btnWatchVideo) btnWatchVideo.classList.add('hidden');
+        if (videoEmptyEl) videoEmptyEl.classList.remove('hidden');
         if (toolbarVideoBtn) toolbarVideoBtn.classList.add('hidden');
         if (speakingBadge) speakingBadge.classList.add('hidden');
       }
