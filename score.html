@@ -187,11 +187,6 @@
             </select>
           </div>
 
-          <a id="toolbarVideoBtn" href="#" target="_blank" rel="noopener noreferrer" class="hidden px-3 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold rounded-lg shadow transition flex items-center space-x-1.5">
-            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/></svg>
-            <span>Xem Video Phỏng Vấn</span>
-          </a>
-
           <button onclick="window.print()" class="px-4 py-2 bg-potato-blue hover:bg-blue-700 text-white text-xs font-semibold rounded-lg shadow transition flex items-center space-x-1.5">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
             <span>In Phiếu Điểm (A4)</span>
@@ -289,15 +284,7 @@
                   <td class="border border-slate-300 py-2 px-3 font-semibold text-slate-700" id="valListening">7 / 10</td>
                   <td class="border border-slate-300 py-2 px-3 font-semibold text-slate-700" id="valReading">36 / 60</td>
                   <td class="border border-slate-300 py-2 px-3 font-semibold text-slate-700" id="valWriting">6 / 10</td>
-                  <td class="border border-slate-300 py-2 px-3 font-semibold text-slate-700">
-                    <span id="valSpeaking">--</span>
-                    <div id="speakingVideoBadge" class="no-print hidden mt-0.5">
-                      <a id="speakingVideoLink" href="#" target="_blank" rel="noopener noreferrer" class="inline-flex items-center space-x-0.5 text-[10px] text-red-600 hover:underline font-semibold">
-                        <svg class="w-3 h-3 text-red-600 inline" fill="currentColor" viewBox="0 0 24 24"><path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/></svg>
-                        <span>Video</span>
-                      </a>
-                    </div>
-                  </td>
+                  <td class="border border-slate-300 py-2 px-3 font-semibold text-slate-700" id="valSpeaking">--</td>
                   <td class="border border-slate-300 py-2 px-3 font-bold text-base print:text-sm text-potato-navy bg-amber-50/30" id="valTotal">49 / 80</td>
                   <td class="border border-slate-300 py-2 px-3 font-bold text-base print:text-sm text-emerald-600 bg-amber-50/50" id="valGrade">61.25%</td>
                 </tr>
@@ -682,13 +669,10 @@
       document.getElementById('valTotal').innerText = test.total;
       document.getElementById('valGrade').innerText = test.grade;
 
-      // Video Interview button (cùng dòng với kết quả, nằm bên phải)
+      // Video Interview button (chỉ 1 link duy nhất tại dòng Kết Quả)
       const videoUrl = (test.speakingLink || '').trim();
       const videoEmptyEl = document.getElementById('fieldVideoLinkEmpty');
       const btnWatchVideo = document.getElementById('btnWatchVideo');
-      const toolbarVideoBtn = document.getElementById('toolbarVideoBtn');
-      const speakingBadge = document.getElementById('speakingVideoBadge');
-      const speakingVideoLink = document.getElementById('speakingVideoLink');
 
       if (videoUrl && videoUrl.startsWith('http')) {
         if (btnWatchVideo) {
@@ -696,19 +680,9 @@
           btnWatchVideo.classList.remove('hidden');
         }
         if (videoEmptyEl) videoEmptyEl.classList.add('hidden');
-        if (toolbarVideoBtn) {
-          toolbarVideoBtn.href = videoUrl;
-          toolbarVideoBtn.classList.remove('hidden');
-        }
-        if (speakingBadge && speakingVideoLink) {
-          speakingVideoLink.href = videoUrl;
-          speakingBadge.classList.remove('hidden');
-        }
       } else {
         if (btnWatchVideo) btnWatchVideo.classList.add('hidden');
         if (videoEmptyEl) videoEmptyEl.classList.remove('hidden');
-        if (toolbarVideoBtn) toolbarVideoBtn.classList.add('hidden');
-        if (speakingBadge) speakingBadge.classList.add('hidden');
       }
 
       document.getElementById('att1').innerText = student.att1;
